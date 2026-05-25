@@ -1,0 +1,31 @@
+# WordPress core files — we only track wp-content
+wp-admin/
+wp-includes/
+wp-*.php
+xmlrpc.php
+index.php
+license.txt
+readme.html
+
+# Sensitive config — never commit this
+wp-config.php
+wp-config-sample.php
+
+# Uploads are tracked, but ignore OS junk inside them
+wp-content/uploads/**/.DS_Store
+wp-content/uploads/**/Thumbs.db
+
+# Caches and generated files
+wp-content/cache/
+wp-content/upgrade/
+wp-content/backups/
+wp-content/debug.log
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor files
+.vscode/
+*.swp
+*.swo
