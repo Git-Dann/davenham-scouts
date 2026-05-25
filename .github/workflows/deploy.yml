@@ -17,8 +17,9 @@ jobs:
       - name: Deploy changed files via FTP
         uses: SamKirkland/FTP-Deploy-Action@v4.3.4
         with:
-          server: ${{ secrets.FTP_HOST }}
-          username: ${{ secrets.FTP_USERNAME }}
+          server: ftp.davenhamscouts.org.uk
+          port: 21
+          username: agent@davenhamscouts.org.uk
           password: ${{ secrets.FTP_PASSWORD }}
           server-dir: ${{ secrets.FTP_SERVER_DIR }}
           local-dir: ./
