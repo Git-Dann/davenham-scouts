@@ -1,4 +1,4 @@
-# WordPress core files — we only track wp-content
+# WordPress core files — only wp-content is tracked
 wp-admin/
 wp-includes/
 wp-*.php
