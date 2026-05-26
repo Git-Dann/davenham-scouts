@@ -12,7 +12,11 @@
   "attributes": {
     "heading": {
       "type": "string",
-      "default": "Latest news"
+      "default": "What's happening"
+    },
+    "subtitle": {
+      "type": "string",
+      "default": "All the latest news for you and your Scouts"
     },
     "viewAllText": {
       "type": "string",
