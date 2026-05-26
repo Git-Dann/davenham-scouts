@@ -21,10 +21,15 @@ jobs:
           port: 21
           username: agent@davenhamscouts.org.uk
           password: ${{ secrets.FTP_PASSWORD }}
-          server-dir: ${{ secrets.FTP_SERVER_DIR }}
+          server-dir: ./
           local-dir: ./
+          state-name: .ftp-deploy-sync-state.json
           exclude: |
             **/.git*
             **/.git*/**
             **/node_modules/**
             .github/**
+            design.md
+            CLAUDE.md
+            homepage-builder-example.html
+            **/.DS_Store
