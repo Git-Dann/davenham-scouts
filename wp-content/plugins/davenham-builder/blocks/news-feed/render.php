@@ -28,7 +28,7 @@ $query = new WP_Query( array(
 				<p class="news_section__subtitle"><?php echo esc_html( $subtitle ); ?></p>
 			<?php endif; ?>
 		</div><!-- .news_section__header -->
-		<div class="news_blocks cf">
+		<div class="news_blocks">
 			<?php if ( $query->have_posts() ) : ?>
 				<?php while ( $query->have_posts() ) : $query->the_post(); ?>
 					<a href="<?php the_permalink(); ?>" class="news_block<?php echo has_post_thumbnail() ? '' : ' news_block--no-image'; ?>">
