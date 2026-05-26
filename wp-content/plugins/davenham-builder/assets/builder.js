@@ -105,7 +105,7 @@
 				{ key: 'buttonText',      label: 'Button Text',              type: 'text' },
 				{ key: 'buttonUrl',       label: 'Button URL',               type: 'text' },
 				{ key: 'style',           label: 'Style',                    type: 'select', options: [['white','White'],['dark','Dark Navy']] },
-				{ key: 'backgroundColor', label: 'Custom BG Colour',         type: 'text', help: 'e.g. #003f87 — leave blank for default' },
+				{ key: 'backgroundColor', label: 'Custom BG Colour',         type: 'text', help: 'e.g. #003982 — leave blank for default' },
 			],
 		},
 

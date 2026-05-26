@@ -332,7 +332,7 @@ function db_enqueue_builder_assets( $hook ) {
 add_filter( 'page_row_actions', 'db_page_row_action', 10, 2 );
 function db_page_row_action( $actions, $post ) {
 	$url = admin_url( 'admin.php?page=davenham-builder&post_id=' . $post->ID );
-	$actions['davenham_builder'] = '<a href="' . esc_url( $url ) . '" style="color:#7413dc;font-weight:600;">⚜ Builder</a>';
+	$actions['davenham_builder'] = '<a href="' . esc_url( $url ) . '" style="color:#590FA9;font-weight:600;">⚜ Builder</a>';
 	return $actions;
 }
 
