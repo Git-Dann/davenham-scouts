@@ -16,6 +16,9 @@ define( 'DB_VERSION', '1.4.0' );
 define( 'DB_DIR',     plugin_dir_path( __FILE__ ) );
 define( 'DB_URL',     plugin_dir_url( __FILE__ ) );
 
+// One-time page migration helpers (Builder → Page Migration admin screen).
+require_once DB_DIR . 'migrations.php';
+
 // ─── Shared helper — declared once here so render.php files can call it safely ─
 if ( ! function_exists( 'davenham_video_to_embed' ) ) {
 	function davenham_video_to_embed( $url ) {
@@ -115,6 +118,15 @@ function db_register_admin_menu() {
 		'manage_options',
 		'davenham-builder-site-settings',
 		'db_render_site_settings_page'
+	);
+
+	add_submenu_page(
+		'davenham-builder',
+		__( 'Page Migration', 'davenham-builder' ),
+		__( 'Page Migration', 'davenham-builder' ),
+		'manage_options',
+		'davenham-builder-migrate',
+		'db_render_migration_page'
 	);
 }
 
