@@ -117,7 +117,7 @@ Text Domain: the-scouts-skills-for-life
   display: inline-block;
   padding: 12px 18px;
   border: 1px solid rgba(255, 255, 255, 0.45);
-  border-radius: 999px;
+  border-radius: 0px;
   color: #fff;
   font-weight: 700;
   text-decoration: none;
@@ -537,14 +537,19 @@ a.age_group_card:hover {
   margin: 0;
 }
 
-.news_section .news_blocks {
-  display: grid;
+/* Use .home prefix (0-3-0 specificity) + !important on display to beat
+   production.css .home .news_section .news_blocks { display: block; }
+   media query which shares the same 0-3-0 specificity */
+.home .news_section .news_blocks {
+  display: grid !important;
   grid-template-columns: repeat(3, 1fr);
   gap: 20px;
+  white-space: normal;
+  overflow-x: visible;
 }
 
 @media (max-width: 900px) {
-  .news_section .news_blocks {
+  .home .news_section .news_blocks {
     grid-template-columns: 1fr;
   }
 }
