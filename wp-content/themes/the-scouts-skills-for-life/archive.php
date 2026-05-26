@@ -1,5 +1,6 @@
 <?php get_header(); ?>
 
+<main id="main-content" tabindex="-1">
 <section class="hero standard cf">
     <div class="wrapper alt">
         <div class="inner">
@@ -33,5 +34,6 @@
         <?php endif; ?>
     </div>
 </div>
+</main>
 
 <?php get_footer(); ?>

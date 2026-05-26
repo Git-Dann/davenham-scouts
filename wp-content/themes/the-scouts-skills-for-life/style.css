@@ -8,6 +8,68 @@ License: GNU General Public License v2 or later
 Text Domain: the-scouts-skills-for-life
 */
 
+/* ── Accessibility utilities ──────────────────────────────────── */
+.screen-reader-text {
+  position: absolute !important;
+  clip: rect(1px, 1px, 1px, 1px);
+  clip-path: inset(50%);
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  white-space: nowrap;
+  word-wrap: normal;
+  border: 0;
+  padding: 0;
+  margin: -1px;
+}
+
+.scouts-skip-link {
+  position: absolute;
+  top: -100px;
+  left: 8px;
+  z-index: 100000;
+  padding: 10px 16px;
+  background: #590FA9;
+  color: #fff;
+  font-weight: 700;
+  text-decoration: none;
+  border-radius: 0;
+  transition: top 0.15s ease;
+}
+
+.scouts-skip-link:focus {
+  top: 8px;
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(89, 15, 169, 0.15);
+}
+
+/* Header search & nav button focus rings (national focus style) */
+.new-header .search-form input[type="search"]:focus,
+.new-header .search-form .submit:focus,
+.new-header .hamburger:focus,
+.new-header .key_links button:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(89, 15, 169, 0.25);
+}
+
+/* Reset button styling for hamburger/search toggle buttons (they were <a>) */
+.new-header .key_links button.block_icon,
+.new-header .hamburger {
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  font: inherit;
+  color: inherit;
+}
+
+/* Active nav state — WP adds .current-menu-item to <li> */
+.new-header .menu .current-menu-item > a,
+.new-header .menu .current-menu-parent > a,
+.new-header .menu .current-menu-ancestor > a {
+  color: #590FA9;
+}
+
 .hero.standard .inner {
   position: relative;
   z-index: 2;

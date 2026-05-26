@@ -16,6 +16,8 @@
     $body_text  = trim( $split[1] ?? '' );
 ?>
 
+<main id="main-content" tabindex="-1">
+
 <?php
 $notice_text      = get_theme_mod( 'site_notice_text', '' );
 $notice_link      = get_theme_mod( 'site_notice_link', '' );
@@ -138,5 +140,6 @@ if ( $notice_text ) : ?>
 </div>
 
 <?php endwhile; ?>
+</main>
 
 <?php get_footer(); ?>

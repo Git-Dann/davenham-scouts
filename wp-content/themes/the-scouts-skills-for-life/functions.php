@@ -161,6 +161,28 @@ function scouts_render_site_chrome(): void {
                     node.addEventListener('click', closeModal);
                 });
             }
+
+            // Keep aria-expanded in sync on the hamburger when the mobile menu opens/closes.
+            // The existing theme JS toggles a class on body/overlay — we observe that.
+            var overlay = document.getElementById('mobile-menu');
+            var hamburgers = document.querySelectorAll('.new-header .hamburger');
+            if (overlay && hamburgers.length) {
+                var syncAria = function () {
+                    var isOpen = document.body.classList.contains('menu-open') ||
+                                 overlay.classList.contains('open') ||
+                                 overlay.getAttribute('aria-hidden') === 'false';
+                    hamburgers.forEach(function (h) {
+                        h.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+                        h.setAttribute('aria-label', isOpen ? 'Close menu' : 'Open menu');
+                    });
+                    overlay.setAttribute('aria-hidden', isOpen ? 'false' : 'true');
+                };
+                var observer = new MutationObserver(syncAria);
+                observer.observe(document.body, { attributes: true, attributeFilter: ['class'] });
+                observer.observe(overlay, { attributes: true, attributeFilter: ['class', 'style'] });
+                // Fallback: also sync on click
+                hamburgers.forEach(function (h) { h.addEventListener('click', function () { setTimeout(syncAria, 50); }); });
+            }
         }());
     </script>
     <?php

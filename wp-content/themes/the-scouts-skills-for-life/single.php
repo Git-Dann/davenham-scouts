@@ -8,9 +8,12 @@
             'post_type'      => 'post',
             'posts_per_page' => 4,
             'post__not_in'   => [ get_the_ID() ],
+            'orderby'        => 'date',
+            'order'          => 'DESC',
         ]
     );
 ?>
+<main id="main-content" tabindex="-1">
 <section class="hero standard cf">
     <?php if ( $hero_img ) : ?>
         <img src="<?php echo esc_url( $hero_img ); ?>" class="bg" alt="" decoding="async" />
@@ -75,5 +78,6 @@
     </div>
 </div>
 <?php endwhile; ?>
+</main>
 
 <?php get_footer(); ?>

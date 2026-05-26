@@ -36,6 +36,7 @@
     }
 ?>
 
+<main id="main-content" tabindex="-1">
 <section class="hero standard cf">
     <?php if ( $hero_img ) : ?>
         <img src="<?php echo esc_url( $hero_img ); ?>" class="bg" alt="" decoding="async" />
@@ -92,5 +93,6 @@
 </div>
 
 <?php endwhile; ?>
+</main>
 
 <?php get_footer(); ?>
