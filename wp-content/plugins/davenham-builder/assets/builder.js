@@ -19,6 +19,23 @@
 	const REST = ( dbConfig.restUrl || ( dbConfig.siteUrl + '/wp-json/' ) ).replace( /\/$/, '' );
 	const NONCE = dbConfig.nonce;
 
+	// Translate WordPress REST errors into copy a non-technical user can act on.
+	function friendlyRestError( status, body ) {
+		if ( status === 401 || status === 403 ) {
+			return 'Your sign-in may have expired. Please refresh the page and try again.';
+		}
+		if ( status === 404 ) {
+			return 'That page or item couldn\'t be found. It may have been deleted.';
+		}
+		if ( status >= 500 ) {
+			return 'The server didn\'t respond — please try again in a moment.';
+		}
+		if ( body && body.message ) {
+			return body.message;
+		}
+		return 'Something went wrong (error ' + status + '). Please try again.';
+	}
+
 	function restGet( path ) {
 		return window.fetch( REST + path, {
 			method: 'GET',
@@ -30,10 +47,12 @@
 		} ).then( function ( r ) {
 			return r.json().then( function ( body ) {
 				if ( ! r.ok ) {
-					var msg = ( body && body.message ) ? body.message : ( 'HTTP ' + r.status );
-					throw new Error( msg );
+					throw new Error( friendlyRestError( r.status, body ) );
 				}
 				return body;
+			} ).catch( function ( err ) {
+				if ( err instanceof Error ) throw err;
+				throw new Error( 'Couldn\'t reach the site — check your connection and try again.' );
 			} );
 		} );
 	}
@@ -50,10 +69,12 @@
 		} ).then( function ( r ) {
 			return r.json().then( function ( body ) {
 				if ( ! r.ok ) {
-					var msg = ( body && body.message ) ? body.message : ( 'HTTP ' + r.status );
-					throw new Error( msg );
+					throw new Error( friendlyRestError( r.status, body ) );
 				}
 				return body;
+			} ).catch( function ( err ) {
+				if ( err instanceof Error ) throw err;
+				throw new Error( 'Couldn\'t save — check your connection and try again.' );
 			} );
 		} );
 	}
@@ -1567,9 +1588,9 @@
 					el( 'span', { className: 'db-section__preview' }, preview )
 				),
 				! simpleMode && el( 'div', { className: 'db-section__actions', onClick: e => e.stopPropagation() },
-					el( 'button', { className: 'db-section__btn db-section__btn--up',     title: 'Move up',      disabled: ! canMoveUp,   onClick: onMoveUp   }, '↑' ),
-					el( 'button', { className: 'db-section__btn db-section__btn--down',   title: 'Move down',    disabled: ! canMoveDown, onClick: onMoveDown }, '↓' ),
-					el( 'button', { className: 'db-section__btn db-section__btn--delete', title: 'Delete',       onClick: () => { if ( window.confirm( 'Delete this section?' ) ) onDelete(); } }, '🗑' )
+					el( 'button', { type: 'button', className: 'db-section__btn db-section__btn--up',     title: 'Move up',   'aria-label': 'Move section up',   disabled: ! canMoveUp,   onClick: onMoveUp   }, '↑' ),
+					el( 'button', { type: 'button', className: 'db-section__btn db-section__btn--down',   title: 'Move down', 'aria-label': 'Move section down', disabled: ! canMoveDown, onClick: onMoveDown }, '↓' ),
+					el( 'button', { type: 'button', className: 'db-section__btn db-section__btn--delete', title: 'Delete',    'aria-label': 'Delete this section', onClick: () => { if ( window.confirm( 'Delete this section? This can\'t be undone unless you discard your unsaved changes.' ) ) onDelete(); } }, '🗑' )
 				)
 			)
 		);
@@ -1634,32 +1655,59 @@
 				} );
 		}
 
-		return el( 'div', { className: 'db-modal-overlay', onClick: e => { if ( e.target === e.currentTarget ) onClose(); } },
-			el( 'div', { className: 'db-modal' },
+		// Close on Escape key (standard modal behaviour)
+		useEffect( function () {
+			function onKey( e ) { if ( e.key === 'Escape' ) onClose(); }
+			document.addEventListener( 'keydown', onKey );
+			return function () { document.removeEventListener( 'keydown', onKey ); };
+		}, [ onClose ] );
+
+		return el( 'div', {
+			className: 'db-modal-overlay',
+			onClick: e => { if ( e.target === e.currentTarget ) onClose(); },
+		},
+			el( 'div', {
+				className: 'db-modal',
+				role: 'dialog',
+				'aria-modal': 'true',
+				'aria-labelledby': 'db-new-page-title',
+			},
 				el( 'div', { className: 'db-modal__header' },
-					el( 'h3', { className: 'db-modal__title' }, '＋ Create New Page' ),
-					el( 'button', { className: 'db-modal__close', onClick: onClose }, '✕' )
+					el( 'h3', { className: 'db-modal__title', id: 'db-new-page-title' }, '＋ Create New Page' ),
+					el( 'button', {
+						className: 'db-modal__close',
+						onClick: onClose,
+						'aria-label': 'Close',
+						type: 'button',
+					}, '✕' )
 				),
 				el( 'div', { className: 'db-modal__body' },
-					el( 'label', { className: 'db-modal__label' }, 'Page Title' ),
+					el( 'label', { className: 'db-modal__label', htmlFor: 'db-new-page-title-input' }, 'Page Title' ),
 					el( 'input', {
 						ref: inputRef,
+						id: 'db-new-page-title-input',
 						type: 'text',
 						className: 'db-modal__input',
 						placeholder: 'e.g. About Us',
 						value: title,
+						'aria-describedby': errMsg ? 'db-new-page-error' : 'db-new-page-help',
 						onChange: e => { setTitle( e.target.value ); setErrMsg( '' ); },
 						onKeyDown: e => { if ( e.key === 'Enter' ) create(); },
 					} ),
-					errMsg && el( 'p', { className: 'db-modal__error' }, errMsg ),
-					el( 'p', { style: { fontSize: 12, color: '#aaa', margin: '6px 0 0' } }, 'The page will be created as a draft — you can publish it from WordPress after building.' )
+					errMsg && el( 'p', { className: 'db-modal__error', id: 'db-new-page-error', role: 'alert' }, errMsg ),
+					el( 'p', { id: 'db-new-page-help', className: 'db-modal__help' }, 'The page will be created as a draft — you can publish it from WordPress after building.' )
 				),
 				el( 'div', { className: 'db-modal__footer' },
-					el( 'button', { className: 'db-btn db-btn--ghost', style: { color: '#666', background: '#f5f5f5', border: '1px solid #ddd' }, onClick: onClose }, 'Cancel' ),
+					el( 'button', {
+						className: 'db-btn db-btn--ghost',
+						onClick: onClose,
+						type: 'button',
+					}, 'Cancel' ),
 					el( 'button', {
 						className: 'db-btn db-btn--save',
 						disabled: busy || ! title.trim(),
 						onClick: create,
+						type: 'button',
 					}, busy ? '⏳ Creating…' : 'Create Page →' )
 				)
 			)
