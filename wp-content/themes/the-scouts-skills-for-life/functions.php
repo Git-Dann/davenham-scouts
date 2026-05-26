@@ -3,6 +3,19 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 
 define( 'SCOUTS_THEME_VERSION', '1.0.6' );
 define( 'SCOUTS_THEME_URI', get_template_directory_uri() );
+define( 'SCOUTS_THEME_DIR', get_template_directory() );
+
+/**
+ * Cache-busting version for theme assets.
+ *
+ * Returns the file's modification time as a version string so the URL
+ * changes every time the asset is updated on disk. Falls back to the
+ * theme version if the file is missing (avoids fatal errors in edge cases).
+ */
+function scouts_asset_version( $relative_path ) {
+    $abs = SCOUTS_THEME_DIR . '/' . ltrim( $relative_path, '/' );
+    return file_exists( $abs ) ? (string) filemtime( $abs ) : SCOUTS_THEME_VERSION;
+}
 
 function scouts_site_settings_defaults(): array {
     return [
@@ -165,19 +178,19 @@ function scouts_enqueue_assets() {
         'scouts-production',
         SCOUTS_THEME_URI . '/production/production.css',
         [ 'nunito-sans' ],
-        SCOUTS_THEME_VERSION
+        scouts_asset_version( 'production/production.css' )
     );
     wp_enqueue_style(
         'scouts-theme',
         get_stylesheet_uri(),
         [ 'scouts-production' ],
-        SCOUTS_THEME_VERSION
+        scouts_asset_version( 'style.css' )
     );
     wp_enqueue_script(
         'scouts-production',
         SCOUTS_THEME_URI . '/production/production.min.js',
         [ 'jquery' ],
-        SCOUTS_THEME_VERSION,
+        scouts_asset_version( 'production/production.min.js' ),
         true
     );
     wp_localize_script( 'scouts-production', 'template_url', SCOUTS_THEME_URI );
@@ -190,7 +203,7 @@ function scouts_admin_assets() {
         'scouts-editor-style',
         SCOUTS_THEME_URI . '/editor-style.css',
         [],
-        SCOUTS_THEME_VERSION
+        scouts_asset_version( 'editor-style.css' )
     );
 }
 add_action( 'enqueue_block_editor_assets', 'scouts_admin_assets' );
