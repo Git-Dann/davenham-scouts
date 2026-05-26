@@ -1,0 +1,1135 @@
+<?php
+/**
+ * Plugin Name: Davenham Admin Suite
+ * Plugin URI:  https://davenhamscouts.org.uk
+ * Description: White-label admin customisation, menu cleanup, and editorial polish for Davenham Scouts.
+ * Version:     1.1.2
+ * Author:      Davenham Scout Group
+ * Text Domain: davenham-admin-suite
+ */
+
+defined( 'ABSPATH' ) || exit;
+
+define( 'DAS_VERSION', '1.1.2' );
+define( 'DAS_FILE', __FILE__ );
+define( 'DAS_DIR', plugin_dir_path( __FILE__ ) );
+define( 'DAS_URL', plugin_dir_url( __FILE__ ) );
+
+final class Davenham_Admin_Suite {
+	const OPTION_NAME = 'davenham_admin_suite_settings';
+
+	private static $fallback_menu_links = [
+		'plugins.php'            => 'Plugins',
+		'tools.php'              => 'Tools',
+		'update-core.php'        => 'Updates',
+		'site-health.php'        => 'Site Health',
+		'backuply'               => 'Backuply',
+		'loginizer'              => 'Loginizer',
+		'fileorganizer'          => 'File Organizer',
+		'siteseo'                => 'SiteSEO',
+		'kadence-blocks'         => 'Kadence',
+		'speedycache'            => 'SpeedyCache',
+		'woocommerce'            => 'WooCommerce',
+		'options-general.php'    => 'Settings',
+		'users.php'              => 'Users',
+	];
+
+	private static $captured_menu_items = [];
+
+	public static function init() {
+		add_action( 'admin_init', [ __CLASS__, 'maybe_upgrade_settings' ], 5 );
+		add_action( 'admin_init', [ __CLASS__, 'register_settings' ] );
+		add_action( 'admin_post_davenham_admin_suite_save', [ __CLASS__, 'handle_save' ] );
+		add_action( 'admin_menu', [ __CLASS__, 'register_admin_hub' ], 5 );
+		add_action( 'admin_menu', [ __CLASS__, 'capture_menu_items' ], 998 );
+		add_action( 'admin_menu', [ __CLASS__, 'tidy_admin_menus' ], 999 );
+		add_action( 'admin_bar_menu', [ __CLASS__, 'replace_wp_logo' ], 11 );
+		add_action( 'admin_bar_menu', [ __CLASS__, 'cleanup_admin_bar' ], 999 );
+		add_action( 'admin_enqueue_scripts', [ __CLASS__, 'enqueue_assets' ] );
+		add_action( 'wp_enqueue_scripts', [ __CLASS__, 'enqueue_frontend_assets' ] );
+		add_action( 'login_enqueue_scripts', [ __CLASS__, 'enqueue_assets' ] );
+		add_action( 'wp_dashboard_setup', [ __CLASS__, 'cleanup_dashboard' ], 25 );
+		add_action( 'admin_head', [ __CLASS__, 'suppress_update_ui' ] );
+		add_filter( 'admin_footer_text', [ __CLASS__, 'admin_footer_text' ] );
+		add_filter( 'update_footer', [ __CLASS__, 'admin_version_text' ], 11 );
+		add_filter( 'gettext', [ __CLASS__, 'replace_thank_you_text' ], 20, 3 );
+	}
+
+	public static function defaults() {
+		return [
+			'admin_logo_id'        => 0,
+			'admin_logo_url'       => '',
+			'admin_bar_label'      => 'Davenham Scouts',
+			'footer_text'          => 'Managed by Davenham Scouts.',
+			'version_text'         => 'Davenham admin',
+			'primary_color'        => '#003982',
+			'accent_color'         => '#f36d00',
+			'menu_bg_color'        => '#1c2f45',
+			'menu_text_color'      => '#eef3f8',
+			'dashboard_welcome'    => 'Welcome to the Davenham Scouts admin area.',
+			'hide_wp_updates'      => '1',
+			'menu_groups'          => self::default_groups(),
+			'menu_items'           => self::default_menu_items(),
+			'custom_links'         => [],
+		];
+	}
+
+	private static function default_groups() {
+		return [
+			'technical'    => 'Technical',
+			'maintenance'  => 'Maintenance',
+			'store'        => 'Store',
+			'communications'=> 'Communications',
+		];
+	}
+
+	private static function default_menu_items() {
+		return [
+			'plugins.php' => [
+				'label'     => 'Plugins',
+				'group'     => 'technical',
+				'placement' => 'admin',
+			],
+			'tools.php' => [
+				'label'     => 'Tools',
+				'group'     => 'technical',
+				'placement' => 'admin',
+			],
+			'update-core.php' => [
+				'label'     => 'Updates',
+				'group'     => 'maintenance',
+				'placement' => 'admin',
+			],
+			'site-health.php' => [
+				'label'     => 'Site Health',
+				'group'     => 'maintenance',
+				'placement' => 'admin',
+			],
+			'backuply' => [
+				'label'     => 'Backuply',
+				'group'     => 'maintenance',
+				'placement' => 'admin',
+			],
+			'loginizer' => [
+				'label'     => 'Loginizer',
+				'group'     => 'technical',
+				'placement' => 'admin',
+			],
+			'fileorganizer' => [
+				'label'     => 'File Organizer',
+				'group'     => 'technical',
+				'placement' => 'admin',
+			],
+			'siteseo' => [
+				'label'     => 'SiteSEO',
+				'group'     => 'communications',
+				'placement' => 'admin',
+			],
+			'kadence-blocks' => [
+				'label'     => 'Kadence',
+				'group'     => 'technical',
+				'placement' => 'keep',
+			],
+			'speedycache' => [
+				'label'     => 'SpeedyCache',
+				'group'     => 'technical',
+				'placement' => 'admin',
+			],
+			'woocommerce' => [
+				'label'     => 'WooCommerce',
+				'group'     => 'store',
+				'placement' => 'keep',
+			],
+		];
+	}
+
+	private static function utility_links() {
+		return [
+			'update-core.php' => 'Updates',
+			'site-health.php' => 'Site Health',
+		];
+	}
+
+	public static function settings() {
+		$saved    = get_option( self::OPTION_NAME, [] );
+		$settings = wp_parse_args( is_array( $saved ) ? $saved : [], self::defaults() );
+
+		$settings['menu_groups'] = self::sanitize_group_values( $settings['menu_groups'] ?? self::default_groups() );
+		$settings['menu_items']  = self::normalise_menu_items(
+			is_array( $settings['menu_items'] ?? null ) ? $settings['menu_items'] : [],
+			$settings['menu_groups']
+		);
+		$settings['custom_links'] = self::sanitize_custom_links( $settings['custom_links'] ?? [] );
+
+		return $settings;
+	}
+
+	public static function register_settings() {
+		register_setting(
+			'davenham_admin_suite',
+			self::OPTION_NAME,
+			[
+				'type'              => 'array',
+				'sanitize_callback' => [ __CLASS__, 'sanitize_settings' ],
+				'default'           => self::defaults(),
+			]
+		);
+	}
+
+	public static function maybe_upgrade_settings() {
+		$saved = get_option( self::OPTION_NAME, null );
+		if ( ! is_array( $saved ) ) {
+			return;
+		}
+
+		if ( isset( $saved['menu_items']['site-seo-dashboard'] ) && ! isset( $saved['menu_items']['siteseo'] ) ) {
+			$saved['menu_items']['siteseo'] = $saved['menu_items']['site-seo-dashboard'];
+			unset( $saved['menu_items']['site-seo-dashboard'] );
+		}
+
+		$merged = wp_parse_args( $saved, self::defaults() );
+		$merged['menu_groups']  = self::sanitize_group_values( $merged['menu_groups'] ?? self::default_groups() );
+		$merged['menu_items']   = self::normalise_menu_items( is_array( $merged['menu_items'] ?? null ) ? $merged['menu_items'] : [], $merged['menu_groups'] );
+		$merged['custom_links'] = self::sanitize_custom_links( $merged['custom_links'] ?? [] );
+
+		if ( $merged !== $saved ) {
+			update_option( self::OPTION_NAME, $merged, false );
+		}
+	}
+
+	public static function sanitize_settings( $input ) {
+		$current = self::settings();
+		$clean   = [];
+
+		$clean['admin_logo_id']     = absint( $input['admin_logo_id'] ?? $current['admin_logo_id'] );
+		$clean['admin_logo_url']    = esc_url_raw( $input['admin_logo_url'] ?? $current['admin_logo_url'] );
+		$clean['admin_bar_label']   = sanitize_text_field( $input['admin_bar_label'] ?? $current['admin_bar_label'] );
+		$clean['footer_text']       = sanitize_text_field( $input['footer_text'] ?? $current['footer_text'] );
+		$clean['version_text']      = sanitize_text_field( $input['version_text'] ?? $current['version_text'] );
+		$clean['primary_color']     = sanitize_hex_color( $input['primary_color'] ?? $current['primary_color'] ) ?: $current['primary_color'];
+		$clean['accent_color']      = sanitize_hex_color( $input['accent_color'] ?? $current['accent_color'] ) ?: $current['accent_color'];
+		$clean['menu_bg_color']     = sanitize_hex_color( $input['menu_bg_color'] ?? $current['menu_bg_color'] ) ?: $current['menu_bg_color'];
+		$clean['menu_text_color']   = sanitize_hex_color( $input['menu_text_color'] ?? $current['menu_text_color'] ) ?: $current['menu_text_color'];
+		$clean['dashboard_welcome'] = sanitize_text_field( $input['dashboard_welcome'] ?? $current['dashboard_welcome'] );
+		$clean['hide_wp_updates']   = ! empty( $input['hide_wp_updates'] ) ? '1' : '0';
+		$clean['menu_groups']       = self::sanitize_group_textarea( $input['menu_groups_text'] ?? '', $current['menu_groups'] );
+		$clean['menu_items']        = self::sanitize_menu_items(
+			$input['menu_items'] ?? [],
+			$clean['menu_groups'],
+			$current['menu_items']
+		);
+		$clean['custom_links']      = self::sanitize_custom_links( $input['custom_links'] ?? [] );
+
+		if ( $clean['admin_logo_id'] > 0 ) {
+			$logo_url = wp_get_attachment_image_url( $clean['admin_logo_id'], 'full' );
+			if ( $logo_url ) {
+				$clean['admin_logo_url'] = $logo_url;
+			}
+		}
+
+		return $clean;
+	}
+
+	public static function register_admin_hub() {
+		add_menu_page(
+			'Davenham Admin',
+			'Admin',
+			'manage_options',
+			'davenham-admin-suite',
+			[ __CLASS__, 'render_overview_page' ],
+			'dashicons-admin-generic',
+			59
+		);
+
+		add_submenu_page(
+			'davenham-admin-suite',
+			'Overview',
+			'Overview',
+			'manage_options',
+			'davenham-admin-suite',
+			[ __CLASS__, 'render_overview_page' ]
+		);
+
+		add_submenu_page(
+			'davenham-admin-suite',
+			'Branding',
+			'Branding',
+			'manage_options',
+			'davenham-admin-suite-branding',
+			[ __CLASS__, 'render_branding_page' ]
+		);
+
+		add_submenu_page(
+			'davenham-admin-suite',
+			'Menu Builder',
+			'Menu Builder',
+			'manage_options',
+			'davenham-admin-suite-menu-builder',
+			[ __CLASS__, 'render_menu_builder_page' ]
+		);
+
+		add_submenu_page(
+			'davenham-admin-suite',
+			'Updates',
+			'Updates',
+			'manage_options',
+			'davenham-admin-suite-updates',
+			[ __CLASS__, 'render_updates_page' ]
+		);
+
+		foreach ( self::settings()['menu_groups'] as $group_slug => $group_label ) {
+			add_submenu_page(
+				'davenham-admin-suite',
+				$group_label,
+				$group_label,
+				'manage_options',
+				'davenham-admin-suite-group-' . $group_slug,
+				function () use ( $group_slug, $group_label ) {
+					self::render_group_page( $group_slug, $group_label );
+				}
+			);
+		}
+	}
+
+	public static function capture_menu_items() {
+		if ( ! current_user_can( 'manage_options' ) ) {
+			return;
+		}
+
+		global $menu;
+
+		$captured = [];
+		if ( is_array( $menu ) ) {
+			foreach ( $menu as $item ) {
+				if ( empty( $item[2] ) ) {
+					continue;
+				}
+
+				$slug = (string) $item[2];
+				if ( 0 === strpos( $slug, 'separator' ) || 'davenham-admin-suite' === $slug ) {
+					continue;
+				}
+
+				$captured[ $slug ] = [
+					'label' => self::clean_menu_label( $item[0] ?? $slug ),
+					'slug'  => $slug,
+				];
+			}
+		}
+
+		foreach ( self::$fallback_menu_links as $slug => $label ) {
+			if ( ! isset( $captured[ $slug ] ) ) {
+				$captured[ $slug ] = [
+					'label' => $label,
+					'slug'  => $slug,
+				];
+			}
+		}
+
+		self::$captured_menu_items = $captured;
+	}
+
+	public static function tidy_admin_menus() {
+		if ( ! is_admin() ) {
+			return;
+		}
+
+		$settings   = self::settings();
+		$menu_items = $settings['menu_items'];
+		global $menu;
+
+		if ( is_array( $menu ) ) {
+			foreach ( $menu as $index => $entry ) {
+				$slug = $entry[2] ?? '';
+				if ( ! $slug || ! isset( $menu_items[ $slug ] ) ) {
+					continue;
+				}
+
+				$custom_label = $menu_items[ $slug ]['label'];
+				if ( '' !== $custom_label ) {
+					$menu[ $index ][0] = $custom_label;
+				}
+			}
+		}
+
+		foreach ( $menu_items as $slug => $item ) {
+			if ( 'keep' === $item['placement'] ) {
+				continue;
+			}
+
+			remove_menu_page( $slug );
+
+			if ( 'siteseo' === $slug ) {
+				remove_menu_page( 'site-seo-dashboard' );
+			}
+		}
+
+		if ( $settings['hide_wp_updates'] === '1' ) {
+			remove_submenu_page( 'index.php', 'update-core.php' );
+		}
+	}
+
+	public static function replace_wp_logo( WP_Admin_Bar $wp_admin_bar ) {
+		$settings = self::settings();
+		$logo_url = self::logo_url();
+		$logo     = '';
+
+		if ( $logo_url ) {
+			$logo = sprintf(
+				'<span class="das-admin-logo" style="display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;min-width:20px;max-width:20px;overflow:hidden;margin-right:8px;line-height:0;vertical-align:middle;"><img class="das-admin-logo-image" src="%1$s" alt="" width="20" height="20" style="display:block;width:20px;height:20px;min-width:20px;max-width:20px;max-height:20px;object-fit:contain;" /></span>',
+				esc_url( $logo_url )
+			);
+		}
+
+		$wp_admin_bar->remove_node( 'wp-logo' );
+		$wp_admin_bar->add_node(
+			[
+				'id'    => 'davenham-admin-logo',
+				'title' => sprintf(
+					'%s<span class="ab-label">%s</span>',
+					$logo,
+					esc_html( $settings['admin_bar_label'] )
+				),
+				'href'  => admin_url(),
+				'meta'  => [ 'class' => 'davenham-admin-logo-node' ],
+			]
+		);
+	}
+
+	public static function cleanup_admin_bar( WP_Admin_Bar $wp_admin_bar ) {
+		if ( self::settings()['hide_wp_updates'] === '1' ) {
+			$wp_admin_bar->remove_node( 'updates' );
+		}
+	}
+
+	public static function enqueue_assets() {
+		$settings = self::settings();
+		wp_enqueue_style( 'davenham-admin-suite', DAS_URL . 'assets/admin-suite.css', [], DAS_VERSION );
+		wp_add_inline_style( 'davenham-admin-suite', self::inline_css( $settings ) );
+
+		$screen = function_exists( 'get_current_screen' ) ? get_current_screen() : null;
+		if ( $screen && false !== strpos( $screen->id, 'davenham-admin-suite' ) ) {
+			wp_enqueue_media();
+			wp_enqueue_script( 'davenham-admin-suite', DAS_URL . 'assets/admin-suite.js', [ 'jquery' ], DAS_VERSION, true );
+		}
+	}
+
+	public static function enqueue_frontend_assets() {
+		if ( ! is_admin_bar_showing() ) {
+			return;
+		}
+
+		$settings = self::settings();
+		wp_enqueue_style( 'davenham-admin-suite', DAS_URL . 'assets/admin-suite.css', [], DAS_VERSION );
+		wp_add_inline_style( 'davenham-admin-suite', self::inline_css( $settings ) );
+	}
+
+	public static function cleanup_dashboard() {
+		remove_meta_box( 'dashboard_primary', 'dashboard', 'side' );
+		remove_meta_box( 'dashboard_quick_press', 'dashboard', 'side' );
+		remove_meta_box( 'dashboard_site_health', 'dashboard', 'normal' );
+
+		wp_add_dashboard_widget(
+			'davenham_admin_welcome',
+			'Davenham Admin',
+			[ __CLASS__, 'render_dashboard_welcome' ]
+		);
+	}
+
+	public static function suppress_update_ui() {
+		if ( self::settings()['hide_wp_updates'] !== '1' ) {
+			return;
+		}
+
+		remove_action( 'admin_notices', 'update_nag', 3 );
+
+		echo '<style>
+			.update-nag,
+			.notice.notice-warning[data-dismissible*="update"],
+			.notice.notice-info[data-dismissible*="update"],
+			.notice[data-dismissible*="update-core"],
+			.plugins .plugin-update-tr,
+			.themes-php .notice.notice-warning,
+			.themes-php .notice.notice-info,
+			.core-updates,
+			.update-php .wrap > .notice-warning,
+			.wp-core-ui .update-count {
+				display:none !important;
+			}
+		</style>';
+	}
+
+	public static function render_dashboard_welcome() {
+		$settings = self::settings();
+		$summary  = self::update_summary();
+
+		echo '<p><strong>' . esc_html( $settings['dashboard_welcome'] ) . '</strong></p>';
+		echo '<p>Everyday work stays in Pages, Media, OSM Manager, Posts, and WooCommerce. Technical tools and update controls are grouped under <strong>Admin</strong>.</p>';
+		echo '<ul class="das-summary-list">';
+		echo '<li><strong>Core updates:</strong> ' . esc_html( (string) $summary['core'] ) . '</li>';
+		echo '<li><strong>Plugin updates:</strong> ' . esc_html( (string) $summary['plugins'] ) . '</li>';
+		echo '<li><strong>Theme updates:</strong> ' . esc_html( (string) $summary['themes'] ) . '</li>';
+		echo '</ul>';
+	}
+
+	public static function admin_footer_text() {
+		return esc_html( self::settings()['footer_text'] );
+	}
+
+	public static function admin_version_text() {
+		return esc_html( self::settings()['version_text'] );
+	}
+
+	public static function replace_thank_you_text( $translated, $text, $domain ) {
+		if ( 'default' === $domain && 'Thank you for creating with WordPress.' === $text ) {
+			return self::settings()['footer_text'];
+		}
+
+		return $translated;
+	}
+
+	public static function handle_save() {
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_die( 'Not allowed.' );
+		}
+
+		check_admin_referer( 'davenham_admin_suite_save' );
+
+		$incoming = isset( $_POST[ self::OPTION_NAME ] ) ? wp_unslash( $_POST[ self::OPTION_NAME ] ) : [];
+		$clean    = self::sanitize_settings( is_array( $incoming ) ? $incoming : [] );
+		update_option( self::OPTION_NAME, $clean, false );
+
+		$redirect = isset( $_POST['_wp_http_referer'] ) ? wp_unslash( $_POST['_wp_http_referer'] ) : admin_url( 'admin.php?page=davenham-admin-suite' );
+		$redirect = add_query_arg( 'updated', '1', $redirect );
+
+		wp_safe_redirect( $redirect );
+		exit;
+	}
+
+	public static function render_overview_page() {
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_die( 'Not allowed.' );
+		}
+
+		$settings = self::settings();
+		$summary  = self::update_summary();
+		$groups   = self::grouped_admin_links( $settings );
+		?>
+		<div class="wrap davenham-admin-suite">
+			<h1>Davenham Admin</h1>
+			<p>Use this area for the technical side of the site while keeping the everyday workspace lighter for everyone else.</p>
+			<?php self::render_updated_notice(); ?>
+			<div class="das-overview-grid">
+				<div class="das-card">
+					<h2>Updates</h2>
+					<ul class="das-summary-list">
+						<li><strong>Core:</strong> <?php echo esc_html( (string) $summary['core'] ); ?></li>
+						<li><strong>Plugins:</strong> <?php echo esc_html( (string) $summary['plugins'] ); ?></li>
+						<li><strong>Themes:</strong> <?php echo esc_html( (string) $summary['themes'] ); ?></li>
+					</ul>
+					<p><a class="button button-primary" href="<?php echo esc_url( admin_url( 'admin.php?page=davenham-admin-suite-updates' ) ); ?>">Review updates</a></p>
+				</div>
+				<div class="das-card">
+					<h2>Admin Builder</h2>
+					<p>Rename sidebar items, move them into Admin groups, hide them completely, and add your own links for the team.</p>
+					<p><a class="button button-secondary" href="<?php echo esc_url( admin_url( 'admin.php?page=davenham-admin-suite-menu-builder' ) ); ?>">Open menu builder</a></p>
+				</div>
+			</div>
+
+			<div class="das-group-grid">
+				<?php foreach ( $groups as $group_slug => $group ) : ?>
+					<div class="das-card">
+						<h2><?php echo esc_html( $group['label'] ); ?></h2>
+						<?php if ( empty( $group['links'] ) ) : ?>
+							<p>No links are currently assigned to this group.</p>
+						<?php else : ?>
+							<ul class="das-admin-links">
+								<?php foreach ( $group['links'] as $link ) : ?>
+									<li><a class="button button-secondary" href="<?php echo esc_url( $link['url'] ); ?>"><?php echo esc_html( $link['label'] ); ?></a></li>
+								<?php endforeach; ?>
+							</ul>
+						<?php endif; ?>
+					</div>
+				<?php endforeach; ?>
+			</div>
+		</div>
+		<?php
+	}
+
+	public static function render_branding_page() {
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_die( 'Not allowed.' );
+		}
+
+		$settings = self::settings();
+		?>
+		<div class="wrap davenham-admin-suite">
+			<h1>Branding</h1>
+			<p>Control the admin logo, footer copy, and overall colour treatment.</p>
+			<?php self::render_updated_notice(); ?>
+			<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
+				<?php wp_nonce_field( 'davenham_admin_suite_save' ); ?>
+				<input type="hidden" name="action" value="davenham_admin_suite_save">
+				<table class="form-table" role="presentation">
+					<tbody>
+						<tr>
+							<th scope="row"><label for="das_admin_logo_url">Admin Logo</label></th>
+							<td>
+								<div class="das-media-field">
+									<input type="hidden" id="das_admin_logo_id" name="<?php echo esc_attr( self::OPTION_NAME ); ?>[admin_logo_id]" value="<?php echo esc_attr( (string) $settings['admin_logo_id'] ); ?>">
+									<input type="url" class="regular-text" id="das_admin_logo_url" name="<?php echo esc_attr( self::OPTION_NAME ); ?>[admin_logo_url]" value="<?php echo esc_attr( $settings['admin_logo_url'] ); ?>">
+									<button type="button" class="button button-secondary das-media-open" data-target="#das_admin_logo_url" data-id-target="#das_admin_logo_id">Choose image</button>
+									<button type="button" class="button button-link-delete das-media-clear" data-target="#das_admin_logo_url" data-id-target="#das_admin_logo_id">Remove</button>
+								</div>
+								<p class="description">Choose an image from the WordPress media library. If blank, the site icon is used, then the active theme screenshot as a fallback.</p>
+								<?php if ( ! empty( $settings['admin_logo_url'] ) ) : ?>
+									<p class="das-logo-preview"><img src="<?php echo esc_url( $settings['admin_logo_url'] ); ?>" alt="" /></p>
+								<?php endif; ?>
+							</td>
+						</tr>
+						<tr>
+							<th scope="row"><label for="das_admin_bar_label">Admin Bar Label</label></th>
+							<td><input type="text" class="regular-text" id="das_admin_bar_label" name="<?php echo esc_attr( self::OPTION_NAME ); ?>[admin_bar_label]" value="<?php echo esc_attr( $settings['admin_bar_label'] ); ?>"></td>
+						</tr>
+						<tr>
+							<th scope="row"><label for="das_footer_text">Footer Text</label></th>
+							<td><input type="text" class="regular-text" id="das_footer_text" name="<?php echo esc_attr( self::OPTION_NAME ); ?>[footer_text]" value="<?php echo esc_attr( $settings['footer_text'] ); ?>"></td>
+						</tr>
+						<tr>
+							<th scope="row"><label for="das_version_text">Footer Right Text</label></th>
+							<td><input type="text" class="regular-text" id="das_version_text" name="<?php echo esc_attr( self::OPTION_NAME ); ?>[version_text]" value="<?php echo esc_attr( $settings['version_text'] ); ?>"></td>
+						</tr>
+						<tr>
+							<th scope="row"><label for="das_dashboard_welcome">Dashboard Welcome</label></th>
+							<td><input type="text" class="large-text" id="das_dashboard_welcome" name="<?php echo esc_attr( self::OPTION_NAME ); ?>[dashboard_welcome]" value="<?php echo esc_attr( $settings['dashboard_welcome'] ); ?>"></td>
+						</tr>
+						<tr>
+							<th scope="row">Admin Colours</th>
+							<td class="das-color-grid">
+								<label>Primary <input type="color" name="<?php echo esc_attr( self::OPTION_NAME ); ?>[primary_color]" value="<?php echo esc_attr( $settings['primary_color'] ); ?>"></label>
+								<label>Accent <input type="color" name="<?php echo esc_attr( self::OPTION_NAME ); ?>[accent_color]" value="<?php echo esc_attr( $settings['accent_color'] ); ?>"></label>
+								<label>Menu Background <input type="color" name="<?php echo esc_attr( self::OPTION_NAME ); ?>[menu_bg_color]" value="<?php echo esc_attr( $settings['menu_bg_color'] ); ?>"></label>
+								<label>Menu Text <input type="color" name="<?php echo esc_attr( self::OPTION_NAME ); ?>[menu_text_color]" value="<?php echo esc_attr( $settings['menu_text_color'] ); ?>"></label>
+							</td>
+						</tr>
+					</tbody>
+				</table>
+				<?php submit_button( 'Save Branding' ); ?>
+			</form>
+		</div>
+		<?php
+	}
+
+	public static function render_menu_builder_page() {
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_die( 'Not allowed.' );
+		}
+
+		$settings = self::settings();
+		$catalog  = self::available_menu_catalog();
+		?>
+		<div class="wrap davenham-admin-suite">
+			<h1>Menu Builder</h1>
+			<p>Rename menu items, move them into Admin groups, hide them, or add your own links.</p>
+			<?php self::render_updated_notice(); ?>
+			<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
+				<?php wp_nonce_field( 'davenham_admin_suite_save' ); ?>
+				<input type="hidden" name="action" value="davenham_admin_suite_save">
+
+				<h2>Groups</h2>
+				<p class="description">One group per line. These become the group pages under Admin.</p>
+				<textarea class="large-text code" rows="6" name="<?php echo esc_attr( self::OPTION_NAME ); ?>[menu_groups_text]"><?php echo esc_textarea( self::groups_textarea_value( $settings['menu_groups'] ) ); ?></textarea>
+
+				<h2>Existing Menu Items</h2>
+				<table class="widefat striped das-menu-table">
+					<thead>
+						<tr>
+							<th>Current Menu</th>
+							<th>Custom Label</th>
+							<th>Group</th>
+							<th>Placement</th>
+						</tr>
+					</thead>
+					<tbody>
+						<?php foreach ( $catalog as $slug => $item ) : ?>
+							<?php
+							$config = $settings['menu_items'][ $slug ] ?? [
+								'label'     => $item['label'],
+								'group'     => self::default_group_slug( $settings['menu_groups'] ),
+								'placement' => 'keep',
+							];
+							?>
+							<tr>
+								<td>
+									<strong><?php echo esc_html( $item['label'] ); ?></strong>
+									<div class="description"><code><?php echo esc_html( $slug ); ?></code></div>
+								</td>
+								<td><input type="text" class="regular-text" name="<?php echo esc_attr( self::OPTION_NAME ); ?>[menu_items][<?php echo esc_attr( $slug ); ?>][label]" value="<?php echo esc_attr( $config['label'] ); ?>"></td>
+								<td><?php self::render_group_select( self::OPTION_NAME . '[menu_items][' . $slug . '][group]', $config['group'], $settings['menu_groups'] ); ?></td>
+								<td>
+										<select name="<?php echo esc_attr( self::OPTION_NAME ); ?>[menu_items][<?php echo esc_attr( $slug ); ?>][placement]">
+											<option value="keep" <?php selected( $config['placement'], 'keep' ); ?>>Main Menu</option>
+											<option value="admin" <?php selected( $config['placement'], 'admin' ); ?>>Admin</option>
+											<option value="hide" <?php selected( $config['placement'], 'hide' ); ?>>Hide completely</option>
+										</select>
+									</td>
+							</tr>
+						<?php endforeach; ?>
+					</tbody>
+				</table>
+
+				<h2>Custom Admin Links</h2>
+				<p class="description">Add quick links for team shortcuts, plugin screens, documentation, or external services.</p>
+				<div class="das-custom-links" data-next-index="<?php echo esc_attr( (string) count( $settings['custom_links'] ) ); ?>">
+					<div class="das-custom-link-rows">
+						<?php foreach ( $settings['custom_links'] as $index => $link ) : ?>
+							<?php self::render_custom_link_row( $index, $link, $settings['menu_groups'] ); ?>
+						<?php endforeach; ?>
+					</div>
+					<p><button type="button" class="button button-secondary das-add-custom-link">Add custom link</button></p>
+				</div>
+
+				<script type="text/template" id="das-custom-link-template">
+					<?php self::render_custom_link_row( '__INDEX__', [ 'label' => '', 'url' => '', 'group' => self::default_group_slug( $settings['menu_groups'] ) ], $settings['menu_groups'] ); ?>
+				</script>
+
+				<p>
+					<label>
+						<input type="checkbox" name="<?php echo esc_attr( self::OPTION_NAME ); ?>[hide_wp_updates]" value="1" <?php checked( $settings['hide_wp_updates'], '1' ); ?>>
+						Hide update banners and update shortcuts outside the Admin area.
+					</label>
+				</p>
+
+				<?php submit_button( 'Save Menu Builder' ); ?>
+			</form>
+		</div>
+		<?php
+	}
+
+	public static function render_updates_page() {
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_die( 'Not allowed.' );
+		}
+
+		$core_updates   = get_core_updates( [ 'dismissed' => false ] );
+		$plugin_updates = get_plugin_updates();
+		$theme_updates  = get_theme_updates();
+		?>
+		<div class="wrap davenham-admin-suite">
+			<h1>Updates</h1>
+			<p>Update information stays here so other users do not accidentally apply changes from notice banners.</p>
+			<div class="das-overview-grid">
+				<div class="das-card">
+					<h2>Core</h2>
+					<p><?php echo ! empty( $core_updates ) ? esc_html( (string) count( $core_updates ) ) . ' update item(s) available.' : 'WordPress core is up to date.'; ?></p>
+				</div>
+				<div class="das-card">
+					<h2>Plugins</h2>
+					<p><?php echo ! empty( $plugin_updates ) ? esc_html( (string) count( $plugin_updates ) ) . ' plugin update(s) available.' : 'Plugins are up to date.'; ?></p>
+				</div>
+				<div class="das-card">
+					<h2>Themes</h2>
+					<p><?php echo ! empty( $theme_updates ) ? esc_html( (string) count( $theme_updates ) ) . ' theme update(s) available.' : 'Themes are up to date.'; ?></p>
+				</div>
+			</div>
+
+			<?php if ( ! empty( $plugin_updates ) ) : ?>
+				<h2>Plugin Updates</h2>
+				<table class="widefat striped">
+					<thead><tr><th>Plugin</th><th>Version</th><th>Next step</th></tr></thead>
+					<tbody>
+						<?php foreach ( $plugin_updates as $plugin_file => $plugin ) : ?>
+							<tr>
+								<td><?php echo esc_html( $plugin['Name'] ?? $plugin_file ); ?></td>
+								<td><?php echo esc_html( (string) ( $plugin['Version'] ?? '' ) ); ?> -> <?php echo esc_html( (string) ( $plugin['update']->new_version ?? '' ) ); ?></td>
+								<td><a class="button button-secondary" href="<?php echo esc_url( admin_url( 'plugins.php' ) ); ?>">Review in Plugins</a></td>
+							</tr>
+						<?php endforeach; ?>
+					</tbody>
+				</table>
+			<?php endif; ?>
+
+			<?php if ( ! empty( $theme_updates ) ) : ?>
+				<h2>Theme Updates</h2>
+				<table class="widefat striped">
+					<thead><tr><th>Theme</th><th>Version</th></tr></thead>
+					<tbody>
+						<?php foreach ( $theme_updates as $theme_slug => $theme ) : ?>
+							<tr>
+								<td><?php echo esc_html( $theme['Name'] ?? $theme_slug ); ?></td>
+								<td><?php echo esc_html( (string) ( $theme['Version'] ?? '' ) ); ?> -> <?php echo esc_html( (string) ( $theme['update']['new_version'] ?? '' ) ); ?></td>
+							</tr>
+						<?php endforeach; ?>
+					</tbody>
+				</table>
+			<?php endif; ?>
+
+			<p><a class="button button-primary" href="<?php echo esc_url( admin_url( 'update-core.php' ) ); ?>">Open WordPress update screen</a></p>
+		</div>
+		<?php
+	}
+
+	public static function render_group_page( $group_slug, $group_label ) {
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_die( 'Not allowed.' );
+		}
+
+		$groups = self::grouped_admin_links( self::settings() );
+		$group  = $groups[ $group_slug ] ?? [ 'label' => $group_label, 'links' => [] ];
+		?>
+		<div class="wrap davenham-admin-suite">
+			<h1><?php echo esc_html( $group['label'] ); ?></h1>
+			<?php if ( empty( $group['links'] ) ) : ?>
+				<p>No links are currently assigned to this group.</p>
+			<?php else : ?>
+				<ul class="das-admin-links">
+					<?php foreach ( $group['links'] as $link ) : ?>
+						<li><a class="button button-secondary" href="<?php echo esc_url( $link['url'] ); ?>"><?php echo esc_html( $link['label'] ); ?></a></li>
+					<?php endforeach; ?>
+				</ul>
+			<?php endif; ?>
+		</div>
+		<?php
+	}
+
+	private static function render_updated_notice() {
+		if ( isset( $_GET['updated'] ) ) {
+			echo '<div class="notice notice-success"><p>Admin settings saved.</p></div>';
+		}
+	}
+
+	private static function grouped_admin_links( $settings ) {
+		$groups = [];
+		foreach ( $settings['menu_groups'] as $group_slug => $group_label ) {
+			$groups[ $group_slug ] = [
+				'label' => $group_label,
+				'links' => [],
+			];
+		}
+
+		foreach ( $settings['menu_items'] as $slug => $item ) {
+			if ( 'admin' !== $item['placement'] ) {
+				continue;
+			}
+
+			if ( ! isset( $groups[ $item['group'] ] ) ) {
+				$groups[ $item['group'] ] = [
+					'label' => $item['group'],
+					'links' => [],
+				];
+			}
+
+			$groups[ $item['group'] ]['links'][] = [
+				'label' => $item['label'],
+				'url'   => admin_url( $slug ),
+			];
+		}
+
+		foreach ( $settings['custom_links'] as $link ) {
+			if ( empty( $link['label'] ) || empty( $link['url'] ) ) {
+				continue;
+			}
+
+			if ( ! isset( $groups[ $link['group'] ] ) ) {
+				$groups[ $link['group'] ] = [
+					'label' => $link['group'],
+					'links' => [],
+				];
+			}
+
+			$groups[ $link['group'] ]['links'][] = [
+				'label' => $link['label'],
+				'url'   => self::normalise_link_url( $link['url'] ),
+			];
+		}
+
+		return $groups;
+	}
+
+	private static function update_summary() {
+		return [
+			'core'    => count( get_core_updates( [ 'dismissed' => false ] ) ),
+			'plugins' => count( get_plugin_updates() ),
+			'themes'  => count( get_theme_updates() ),
+		];
+	}
+
+	private static function logo_url() {
+		$settings = self::settings();
+
+		if ( ! empty( $settings['admin_logo_id'] ) ) {
+			$logo_url = wp_get_attachment_image_url( absint( $settings['admin_logo_id'] ), 'full' );
+			if ( $logo_url ) {
+				return $logo_url;
+			}
+		}
+
+		if ( ! empty( $settings['admin_logo_url'] ) ) {
+			return $settings['admin_logo_url'];
+		}
+
+		if ( function_exists( 'get_site_icon_url' ) && get_site_icon_url( 128 ) ) {
+			return get_site_icon_url( 128 );
+		}
+
+		return trailingslashit( get_stylesheet_directory_uri() ) . 'screenshot.png';
+	}
+
+	private static function inline_css( $settings ) {
+		$logo_url = self::logo_url();
+
+		return sprintf(
+			':root{--das-primary:%1$s;--das-accent:%2$s;--das-menu-bg:%3$s;--das-menu-text:%4$s;--das-logo:url("%5$s");}',
+			esc_html( $settings['primary_color'] ),
+			esc_html( $settings['accent_color'] ),
+			esc_html( $settings['menu_bg_color'] ),
+			esc_html( $settings['menu_text_color'] ),
+			esc_url_raw( $logo_url )
+		);
+	}
+
+	private static function clean_menu_label( $label ) {
+		$label = wp_strip_all_tags( (string) $label );
+		$label = preg_replace( '/\s+\d+$/', '', $label );
+		return trim( $label );
+	}
+
+	private static function available_menu_catalog() {
+		$catalog = self::$captured_menu_items;
+		if ( empty( $catalog ) ) {
+			$catalog = [];
+			foreach ( self::$fallback_menu_links as $slug => $label ) {
+				$catalog[ $slug ] = [
+					'label' => $label,
+					'slug'  => $slug,
+				];
+			}
+		}
+
+		uksort(
+			$catalog,
+			function ( $left, $right ) use ( $catalog ) {
+				return strcasecmp( $catalog[ $left ]['label'], $catalog[ $right ]['label'] );
+			}
+		);
+
+		return $catalog;
+	}
+
+	private static function default_group_slug( $groups ) {
+		$keys = array_keys( $groups );
+		return ! empty( $keys ) ? $keys[0] : 'technical';
+	}
+
+	private static function sanitize_group_textarea( $text, $fallback ) {
+		$lines  = preg_split( '/\r\n|\r|\n/', (string) $text );
+		$groups = [];
+
+		foreach ( $lines as $line ) {
+			$label = trim( sanitize_text_field( $line ) );
+			if ( '' === $label ) {
+				continue;
+			}
+
+			$slug = sanitize_title( $label );
+			if ( '' === $slug ) {
+				continue;
+			}
+
+			$groups[ $slug ] = $label;
+		}
+
+		if ( empty( $groups ) ) {
+			return self::sanitize_group_values( $fallback );
+		}
+
+		return $groups;
+	}
+
+	private static function sanitize_group_values( $groups ) {
+		$clean = [];
+		foreach ( (array) $groups as $slug => $label ) {
+			$label = trim( sanitize_text_field( $label ) );
+			$slug  = sanitize_title( is_string( $slug ) ? $slug : $label );
+
+			if ( '' === $slug || '' === $label ) {
+				continue;
+			}
+
+			$clean[ $slug ] = $label;
+		}
+
+		if ( empty( $clean ) ) {
+			return self::default_groups();
+		}
+
+		return $clean;
+	}
+
+	private static function normalise_menu_items( $items, $groups ) {
+		$defaults = self::default_menu_items();
+		$catalog  = self::available_menu_catalog();
+		$utility  = self::utility_links();
+		$normal   = [];
+
+		$slugs = array_unique(
+			array_merge(
+				array_keys( $catalog ),
+				array_keys( array_intersect_key( (array) $items, $utility ) )
+			)
+		);
+
+		foreach ( $slugs as $slug ) {
+			$catalog_item = $catalog[ $slug ] ?? [
+				'label' => $utility[ $slug ] ?? ( $defaults[ $slug ]['label'] ?? $slug ),
+				'slug'  => $slug,
+			];
+
+			$base = $defaults[ $slug ] ?? [
+				'label'     => $catalog_item['label'],
+				'group'     => self::default_group_slug( $groups ),
+				'placement' => 'keep',
+			];
+
+			$saved = $items[ $slug ] ?? [];
+
+			$group = sanitize_title( $saved['group'] ?? $base['group'] );
+			if ( ! isset( $groups[ $group ] ) ) {
+				$group = self::default_group_slug( $groups );
+			}
+
+			$placement = $saved['placement'] ?? $base['placement'];
+			if ( ! in_array( $placement, [ 'keep', 'admin', 'hide' ], true ) ) {
+				$placement = $base['placement'];
+			}
+
+			$normal[ $slug ] = [
+				'label'     => sanitize_text_field( $saved['label'] ?? $base['label'] ),
+				'group'     => $group,
+				'placement' => $placement,
+			];
+		}
+
+		return $normal;
+	}
+
+	private static function sanitize_menu_items( $items, $groups, $fallback_items ) {
+		$catalog = self::available_menu_catalog();
+		$utility = self::utility_links();
+		$clean   = [];
+
+		$slugs = array_unique(
+			array_merge(
+				array_keys( is_array( $items ) ? $items : [] ),
+				array_keys( $catalog ),
+				array_keys( $utility )
+			)
+		);
+
+		foreach ( $slugs as $slug ) {
+			$catalog_item = $catalog[ $slug ] ?? [
+				'label' => $utility[ $slug ] ?? ( $fallback_items[ $slug ]['label'] ?? $slug ),
+				'slug'  => $slug,
+			];
+
+			$current = $fallback_items[ $slug ] ?? [
+				'label'     => $catalog_item['label'] ?? $slug,
+				'group'     => self::default_group_slug( $groups ),
+				'placement' => 'keep',
+			];
+
+			$item = isset( $items[ $slug ] ) && is_array( $items[ $slug ] ) ? $items[ $slug ] : [];
+
+			$group = sanitize_title( $item['group'] ?? $current['group'] );
+			if ( ! isset( $groups[ $group ] ) ) {
+				$group = self::default_group_slug( $groups );
+			}
+
+			$placement = sanitize_text_field( $item['placement'] ?? $current['placement'] );
+			if ( ! in_array( $placement, [ 'keep', 'admin', 'hide' ], true ) ) {
+				$placement = $current['placement'];
+			}
+
+			$label = sanitize_text_field( $item['label'] ?? $current['label'] );
+			if ( '' === $label ) {
+				$label = $catalog_item['label'];
+			}
+
+			$clean[ $slug ] = [
+				'label'     => $label,
+				'group'     => $group,
+				'placement' => $placement,
+			];
+		}
+
+		return $clean;
+	}
+
+	private static function sanitize_custom_links( $links ) {
+		$clean = [];
+
+		foreach ( (array) $links as $link ) {
+			if ( ! is_array( $link ) ) {
+				continue;
+			}
+
+			$label = sanitize_text_field( $link['label'] ?? '' );
+			$url   = sanitize_text_field( $link['url'] ?? '' );
+			$group = sanitize_title( $link['group'] ?? '' );
+
+			if ( '' === $label && '' === $url ) {
+				continue;
+			}
+
+			if ( '' === $label || '' === $url ) {
+				continue;
+			}
+
+			$clean[] = [
+				'label' => $label,
+				'url'   => $url,
+				'group' => '' !== $group ? $group : 'technical',
+			];
+		}
+
+		return array_values( $clean );
+	}
+
+	private static function normalise_link_url( $url ) {
+		$url = trim( (string) $url );
+		if ( '' === $url ) {
+			return admin_url();
+		}
+
+		if ( preg_match( '#^https?://#i', $url ) ) {
+			return $url;
+		}
+
+		return admin_url( ltrim( $url, '/' ) );
+	}
+
+	private static function groups_textarea_value( $groups ) {
+		return implode( "\n", array_values( $groups ) );
+	}
+
+	private static function render_group_select( $name, $selected, $groups ) {
+		echo '<select name="' . esc_attr( $name ) . '">';
+		foreach ( $groups as $group_slug => $group_label ) {
+			echo '<option value="' . esc_attr( $group_slug ) . '" ' . selected( $selected, $group_slug, false ) . '>' . esc_html( $group_label ) . '</option>';
+		}
+		echo '</select>';
+	}
+
+	private static function render_custom_link_row( $index, $link, $groups ) {
+		?>
+		<div class="das-custom-link-row">
+			<input type="text" class="regular-text" name="<?php echo esc_attr( self::OPTION_NAME ); ?>[custom_links][<?php echo esc_attr( (string) $index ); ?>][label]" value="<?php echo esc_attr( $link['label'] ?? '' ); ?>" placeholder="Label">
+			<input type="text" class="regular-text" name="<?php echo esc_attr( self::OPTION_NAME ); ?>[custom_links][<?php echo esc_attr( (string) $index ); ?>][url]" value="<?php echo esc_attr( $link['url'] ?? '' ); ?>" placeholder="plugins.php or full URL">
+			<?php self::render_group_select( self::OPTION_NAME . '[custom_links][' . $index . '][group]', $link['group'] ?? self::default_group_slug( $groups ), $groups ); ?>
+			<button type="button" class="button-link-delete das-remove-custom-link">Remove</button>
+		</div>
+		<?php
+	}
+}
+
+Davenham_Admin_Suite::init();

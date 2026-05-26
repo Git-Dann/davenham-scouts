@@ -1,0 +1,16 @@
+{
+  "$schema": "https://schemas.wp.org/trunk/block.json",
+  "apiVersion": 3,
+  "name": "davenham/logo-strip",
+  "version": "1.0.0",
+  "title": "Logo Strip",
+  "category": "davenham",
+  "description": "A simple row of logos with optional links.",
+  "textdomain": "davenham-blocks",
+  "editorScript": "davenham-blocks-editor",
+  "render": "file:./render.php",
+  "attributes": {
+    "heading": { "type": "string", "default": "Trusted by" },
+    "logos": { "type": "array", "default": [], "items": { "type": "object" } }
+  }
+}

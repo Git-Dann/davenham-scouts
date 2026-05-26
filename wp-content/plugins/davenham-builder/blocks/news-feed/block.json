@@ -1,0 +1,30 @@
+{
+  "$schema": "https://schemas.wp.org/trunk/block.json",
+  "apiVersion": 3,
+  "name": "davenham/news-feed",
+  "version": "1.0.0",
+  "title": "News Feed",
+  "category": "davenham",
+  "description": "Queries the latest posts and renders .news_block cards. Fully dynamic.",
+  "textdomain": "davenham-blocks",
+  "editorScript": "davenham-blocks-editor",
+  "render": "file:./render.php",
+  "attributes": {
+    "heading": {
+      "type": "string",
+      "default": "Latest news"
+    },
+    "viewAllText": {
+      "type": "string",
+      "default": "View all news"
+    },
+    "viewAllUrl": {
+      "type": "string",
+      "default": "/news"
+    },
+    "numberOfPosts": {
+      "type": "integer",
+      "default": 4
+    }
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "$schema": "https://schemas.wp.org/trunk/block.json",
+  "apiVersion": 3,
+  "name": "davenham/downloads-list",
+  "version": "1.0.0",
+  "title": "Downloads List",
+  "category": "davenham",
+  "description": "A simple list of downloadable files or links.",
+  "textdomain": "davenham-blocks",
+  "editorScript": "davenham-blocks-editor",
+  "render": "file:./render.php",
+  "attributes": {
+    "heading": { "type": "string", "default": "Downloads" },
+    "items": { "type": "array", "default": [], "items": { "type": "object" } }
+  }
+}

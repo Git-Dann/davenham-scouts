@@ -1,0 +1,34 @@
+{
+  "$schema": "https://schemas.wp.org/trunk/block.json",
+  "apiVersion": 3,
+  "name": "davenham/text-image",
+  "version": "1.0.0",
+  "title": "Text + Image",
+  "category": "davenham",
+  "description": "Flexible 50/50 layout inside .white_container — image left or right.",
+  "textdomain": "davenham-blocks",
+  "editorScript": "davenham-blocks-editor",
+  "render": "file:./render.php",
+  "attributes": {
+    "heading": {
+      "type": "string",
+      "default": ""
+    },
+    "content": {
+      "type": "string",
+      "default": ""
+    },
+    "imageUrl": {
+      "type": "string",
+      "default": ""
+    },
+    "imageId": {
+      "type": "integer",
+      "default": 0
+    },
+    "imagePosition": {
+      "type": "string",
+      "default": "right"
+    }
+  }
+}

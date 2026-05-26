@@ -1,0 +1,21 @@
+{
+  "$schema": "https://schemas.wp.org/trunk/block.json",
+  "apiVersion": 3,
+  "name": "davenham/icon-feature-row",
+  "version": "1.0.0",
+  "title": "Icon / Feature Row",
+  "category": "davenham",
+  "description": "A horizontal row of icon + text columns.",
+  "textdomain": "davenham-blocks",
+  "editorScript": "davenham-blocks-editor",
+  "render": "file:./render.php",
+  "attributes": {
+    "columns": {
+      "type": "array",
+      "default": [],
+      "items": {
+        "type": "object"
+      }
+    }
+  }
+}

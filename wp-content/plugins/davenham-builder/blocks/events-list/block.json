@@ -1,0 +1,30 @@
+{
+  "$schema": "https://schemas.wp.org/trunk/block.json",
+  "apiVersion": 3,
+  "name": "davenham/events-list",
+  "version": "1.0.0",
+  "title": "Events List",
+  "category": "davenham",
+  "description": "Upcoming events. Supports The Events Calendar (tribe_events), a custom 'event' CPT, or plain posts with event meta.",
+  "textdomain": "davenham-blocks",
+  "editorScript": "davenham-blocks-editor",
+  "render": "file:./render.php",
+  "attributes": {
+    "heading": {
+      "type": "string",
+      "default": "Upcoming events"
+    },
+    "viewAllText": {
+      "type": "string",
+      "default": "View all events"
+    },
+    "viewAllUrl": {
+      "type": "string",
+      "default": "/events"
+    },
+    "numberOfEvents": {
+      "type": "integer",
+      "default": 5
+    }
+  }
+}

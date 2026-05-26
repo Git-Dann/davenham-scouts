@@ -1,0 +1,193 @@
+#wpadminbar #wp-admin-bar-davenham-admin-logo > .ab-item .das-admin-logo {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  min-width: 20px;
+  flex: 0 0 20px;
+  margin-top: 6px;
+  margin-right: 8px;
+  vertical-align: middle;
+  overflow: hidden;
+  line-height: 0;
+}
+
+#wpadminbar #wp-admin-bar-davenham-admin-logo > .ab-item img.das-admin-logo-image {
+  display: block !important;
+  width: 20px !important;
+  height: 20px !important;
+  min-width: 20px !important;
+  max-width: 20px !important;
+  max-height: 20px !important;
+  object-fit: contain !important;
+}
+
+#wpadminbar #wp-admin-bar-davenham-admin-logo > .ab-item {
+  display: flex;
+  align-items: center;
+}
+
+#adminmenu,
+#adminmenu .wp-submenu,
+#adminmenuback,
+#adminmenuwrap {
+  background: var(--das-menu-bg);
+}
+
+#adminmenu a,
+#adminmenu div.wp-menu-image:before,
+#adminmenu .wp-submenu a {
+  color: var(--das-menu-text);
+}
+
+#adminmenu .wp-has-current-submenu .wp-submenu,
+#adminmenu .wp-has-current-submenu .wp-submenu.sub-open,
+#adminmenu .wp-submenu.sub-open,
+#adminmenu .current .wp-submenu {
+  background: color-mix(in srgb, var(--das-menu-bg) 88%, #fff 12%);
+}
+
+#adminmenu li.current a.menu-top,
+#adminmenu li.wp-has-current-submenu a.wp-has-current-submenu,
+#adminmenu li.menu-top:hover,
+#adminmenu li.opensub > a.menu-top,
+#adminmenu li > a.menu-top:focus {
+  background: var(--das-primary);
+  color: #fff;
+}
+
+.wp-core-ui .button-primary {
+  background: var(--das-primary);
+  border-color: var(--das-primary);
+}
+
+.wp-core-ui .button-primary:hover,
+.wp-core-ui .button-primary:focus {
+  background: color-mix(in srgb, var(--das-primary) 88%, #000 12%);
+  border-color: color-mix(in srgb, var(--das-primary) 88%, #000 12%);
+}
+
+a,
+.wrap .page-title-action,
+.notice a {
+  color: var(--das-primary);
+}
+
+.davenham-admin-suite .form-table th {
+  width: 220px;
+}
+
+.davenham-admin-suite h2 {
+  margin-top: 1.5rem;
+}
+
+.das-color-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(180px, 1fr));
+  gap: 12px 20px;
+}
+
+.das-color-grid label {
+  display: block;
+}
+
+.das-overview-grid,
+.das-group-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 20px;
+  margin-top: 20px;
+}
+
+.das-card {
+  background: #fff;
+  border: 1px solid #dcdcde;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05);
+}
+
+.das-card h2 {
+  margin-top: 0;
+}
+
+.das-summary-list {
+  margin: 0;
+  padding-left: 18px;
+}
+
+.das-summary-list li {
+  margin-bottom: 6px;
+}
+
+.das-admin-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin: 12px 0 0;
+}
+
+.das-admin-links li {
+  margin: 0;
+}
+
+.das-menu-table th,
+.das-menu-table td {
+  vertical-align: top;
+}
+
+.das-custom-links {
+  margin-top: 16px;
+}
+
+.das-custom-link-rows {
+  display: grid;
+  gap: 10px;
+}
+
+.das-custom-link-row {
+  display: grid;
+  grid-template-columns: minmax(180px, 1fr) minmax(220px, 1.3fr) minmax(160px, 0.8fr) auto;
+  gap: 12px;
+  align-items: center;
+  padding: 12px;
+  background: #fff;
+  border: 1px solid #dcdcde;
+  border-radius: 10px;
+}
+
+.das-custom-link-row .regular-text {
+  width: 100%;
+}
+
+.das-media-field {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.das-logo-preview {
+  margin-top: 12px;
+}
+
+.das-logo-preview img {
+  max-width: 120px;
+  max-height: 120px;
+  display: block;
+  border: 1px solid #dcdcde;
+  border-radius: 8px;
+  padding: 8px;
+  background: #fff;
+}
+
+@media (max-width: 782px) {
+  .das-color-grid,
+  .das-overview-grid,
+  .das-group-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .das-custom-link-row {
+    grid-template-columns: 1fr;
+  }
+}
