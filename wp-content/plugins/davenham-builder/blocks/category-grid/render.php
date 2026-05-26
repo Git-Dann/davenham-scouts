@@ -60,6 +60,10 @@ foreach ( $slugs as $slug ) {
 	if ( ! $term || is_wp_error( $term ) ) {
 		continue;
 	}
+	// Skip empty categories — no point showing "0 items" tiles.
+	if ( (int) $term->count === 0 ) {
+		continue;
+	}
 	$url = get_term_link( $term );
 	if ( is_wp_error( $url ) ) {
 		continue;

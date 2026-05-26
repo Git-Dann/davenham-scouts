@@ -54,14 +54,8 @@ $query = new WP_Query( $args );
 
 if ( ! $query->have_posts() ) {
 	wp_reset_postdata();
-	?>
-	<section class="product_grid product_grid--empty">
-		<div class="wrapper">
-			<h2 class="product_grid__heading"><?php echo esc_html( $heading ); ?></h2>
-			<p class="product_grid__empty">No products to show yet — new items appear here when they're added.</p>
-		</div>
-	</section>
-	<?php
+	// Silently hide empty grids — better than leaving an empty section
+	// staring back at the visitor.
 	return;
 }
 ?>

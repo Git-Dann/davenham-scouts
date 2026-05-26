@@ -581,8 +581,458 @@ Text Domain: the-scouts-skills-for-life
 }
 
 .scouts-woocommerce--landing > section:first-child {
-  /* The first block (usually category-grid) should not double up on padding */
   margin-top: 0;
+}
+
+/* ══════════════════════════════════════════════════════════
+   Product Category Archive — modern full-width experience
+   ══════════════════════════════════════════════════════════ */
+.scouts-woocommerce--category {
+  background: #fff;
+  padding: 0 0 64px;
+}
+
+.scouts-woocommerce--category > .wrapper {
+  padding-top: 40px;
+}
+
+.scouts-woocommerce--category .scouts-woocommerce__main {
+  max-width: 100%;
+}
+
+.scouts-woocommerce--category ul.products {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 20px;
+}
+
+@media (max-width: 1100px) {
+  .scouts-woocommerce--category ul.products {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 800px) {
+  .scouts-woocommerce--category ul.products {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 480px) {
+  .scouts-woocommerce--category ul.products {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ── Category Hero (replaces generic "Shop" hero on /product-category/X/) */
+.shop_cat_hero {
+  --cat-gradient: linear-gradient(135deg, #003982 0%, #590FA9 100%);
+  --cat-accent: #590FA9;
+  position: relative;
+  overflow: hidden;
+  background: var(--cat-gradient);
+  color: #fff;
+  padding: 56px 0 64px;
+}
+
+.shop_cat_hero__overlay {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at 90% 15%, rgba(255,255,255,0.15), transparent 50%),
+    radial-gradient(circle at 10% 90%, rgba(0,0,0,0.18), transparent 40%);
+  pointer-events: none;
+}
+
+.shop_cat_hero .wrapper {
+  position: relative;
+  z-index: 1;
+}
+
+.shop_cat_hero__crumbs {
+  display: flex;
+  gap: 8px;
+  font-size: 13px;
+  margin-bottom: 18px;
+  color: rgba(255,255,255,0.7);
+  font-weight: 600;
+}
+
+.shop_cat_hero__crumbs a {
+  color: rgba(255,255,255,0.85);
+  text-decoration: none;
+  transition: color 0.15s ease;
+}
+
+.shop_cat_hero__crumbs a:hover {
+  color: #fff;
+  text-decoration: underline;
+}
+
+.shop_cat_hero__eyebrow {
+  display: inline-block;
+  background: rgba(255, 255, 255, 0.16);
+  color: #fff;
+  padding: 5px 12px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 14px;
+}
+
+.shop_cat_hero__title {
+  margin: 0 0 14px;
+  font-size: clamp(36px, 5vw, 56px);
+  font-weight: 900;
+  line-height: 1.05;
+  color: #fff;
+  letter-spacing: -0.02em;
+}
+
+.shop_cat_hero__desc {
+  margin: 0 0 22px;
+  font-size: clamp(15px, 1.5vw, 17px);
+  line-height: 1.5;
+  color: rgba(255,255,255,0.92);
+  max-width: 640px;
+}
+
+.shop_cat_hero__meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px;
+}
+
+.shop_cat_hero__count {
+  background: rgba(0,0,0,0.25);
+  padding: 6px 14px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.shop_cat_hero__back {
+  color: rgba(255,255,255,0.85);
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 13px;
+  transition: color 0.15s ease;
+}
+
+.shop_cat_hero__back:hover {
+  color: #fff;
+  text-decoration: underline;
+}
+
+/* ── Sort/result-count toolbar on category pages ──────────── */
+.scouts-woocommerce--category .woocommerce-result-count,
+.scouts-woocommerce--category .woocommerce-ordering {
+  margin: 0;
+  font-size: 13px;
+  color: #6E6E6E;
+}
+
+.scouts-woocommerce--category .woocommerce-ordering {
+  float: right;
+}
+
+.scouts-woocommerce--category .woocommerce-ordering select {
+  padding: 8px 30px 8px 12px;
+  background: #fff;
+  border: 1px solid #CCCCCC;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #333333;
+  cursor: pointer;
+}
+
+.scouts-woocommerce--category .woocommerce-ordering select:focus {
+  outline: none;
+  border-color: #590FA9;
+  box-shadow: 0 0 0 3px rgba(89, 15, 169, 0.15);
+}
+
+.scouts-woocommerce--category .woocommerce-result-count + .woocommerce-ordering,
+.scouts-woocommerce--category .woocommerce-notices-wrapper + .woocommerce-result-count {
+  margin-top: 0;
+}
+
+/* Wrap result-count + ordering in a flex bar */
+.scouts-woocommerce--category .scouts-woocommerce__main::before {
+  content: '';
+  display: block;
+  margin-bottom: 24px;
+  border-bottom: 1px solid #F1F1F1;
+}
+
+/* ── Pagination ──────────────────────────────────────────── */
+.scouts-woocommerce .woocommerce-pagination {
+  margin-top: 40px;
+  text-align: center;
+}
+
+.scouts-woocommerce .woocommerce-pagination ul {
+  display: inline-flex;
+  gap: 4px;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+  border: 0;
+}
+
+.scouts-woocommerce .woocommerce-pagination ul li {
+  border: 0;
+}
+
+.scouts-woocommerce .woocommerce-pagination ul li a,
+.scouts-woocommerce .woocommerce-pagination ul li span {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 40px;
+  height: 40px;
+  padding: 0 12px;
+  background: #F1F1F1;
+  color: #404040;
+  border-radius: 6px;
+  font-weight: 700;
+  text-decoration: none;
+  transition: background 0.15s, color 0.15s;
+  border: 0;
+}
+
+.scouts-woocommerce .woocommerce-pagination ul li a:hover {
+  background: #f3eaff;
+  color: #590FA9;
+}
+
+.scouts-woocommerce .woocommerce-pagination ul li span.current {
+  background: #590FA9;
+  color: #fff;
+}
+
+/* ── "Keep browsing" — other categories strip ──────────── */
+.shop_other_cats {
+  background: #F1F1F1;
+  padding: 56px 0;
+  margin-top: 56px;
+}
+
+.shop_other_cats__heading {
+  margin: 0 0 24px;
+  font-size: 24px;
+  font-weight: 900;
+  color: #333333;
+}
+
+.shop_other_cats__tiles {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+
+@media (max-width: 800px) {
+  .shop_other_cats__tiles {
+    grid-template-columns: 1fr;
+  }
+}
+
+.shop_other_cats__tile {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 18px 22px;
+  background: #fff;
+  border: 1px solid #CCCCCC;
+  border-radius: 10px;
+  text-decoration: none;
+  color: inherit;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+}
+
+.shop_other_cats__tile:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.10);
+  border-color: #590FA9;
+}
+
+.shop_other_cats__name {
+  font-size: 16px;
+  font-weight: 800;
+  color: #333333;
+  flex: 1;
+}
+
+.shop_other_cats__count {
+  font-size: 11px;
+  font-weight: 700;
+  color: #fff;
+  background: #590FA9;
+  padding: 3px 10px;
+  border-radius: 999px;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.shop_other_cats__arrow {
+  color: #590FA9;
+  font-weight: 700;
+  transition: transform 0.15s ease;
+}
+
+.shop_other_cats__tile:hover .shop_other_cats__arrow {
+  transform: translateX(3px);
+}
+
+/* ══════════════════════════════════════════════════════════
+   Single product page — slick treatment
+   ══════════════════════════════════════════════════════════ */
+.scouts-woocommerce div.product {
+  padding: 0;
+}
+
+.scouts-woocommerce div.product div.images {
+  border-radius: 14px;
+  overflow: hidden;
+  background: #F1F1F1;
+  border: 1px solid #CCCCCC;
+}
+
+.scouts-woocommerce div.product div.images img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.scouts-woocommerce div.product div.summary .product_title {
+  font-size: clamp(28px, 3.5vw, 40px);
+  font-weight: 900;
+  margin: 0 0 14px;
+  color: #333333;
+  letter-spacing: -0.01em;
+  line-height: 1.1;
+}
+
+.scouts-woocommerce div.product .stock {
+  display: inline-block;
+  padding: 4px 10px;
+  background: #008A1C;
+  color: #fff;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-top: 8px;
+}
+
+.scouts-woocommerce div.product .out-of-stock {
+  background: #ED3F23;
+}
+
+.scouts-woocommerce div.product form.cart {
+  margin: 24px 0;
+  padding: 20px;
+  background: #F1F1F1;
+  border-radius: 10px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+}
+
+.scouts-woocommerce div.product form.cart .quantity {
+  margin: 0;
+}
+
+.scouts-woocommerce div.product form.cart .single_add_to_cart_button {
+  flex: 1;
+  min-width: 200px;
+  margin: 0;
+  padding: 14px 22px;
+  font-size: 15px;
+}
+
+/* ══════════════════════════════════════════════════════════
+   Cart / empty cart polish
+   ══════════════════════════════════════════════════════════ */
+.scouts-woocommerce .cart-empty {
+  text-align: center;
+  font-size: 18px;
+  color: #333333;
+  margin: 40px 0 20px;
+  padding: 40px 20px;
+  background: #F1F1F1;
+  border-radius: 14px;
+  font-weight: 600;
+}
+
+.scouts-woocommerce .cart-empty::before {
+  content: '🛒';
+  display: block;
+  font-size: 48px;
+  margin-bottom: 12px;
+  opacity: 0.7;
+}
+
+.scouts-woocommerce .return-to-shop {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.scouts-woocommerce .return-to-shop .button {
+  display: inline-block;
+  padding: 12px 28px;
+  background: #006DDF;
+  color: #fff;
+  border-radius: 0;
+  font-weight: 700;
+  text-decoration: none;
+  transition: background 0.15s ease;
+}
+
+.scouts-woocommerce .return-to-shop .button:hover {
+  background: #003982;
+}
+
+/* ══════════════════════════════════════════════════════════
+   Notices — branded
+   ══════════════════════════════════════════════════════════ */
+.scouts-woocommerce .woocommerce-message,
+.scouts-woocommerce .woocommerce-info,
+.scouts-woocommerce .woocommerce-error {
+  background: #F1F1F1;
+  border-left: 4px solid #590FA9;
+  border-radius: 6px;
+  padding: 14px 18px;
+  margin: 0 0 24px;
+  color: #404040;
+  font-weight: 500;
+}
+
+.scouts-woocommerce .woocommerce-message {
+  border-left-color: #008A1C;
+  background: rgba(0, 138, 28, 0.06);
+}
+
+.scouts-woocommerce .woocommerce-error {
+  border-left-color: #ED3F23;
+  background: rgba(237, 63, 35, 0.06);
+}
+
+.scouts-woocommerce .woocommerce-message a,
+.scouts-woocommerce .woocommerce-info a,
+.scouts-woocommerce .woocommerce-error a {
+  color: #590FA9;
+  font-weight: 700;
+}
+
+.scouts-woocommerce .woocommerce-message::before,
+.scouts-woocommerce .woocommerce-info::before {
+  display: none;
 }
 
 /* ── Shop empty state ──────────────────────────────────── */

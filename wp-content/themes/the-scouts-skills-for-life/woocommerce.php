@@ -35,9 +35,50 @@ $shop_has_blocks = $shop_post && false !== strpos( (string) $shop_post->post_con
 // If the Shop landing has its own shop-hero block, suppress the standard
 // theme hero so we don't render two heroes in a row.
 $shop_has_own_hero = $shop_post && false !== strpos( (string) $shop_post->post_content, '<!-- wp:davenham/shop-hero' );
+
+// Branded hero for product category archives — replaces the generic
+// "Shop" hero with the category's own name, count and brand colour.
+$is_product_cat_page = function_exists( 'is_product_category' ) && is_product_category();
+$cat_term            = $is_product_cat_page ? get_queried_object() : null;
+$cat_accent          = '#590FA9';
+$cat_gradient        = 'linear-gradient(135deg, #003982 0%, #590FA9 100%)';
+if ( $cat_term && ! is_wp_error( $cat_term ) ) {
+    $cat_map = array(
+        'event-tickets'     => array( '#590FA9', 'linear-gradient(135deg, #590FA9 0%, #003982 100%)' ),
+        'group-merchandise' => array( '#003982', 'linear-gradient(135deg, #003982 0%, #088486 100%)' ),
+        'fundraising'       => array( '#ED3F23', 'linear-gradient(135deg, #FF912A 0%, #ED3F23 100%)' ),
+        'equipment-kit'     => array( '#008A1C', 'linear-gradient(135deg, #205B41 0%, #008A1C 100%)' ),
+    );
+    if ( isset( $cat_map[ $cat_term->slug ] ) ) {
+        $cat_accent   = $cat_map[ $cat_term->slug ][0];
+        $cat_gradient = $cat_map[ $cat_term->slug ][1];
+    }
+}
 ?>
 
-<?php if ( ! $shop_has_own_hero ) : ?>
+<?php if ( $is_product_cat_page && $cat_term && ! is_wp_error( $cat_term ) ) : ?>
+
+<section class="shop_cat_hero" style="--cat-gradient: <?php echo esc_attr( $cat_gradient ); ?>; --cat-accent: <?php echo esc_attr( $cat_accent ); ?>;">
+    <div class="shop_cat_hero__overlay" aria-hidden="true"></div>
+    <div class="wrapper">
+        <nav class="shop_cat_hero__crumbs" aria-label="Breadcrumb">
+            <a href="<?php echo esc_url( wc_get_page_permalink( 'shop' ) ); ?>">Shop</a>
+            <span aria-hidden="true">/</span>
+            <span><?php echo esc_html( $cat_term->name ); ?></span>
+        </nav>
+        <span class="shop_cat_hero__eyebrow">Browse category</span>
+        <h1 class="shop_cat_hero__title"><?php echo esc_html( $cat_term->name ); ?></h1>
+        <?php if ( $cat_term->description ) : ?>
+            <p class="shop_cat_hero__desc"><?php echo wp_kses_post( $cat_term->description ); ?></p>
+        <?php endif; ?>
+        <div class="shop_cat_hero__meta">
+            <span class="shop_cat_hero__count"><?php echo (int) $cat_term->count; ?> <?php echo esc_html( _n( 'item', 'items', (int) $cat_term->count, 'the-scouts-skills-for-life' ) ); ?></span>
+            <a class="shop_cat_hero__back" href="<?php echo esc_url( wc_get_page_permalink( 'shop' ) ); ?>">← All categories</a>
+        </div>
+    </div>
+</section>
+
+<?php elseif ( ! $shop_has_own_hero ) : ?>
 <section class="hero standard cf">
     <?php if ( ! empty( $hero['image'] ) ) : ?>
         <img src="<?php echo esc_url( $hero['image'] ); ?>" class="bg" alt="" decoding="async" />
@@ -60,18 +101,50 @@ $shop_has_own_hero = $shop_post && false !== strpos( (string) $shop_post->post_c
     <?php echo apply_filters( 'the_content', $shop_post->post_content ); ?>
 </div>
 
+<?php elseif ( $is_product_cat_page ) : ?>
+
+<div class="scouts-woocommerce scouts-woocommerce--category cf">
+    <div class="wrapper">
+        <div class="scouts-woocommerce__main">
+            <?php woocommerce_content(); ?>
+        </div>
+    </div>
+
+    <?php
+    // Other categories strip — quick links to the other 3 categories
+    if ( $cat_term && ! is_wp_error( $cat_term ) ) :
+        $other_terms = get_terms( array(
+            'taxonomy'   => 'product_cat',
+            'hide_empty' => true,
+            'exclude'    => array( $cat_term->term_id, get_option( 'default_product_cat' ) ),
+        ) );
+        if ( ! empty( $other_terms ) && ! is_wp_error( $other_terms ) ) :
+    ?>
+    <section class="shop_other_cats">
+        <div class="wrapper">
+            <h2 class="shop_other_cats__heading">Keep browsing</h2>
+            <div class="shop_other_cats__tiles">
+                <?php foreach ( $other_terms as $term ) :
+                    $url = get_term_link( $term );
+                    if ( is_wp_error( $url ) ) continue;
+                ?>
+                <a class="shop_other_cats__tile" href="<?php echo esc_url( $url ); ?>">
+                    <span class="shop_other_cats__name"><?php echo esc_html( $term->name ); ?></span>
+                    <span class="shop_other_cats__count"><?php echo (int) $term->count; ?> items</span>
+                    <span class="shop_other_cats__arrow" aria-hidden="true">→</span>
+                </a>
+                <?php endforeach; ?>
+            </div>
+        </div>
+    </section>
+    <?php endif; endif; ?>
+</div>
+
 <?php else : ?>
 
 <div class="container scouts-woocommerce cf">
     <div class="wrapper shop-layout cf page_wrapper">
         <div class="shop-main main_content main_content_shop playground cf" id="scroll-access">
-            <?php if ( $is_shop_landing ) : ?>
-                <div class="shop-intro-card">
-                    <p>The shop is the home for tickets, fundraising items, and any group-specific resources we sell directly. For standard Scout uniform, we usually recommend the official Scout Store.</p>
-                    <p>If you cannot find what you need here yet, use the contact form and we will point you in the right direction.</p>
-                </div>
-            <?php endif; ?>
-
             <?php woocommerce_content(); ?>
         </div>
 
