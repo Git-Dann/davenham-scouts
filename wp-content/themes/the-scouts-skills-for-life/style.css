@@ -80,19 +80,26 @@ Text Domain: the-scouts-skills-for-life
 .section-eyebrow {
   display: inline-block;
   margin-bottom: 16px;
-  padding: 8px 14px;
-  border-radius: 999px;
+  padding: 6px 12px;
+  border-radius: 0;
   background: rgba(255, 255, 255, 0.14);
   color: #fff;
   font-size: 12px;
-  font-weight: 800;
-  letter-spacing: 1px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
   text-transform: uppercase;
 }
 
+.hero.standard .inner h1,
 .hero.standard .inner h2 {
   color: #fff;
   margin: 0 0 16px;
+}
+
+.hero.standard .inner h1.post__title {
+  font-size: clamp(2rem, 4.5vw, 3rem);
+  line-height: 1.1;
+  font-weight: 900;
 }
 
 .hero.standard .inner p {
@@ -292,11 +299,24 @@ Text Domain: the-scouts-skills-for-life
 .scouts-form-field select,
 .scouts-form-field textarea {
   width: 100%;
-  border: 1px solid #c9d4de;
+  border: 1px solid #CCCCCC;
+  border-radius: 5px;
   background: #fff;
   padding: 14px 16px;
   font-size: 16px;
   box-sizing: border-box;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.scouts-form-field input[type="text"]:focus,
+.scouts-form-field input[type="email"]:focus,
+.scouts-form-field input[type="tel"]:focus,
+.scouts-form-field input[type="date"]:focus,
+.scouts-form-field select:focus,
+.scouts-form-field textarea:focus {
+  outline: none;
+  border-color: #590FA9;
+  box-shadow: 0 0 0 3px rgba(89, 15, 169, 0.15);
 }
 
 .scouts-form-field textarea {
@@ -963,6 +983,25 @@ nav.pagination {
   margin-bottom: 28px;
 }
 
+.post__hero-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  font-size: 16px;
+  font-weight: 700;
+  color: #fff;
+  opacity: 0.92;
+}
+
+.post__hero-meta time {
+  letter-spacing: 0.4px;
+}
+
+.post__hero-meta-sep {
+  opacity: 0.6;
+}
+
 .news-single__back-link {
   display: inline-flex;
   align-items: center;
@@ -990,7 +1029,7 @@ nav.pagination {
 
 .news-sidebar-list {
   background: #fff;
-  border: 1px solid #dce6f0;
+  border: 1px solid #CCCCCC;
 }
 
 .news-sidebar-list h4 {
@@ -1006,18 +1045,24 @@ nav.pagination {
 .news-sidebar-list li + li {
   margin-top: 18px;
   padding-top: 18px;
-  border-top: 1px solid #e5edf5;
+  border-top: 1px solid #CCCCCC;
 }
 
 .news-sidebar-list a {
   display: block;
   margin-bottom: 6px;
-  color: #003982;
+  color: #006DDF;
   font-weight: 700;
+  text-decoration: none;
+  transition: color 0.15s ease;
+}
+
+.news-sidebar-list a:hover {
+  color: #003982;
 }
 
 .news-sidebar-list span {
-  color: #6b7c93;
+  color: #6E6E6E;
   font-size: 14px;
 }
 
@@ -1081,7 +1126,7 @@ nav.pagination {
 
 .event-card__body p,
 .gallery-card__body p {
-  color: #42566f;
+  color: #404040;
 }
 
 .event-card__body p:last-child,

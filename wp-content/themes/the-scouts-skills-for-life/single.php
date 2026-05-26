@@ -14,15 +14,24 @@
     );
 ?>
 <main id="main-content" tabindex="-1">
-<section class="hero standard cf">
+<section class="hero standard news-single__hero cf">
     <?php if ( $hero_img ) : ?>
         <img src="<?php echo esc_url( $hero_img ); ?>" class="bg" alt="" decoding="async" />
     <?php endif; ?>
     <div class="wrapper alt">
         <div class="inner">
-            <span class="section-eyebrow"><?php esc_html_e( 'News article', 'the-scouts-skills-for-life' ); ?></span>
-            <h2><?php the_title(); ?></h2>
-            <p><?php echo esc_html( get_the_date() ); ?></p>
+            <span class="section-eyebrow"><?php esc_html_e( 'News', 'the-scouts-skills-for-life' ); ?></span>
+            <h1 class="post__title"><?php the_title(); ?></h1>
+            <p class="post__hero-meta">
+                <time datetime="<?php echo esc_attr( get_the_date( 'c' ) ); ?>"><?php echo esc_html( get_the_date() ); ?></time>
+                <?php $author = get_the_author(); if ( $author ) : ?>
+                    <span class="post__hero-meta-sep" aria-hidden="true">&middot;</span>
+                    <span><?php
+                        /* translators: %s: post author name */
+                        printf( esc_html__( 'By %s', 'the-scouts-skills-for-life' ), esc_html( $author ) );
+                    ?></span>
+                <?php endif; ?>
+            </p>
         </div>
     </div>
 </section>
@@ -33,13 +42,6 @@
             <?php if ( $news_page_id ) : ?>
                 <a href="<?php echo esc_url( get_permalink( $news_page_id ) ); ?>" class="news-single__back-link">&larr; <?php esc_html_e( 'Back to news', 'the-scouts-skills-for-life' ); ?></a>
             <?php endif; ?>
-            <header class="post__header">
-                <h1 class="post__title"><?php the_title(); ?></h1>
-                <div class="post__details">
-                    <span>Date: <?php echo esc_html( get_the_date() ); ?></span>
-                    <span>Author: <?php the_author(); ?></span>
-                </div>
-            </header>
             <article id="post-<?php the_ID(); ?>" <?php post_class( 'playground' ); ?>>
                 <?php the_content(); ?>
             </article>
