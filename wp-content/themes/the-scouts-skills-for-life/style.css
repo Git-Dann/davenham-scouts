@@ -81,7 +81,7 @@ Text Domain: the-scouts-skills-for-life
 
 .footer .top .wrapper.footer-grid {
   display: grid;
-  grid-template-columns: 2fr 1fr 1fr 1fr;
+  grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1.2fr);
   gap: 36px;
   align-items: start;
 }
