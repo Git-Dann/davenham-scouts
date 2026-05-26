@@ -1435,12 +1435,22 @@
 		const advancedFields = schema.fields.filter( field => field.group === 'advanced' );
 
 		return el( 'div', { className: 'db-settings' },
-			el( 'div', { className: 'db-sidebar__header' },
+			el( 'div', { className: 'db-settings__topbar' },
+				el( 'button', {
+					type: 'button',
+					className: 'db-settings__back',
+					onClick: onBack,
+					'aria-label': 'Back to all blocks',
+				},
+					el( 'span', { className: 'db-settings__back-arrow', 'aria-hidden': 'true' }, '←' ),
+					' All blocks'
+				)
+			),
+			el( 'div', { className: 'db-sidebar__header db-sidebar__header--settings' },
 				el( 'div', { className: 'db-settings__header-copy' },
 					el( 'span', { className: 'db-settings__section-tag' }, schema.icon, ' ', schema.label ),
 					el( 'p', { className: 'db-settings__intro' }, schema.desc )
-				),
-				el( 'button', { className: 'db-sidebar__back-btn', onClick: onBack }, '← All blocks' )
+				)
 			),
 			el( 'div', { className: 'db-sidebar__scroll' },
 				standardFields.map( field =>
@@ -1476,7 +1486,7 @@
 	}
 
 	// ─── Component Library ────────────────────────────────────────────────────
-	function ComponentLibrary( { onAdd, insertAfterLabel, insertAtIndex, onClearInsertAt, onApplyPreset, simpleMode, guideDismissed, onDismissGuide, hasSections } ) {
+	function ComponentLibrary( { onAdd, insertAfterLabel, insertAtIndex, onClearInsertAt, onApplyPreset, simpleMode, guideDismissed, onDismissGuide, hasSections, hasPage, onCreateNewPage } ) {
 		const [ search, setSearch ] = useState( '' );
 		// In "insert at index" mode we hide templates (they replace everything).
 		const insertingAt = insertAtIndex !== null && insertAtIndex !== undefined;
@@ -1489,6 +1499,18 @@
 		const filtered = q
 			? BLOCKS.filter( b => b.label.toLowerCase().includes( q ) || b.desc.toLowerCase().includes( q ) )
 			: BLOCKS;
+
+		// Guard: if no page is loaded, clicking anything in the library must
+		// first prompt the editor to create a page (otherwise the click looks
+		// silent because the canvas isn't rendered until a page exists).
+		const guardedAdd = function ( type ) {
+			if ( ! hasPage ) { if ( onCreateNewPage ) onCreateNewPage(); return; }
+			onAdd( type );
+		};
+		const guardedPreset = function ( preset ) {
+			if ( ! hasPage ) { if ( onCreateNewPage ) onCreateNewPage(); return; }
+			onApplyPreset( preset );
+		};
 
 		const grouped = CATEGORIES.map( cat => ( {
 			...cat,
@@ -1513,6 +1535,17 @@
 					className: 'db-insert-banner__cancel',
 					onClick: onClearInsertAt,
 				}, 'Cancel' )
+			),
+			! hasPage && el( 'div', { className: 'db-nopage-banner' },
+				el( 'div', { className: 'db-nopage-banner__copy' },
+					el( 'strong', null, 'Pick a page to start editing' ),
+					el( 'span', null, 'Browse blocks below, or create a new page. Clicking a block will prompt you to create one.' )
+				),
+				el( 'button', {
+					type: 'button',
+					className: 'db-nopage-banner__btn',
+					onClick: onCreateNewPage,
+				}, '＋ New page' )
 			),
 			! guideDismissed && el( 'div', { className: 'db-guide' },
 				el( 'div', { className: 'db-guide__header' },
@@ -1552,7 +1585,7 @@
 						key: preset.key,
 						type: 'button',
 						className: 'db-preset-card',
-						onClick: function () { onApplyPreset( preset ); },
+						onClick: function () { guardedPreset( preset ); },
 					},
 						el( 'div', { className: 'db-preset-card__header' },
 							el( 'strong', null, preset.label ),
@@ -1585,7 +1618,7 @@
 									el( 'div', {
 										key: block.type,
 										className: 'db-lib__card',
-										onClick: () => onAdd( block.type ),
+										onClick: () => guardedAdd( block.type ),
 										title: block.desc,
 									},
 										el( 'span', { className: 'db-lib__icon' }, block.icon ),
@@ -2124,6 +2157,8 @@
 				guideDismissed,
 				onDismissGuide: dismissGuide,
 				hasSections,
+				hasPage: !! pageId,
+				onCreateNewPage: () => setShowNewPage( true ),
 			} );
 
 		const mainContent = loading
