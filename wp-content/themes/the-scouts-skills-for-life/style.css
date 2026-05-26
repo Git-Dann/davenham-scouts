@@ -117,7 +117,7 @@ Text Domain: the-scouts-skills-for-life
   display: inline-block;
   padding: 12px 18px;
   border: 1px solid rgba(255, 255, 255, 0.45);
-  border-radius: 999px;
+  border-radius: 0px;
   color: #fff;
   font-weight: 700;
   text-decoration: none;
@@ -532,19 +532,24 @@ a.age_group_card:hover {
 
 /* Override production.css conflicts — news section */
 .news_section {
-  background: #00a794;
+  background: #088486;
   padding: 64px 0;
   margin: 0;
 }
 
-.news_section .news_blocks {
-  display: grid;
+/* Use .home prefix (0-3-0 specificity) + !important on display to beat
+   production.css .home .news_section .news_blocks { display: block; }
+   media query which shares the same 0-3-0 specificity */
+.home .news_section .news_blocks {
+  display: grid !important;
   grid-template-columns: repeat(3, 1fr);
   gap: 20px;
+  white-space: normal;
+  overflow-x: visible;
 }
 
 @media (max-width: 900px) {
-  .news_section .news_blocks {
+  .home .news_section .news_blocks {
     grid-template-columns: 1fr;
   }
 }
@@ -611,38 +616,38 @@ a.age_group_card:hover {
 
 /* Hero: brand gradient replaces plain black overlay */
 .hero .box {
-  background: linear-gradient(135deg, rgba(0, 63, 135, 0.92) 0%, rgba(116, 19, 220, 0.82) 100%);
+  background: linear-gradient(135deg, rgba(0, 57, 130, 0.92) 0%, rgba(89, 15, 169, 0.82) 100%);
   border-radius: 22px;
 }
 
 @media (max-width: 700px) {
   .hero .box {
     border-radius: 0;
-    background: linear-gradient(135deg, rgba(0, 63, 135, 0.95) 0%, rgba(116, 19, 220, 0.9) 100%);
+    background: linear-gradient(135deg, rgba(0, 57, 130, 0.95) 0%, rgba(89, 15, 169, 0.9) 100%);
   }
 }
 
-/* Buttons: purple primary + pill shape */
+/* Buttons: national blue primary + sharp corners */
 .btn {
-  background: #7413dc;
-  border-radius: 999px;
+  background: #006DDF;
+  border-radius: 0px;
 }
 
 .btn:before {
-  background: #5b10b8;
+  background: #0055b3;
 }
 
-/* news_section__btn: restore white outline pill after .btn override */
+/* news_section__btn: restore white outline after .btn override */
 .news_section__btn {
   background: transparent;
-  border: 2px solid #fff;
-  border-radius: 999px;
+  border: 1px solid #fff;
+  border-radius: 0px;
   color: #fff;
 }
 
 .news_section__btn:hover {
   background: #fff;
-  color: #00a794;
+  color: #088486;
 }
 
 /* white_container: remove excessive top/bottom padding from production.css */
@@ -656,9 +661,9 @@ a.age_group_card:hover {
   padding: 64px 0;
 }
 
-/* Colour audit: replace off-brand teal (#088486) accent uses */
+/* Colour audit: align accent uses with national brand */
 .news-archive__count {
-  color: #7413dc;
+  color: #590FA9;
 }
 
 .news-archive-card__image {
@@ -843,7 +848,7 @@ a.age_group_card:hover {
   font-weight: 800;
   letter-spacing: 1px;
   text-transform: uppercase;
-  color: #7314dc;
+  color: #590FA9;
 }
 
 .event-card__body h3,
@@ -940,7 +945,7 @@ a.age_group_card:hover {
 
 .site-newsletter-strip {
   padding: 32px 0;
-  background: linear-gradient(135deg, #003982 0%, #7413dc 100%);
+  background: linear-gradient(135deg, #003982 0%, #590FA9 100%);
   color: #fff;
 }
 
@@ -968,7 +973,7 @@ a.age_group_card:hover {
   align-items: center;
   justify-content: center;
   padding: 12px 18px;
-  border-radius: 999px;
+  border-radius: 0px;
   background: #fff;
   color: #003982;
   font-weight: 700;
@@ -1017,9 +1022,9 @@ a.age_group_card:hover {
 .site-promo-modal__button {
   appearance: none;
   border: 0;
-  border-radius: 999px;
+  border-radius: 0px;
   padding: 12px 18px;
-  background: #7413dc;
+  background: #590FA9;
   color: #fff;
   font-weight: 700;
   cursor: pointer;
