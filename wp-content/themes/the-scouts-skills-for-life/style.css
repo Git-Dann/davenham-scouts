@@ -575,6 +575,16 @@ Text Domain: the-scouts-skills-for-life
   line-height: 1.6;
 }
 
+/* ── Shop landing (block-composed) — no sidebar, full-width ── */
+.scouts-woocommerce--landing {
+  background: #fff;
+}
+
+.scouts-woocommerce--landing > section:first-child {
+  /* The first block (usually category-grid) should not double up on padding */
+  margin-top: 0;
+}
+
 /* ── Shop empty state ──────────────────────────────────── */
 .scouts-woocommerce .shop-intro-card {
   background: #F1F1F1;

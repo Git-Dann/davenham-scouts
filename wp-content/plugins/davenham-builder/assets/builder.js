@@ -723,6 +723,23 @@
 			],
 		},
 		{
+			type: 'davenham/category-grid',
+			label: 'Shop Category Grid',
+			icon: '🗂',
+			category: 'callout',
+			desc: 'Large clickable tiles for browsing shop categories — mirrors the national Scouts shop layout.',
+			defaults: {
+				heading: 'Shop by category',
+				subtitle: 'Pick a section to browse — every penny stays with 1st Davenham.',
+				categories: 'event-tickets,group-merchandise,fundraising,equipment-kit',
+			},
+			fields: [
+				{ key: 'heading',    label: 'Heading',  type: 'text' },
+				{ key: 'subtitle',   label: 'Subtitle', type: 'text', help: 'Optional one-liner under the heading.' },
+				{ key: 'categories', label: 'Category slugs (comma-separated)', type: 'text', help: 'Default: event-tickets,group-merchandise,fundraising,equipment-kit' },
+			],
+		},
+		{
 			type: 'davenham/product-grid',
 			label: 'Product Grid',
 			icon: '🛍',

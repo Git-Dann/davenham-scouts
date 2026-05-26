@@ -393,6 +393,160 @@ function db_shop_pages_seed(): array {
 }
 
 /**
+ * Build the shop LANDING page content — a composed marketing page using
+ * builder blocks. Mirrors the national Scouts shop pattern: category
+ * tiles, featured product, then product grids by category, with a
+ * promo banner explaining free local pickup.
+ */
+function db_shop_landing_build_content(): string {
+	$blocks = array();
+
+	// Category tiles
+	$blocks[] = '<!-- wp:davenham/category-grid ' . wp_json_encode( array(
+		'heading'    => 'Shop by category',
+		'subtitle'   => 'Pick a section to browse — every penny stays with 1st Davenham Scouts.',
+		'categories' => 'event-tickets,group-merchandise,fundraising,equipment-kit',
+	), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE ) . ' /-->';
+
+	// Featured: most expensive event ticket (the headline camp)
+	$featured_id = 0;
+	$candidate = get_posts( array(
+		'post_type'      => 'product',
+		'post_status'    => 'publish',
+		'posts_per_page' => 1,
+		'meta_query'     => array(
+			array( 'key' => '_db_sample_product', 'value' => '1' ),
+		),
+		'tax_query'      => array(
+			array( 'taxonomy' => 'product_cat', 'field' => 'slug', 'terms' => 'event-tickets' ),
+		),
+		'orderby'        => 'meta_value_num',
+		'meta_key'       => '_price',
+		'order'          => 'DESC',
+		'fields'         => 'ids',
+	) );
+	if ( ! empty( $candidate ) ) {
+		$featured_id = (int) $candidate[0];
+	}
+	if ( $featured_id ) {
+		$blocks[] = '<!-- wp:davenham/featured-product ' . wp_json_encode( array(
+			'productId' => $featured_id,
+			'eyebrow'   => 'Featured · Summer Camp',
+			'ctaText'   => 'Book a place',
+		), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE ) . ' /-->';
+	}
+
+	// Event tickets row
+	$blocks[] = '<!-- wp:davenham/product-grid ' . wp_json_encode( array(
+		'heading'     => 'Event tickets',
+		'subtitle'    => 'Camps, sleepovers and group events.',
+		'category'    => 'event-tickets',
+		'count'       => 6,
+		'viewAllUrl'  => '/product-category/event-tickets/',
+		'viewAllText' => 'View all event tickets',
+	), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE ) . ' /-->';
+
+	// Group merchandise row
+	$blocks[] = '<!-- wp:davenham/product-grid ' . wp_json_encode( array(
+		'heading'     => 'Group merchandise',
+		'subtitle'    => 'Neckers, hoodies and group-branded kit.',
+		'category'    => 'group-merchandise',
+		'count'       => 6,
+		'viewAllUrl'  => '/product-category/group-merchandise/',
+		'viewAllText' => 'View all merchandise',
+	), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE ) . ' /-->';
+
+	// Promo banner — pickup info
+	$blocks[] = '<!-- wp:davenham/promo-banner ' . wp_json_encode( array(
+		'eyebrow' => 'Free local pickup',
+		'heading' => 'Skip the postage — collect at Peckmill Scout Wood',
+		'text'    => 'Choose "Free local pickup" at checkout and we will bring your order to the next meeting of your section. No postage fee, no waiting for the post.',
+		'buttons' => array(
+			array( 'text' => 'View FAQ',      'url' => '/shop-faq/',      'style' => 'white' ),
+			array( 'text' => 'Shipping info', 'url' => '/shop-shipping/', 'style' => 'outline' ),
+		),
+	), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE ) . ' /-->';
+
+	// Fundraising row
+	$blocks[] = '<!-- wp:davenham/product-grid ' . wp_json_encode( array(
+		'heading'     => 'Fundraising',
+		'subtitle'    => 'Calendars, raffles and one-off items.',
+		'category'    => 'fundraising',
+		'count'       => 4,
+		'viewAllUrl'  => '/product-category/fundraising/',
+		'viewAllText' => 'View all fundraising items',
+	), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE ) . ' /-->';
+
+	// Trust strip
+	$blocks[] = '<!-- wp:davenham/icon-feature-row ' . wp_json_encode( array(
+		'heading' => 'Shopping with confidence',
+		'columns' => array(
+			array( 'text' => '<p><strong>🎟 Buy online</strong><br />Tickets and items checkout securely with card or bank transfer.</p>' ),
+			array( 'text' => '<p><strong>📦 Local pickup</strong><br />Free collection at Peckmill — or post to your door.</p>' ),
+			array( 'text' => '<p><strong>💛 Every penny stays here</strong><br />All proceeds support 1st Davenham Scouts directly.</p>' ),
+		),
+	), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE ) . ' /-->';
+
+	return implode( "\n\n", $blocks );
+}
+
+/**
+ * Populate the Shop page with the composed builder landing layout.
+ * Backs up the existing content first.
+ */
+function db_shop_landing_seed(): array {
+	if ( ! function_exists( 'wc_get_page_id' ) ) {
+		return array( 'error' => 'WooCommerce is not active.' );
+	}
+	$shop_id = (int) wc_get_page_id( 'shop' );
+	if ( $shop_id <= 0 ) {
+		return array( 'error' => 'Shop page not found.' );
+	}
+	$existing = get_post( $shop_id );
+	if ( ! $existing ) {
+		return array( 'error' => 'Shop page record missing.' );
+	}
+	update_post_meta( $shop_id, '_db_original_shop_content', $existing->post_content );
+	$new_content = db_shop_landing_build_content();
+	$result = wp_update_post( array(
+		'ID'           => $shop_id,
+		'post_content' => $new_content,
+	), true );
+	if ( is_wp_error( $result ) ) {
+		return array( 'error' => $result->get_error_message() );
+	}
+	update_post_meta( $shop_id, '_db_landing_seeded', '1' );
+	return array( 'ok' => true, 'shop_id' => $shop_id, 'bytes' => strlen( $new_content ) );
+}
+
+/**
+ * Restore the original Shop page content from backup.
+ */
+function db_shop_landing_restore(): array {
+	if ( ! function_exists( 'wc_get_page_id' ) ) {
+		return array( 'error' => 'WooCommerce is not active.' );
+	}
+	$shop_id = (int) wc_get_page_id( 'shop' );
+	if ( $shop_id <= 0 ) {
+		return array( 'error' => 'Shop page not found.' );
+	}
+	$backup = get_post_meta( $shop_id, '_db_original_shop_content', true );
+	if ( '' === (string) $backup || null === $backup ) {
+		return array( 'error' => 'No backup found.' );
+	}
+	$result = wp_update_post( array(
+		'ID'           => $shop_id,
+		'post_content' => $backup,
+	), true );
+	if ( is_wp_error( $result ) ) {
+		return array( 'error' => $result->get_error_message() );
+	}
+	delete_post_meta( $shop_id, '_db_landing_seeded' );
+	delete_post_meta( $shop_id, '_db_original_shop_content' );
+	return array( 'ok' => true );
+}
+
+/**
  * Remove the seeded shop policy pages.
  */
 function db_shop_pages_remove(): array {
@@ -470,6 +624,14 @@ function db_render_shop_seed_page() {
 		} elseif ( 'remove_pages' === $action ) {
 			$r = db_shop_pages_remove();
 			$msg = sprintf( 'Removed %d seeded shop policy page(s).', $r['deleted'] );
+		} elseif ( 'seed_landing' === $action ) {
+			$r = db_shop_landing_seed();
+			$msg = isset( $r['ok'] ) ? 'Shop landing page populated with the builder layout. Original content backed up.' : ( 'Failed: ' . ( $r['error'] ?? 'unknown' ) );
+			if ( ! isset( $r['ok'] ) ) { $msg_kind = 'error'; }
+		} elseif ( 'restore_landing' === $action ) {
+			$r = db_shop_landing_restore();
+			$msg = isset( $r['ok'] ) ? 'Shop landing page reverted to its previous content.' : ( 'Failed: ' . ( $r['error'] ?? 'unknown' ) );
+			if ( ! isset( $r['ok'] ) ) { $msg_kind = 'error'; }
 		}
 	}
 
@@ -540,6 +702,26 @@ function db_render_shop_seed_page() {
 				<?php endforeach; ?>
 				</tbody>
 			</table>
+		</section>
+
+		<section class="db-settings-card">
+			<h2><?php esc_html_e( 'Shop landing page', 'davenham-builder' ); ?></h2>
+			<p class="db-settings-card__desc">
+				<?php esc_html_e( 'Replaces the default WooCommerce shop layout with a composed marketing page using builder blocks — category tiles, featured product, product grids by category, a free-pickup promo banner, and a trust strip. Mirrors the national Scouts shop layout pattern.', 'davenham-builder' ); ?>
+			</p>
+			<form method="post" style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
+				<?php wp_nonce_field( 'db_shop_seed_action' ); ?>
+				<button type="submit" name="db_action" value="seed_landing" class="button button-primary" <?php disabled( ! db_shop_seed_woocommerce_active() ); ?>>
+					Populate shop landing page
+				</button>
+				<button type="submit" name="db_action" value="restore_landing" class="button" onclick="return confirm('Restore the previous Shop page content from backup?');">
+					Restore previous content
+				</button>
+				<a href="<?php echo esc_url( get_permalink( wc_get_page_id( 'shop' ) ) ); ?>" target="_blank" class="button">View shop page →</a>
+			</form>
+			<p style="margin-top:14px;font-size:13px;color:#6E6E6E;">
+				<strong>What you get:</strong> a properly composed /shop/ page with category tiles, a featured ticket, product rows by category, and a pickup promo. The previous Shop page content is backed up to post meta — restore any time.
+			</p>
 		</section>
 
 		<section class="db-settings-card">
@@ -623,9 +805,11 @@ function db_shop_seed_maybe_autorun() {
 		return;
 	}
 
-	// Run the seeders
+	// Run the seeders — products first so featured-product on the landing
+	// has something to link to.
 	$products_result = db_shop_seed_run();
 	$pages_result    = db_shop_pages_seed();
+	$landing_result  = db_shop_landing_seed();
 
 	update_option( 'db_shop_autoseeded', '1', false );
 	update_option( 'db_shop_autoseeded_at', current_time( 'mysql' ), false );
@@ -634,6 +818,7 @@ function db_shop_seed_maybe_autorun() {
 	set_transient( 'db_shop_autoseed_notice', array(
 		'products' => (int) ( $products_result['created'] ?? 0 ),
 		'pages'    => (int) ( $pages_result['created']    ?? 0 ),
+		'landing'  => ! empty( $landing_result['ok'] ),
 	), HOUR_IN_SECONDS );
 }
 add_action( 'admin_init', 'db_shop_seed_maybe_autorun', 99 );

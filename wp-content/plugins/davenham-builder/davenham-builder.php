@@ -78,7 +78,7 @@ function db_register_blocks() {
 		'tabs', 'logo-strip', 'key-facts',
 		'promo-banner', 'donation-cards', 'popup-promo',
 		'session-times', 'product-grid', 'featured-product',
-		'event-ticket-card',
+		'event-ticket-card', 'category-grid',
 	);
 
 	foreach ( $blocks as $block ) {

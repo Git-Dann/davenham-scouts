@@ -21,6 +21,17 @@ $support = function_exists( 'scouts_woocommerce_support_copy' )
         'cta'     => home_url( '/contact/' ),
         'label'   => 'Contact the team',
     ];
+
+// On the Shop landing page, if the Shop post has builder block markup,
+// render that INSTEAD of the default sidebar+product loop layout. This
+// lets us turn the shop landing into a properly composed marketing page
+// (category tiles, featured product, promo banner, etc.) while category
+// and product detail pages still use the standard product loop.
+$is_shop_landing = function_exists( 'is_shop' ) && is_shop() && ! is_product_taxonomy();
+$shop_post       = $is_shop_landing && function_exists( 'wc_get_page_id' )
+    ? get_post( wc_get_page_id( 'shop' ) )
+    : null;
+$shop_has_blocks = $shop_post && false !== strpos( (string) $shop_post->post_content, '<!-- wp:davenham/' );
 ?>
 
 <section class="hero standard cf">
@@ -38,10 +49,18 @@ $support = function_exists( 'scouts_woocommerce_support_copy' )
     </div>
 </section>
 
+<?php if ( $shop_has_blocks ) : ?>
+
+<div class="scouts-woocommerce scouts-woocommerce--landing cf">
+    <?php echo apply_filters( 'the_content', $shop_post->post_content ); ?>
+</div>
+
+<?php else : ?>
+
 <div class="container scouts-woocommerce cf">
     <div class="wrapper shop-layout cf page_wrapper">
         <div class="shop-main main_content main_content_shop playground cf" id="scroll-access">
-            <?php if ( function_exists( 'is_shop' ) && is_shop() ) : ?>
+            <?php if ( $is_shop_landing ) : ?>
                 <div class="shop-intro-card">
                     <p>The shop is the home for tickets, fundraising items, and any group-specific resources we sell directly. For standard Scout uniform, we usually recommend the official Scout Store.</p>
                     <p>If you cannot find what you need here yet, use the contact form and we will point you in the right direction.</p>
@@ -69,5 +88,7 @@ $support = function_exists( 'scouts_woocommerce_support_copy' )
         </aside>
     </div>
 </div>
+
+<?php endif; ?>
 
 <?php get_footer(); ?>

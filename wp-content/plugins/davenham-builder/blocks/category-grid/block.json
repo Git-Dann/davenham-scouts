@@ -1,0 +1,21 @@
+{
+  "$schema": "https://schemas.wp.org/trunk/block.json",
+  "apiVersion": 3,
+  "name": "davenham/category-grid",
+  "version": "1.0.0",
+  "title": "Shop Category Grid",
+  "category": "davenham",
+  "description": "Large tiles for browsing shop categories — mirrors the national Scouts shop's 'Shop by section' pattern.",
+  "icon": "grid-view",
+  "keywords": ["shop", "categories", "browse", "store", "tiles"],
+  "textdomain": "davenham-blocks",
+  "render": "file:./render.php",
+  "attributes": {
+    "heading":  { "type": "string", "default": "Shop by category" },
+    "subtitle": { "type": "string", "default": "" },
+    "categories": {
+      "type": "string",
+      "default": "event-tickets,group-merchandise,fundraising,equipment-kit"
+    }
+  }
+}
