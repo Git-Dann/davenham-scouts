@@ -605,6 +605,62 @@ a.age_group_card:hover {
   box-shadow: 0 18px 40px rgba(9, 31, 66, 0.12);
 }
 
+/* ============================================================
+   VISUAL DESIGN PASS — brand colours, typography, spacing
+   ============================================================ */
+
+/* Hero: brand gradient replaces plain black overlay */
+.hero .box {
+  background: linear-gradient(135deg, rgba(0, 63, 135, 0.92) 0%, rgba(116, 19, 220, 0.82) 100%);
+  border-radius: 22px;
+}
+
+@media (max-width: 700px) {
+  .hero .box {
+    border-radius: 0;
+    background: linear-gradient(135deg, rgba(0, 63, 135, 0.95) 0%, rgba(116, 19, 220, 0.9) 100%);
+  }
+}
+
+/* Buttons: purple primary + pill shape */
+.btn {
+  background: #7413dc;
+  border-radius: 999px;
+}
+
+.btn:before {
+  background: #5b10b8;
+}
+
+/* news_section__btn: restore white outline pill after .btn override */
+.news_section__btn {
+  background: transparent;
+  border: 2px solid #fff;
+  border-radius: 999px;
+  color: #fff;
+}
+
+.news_section__btn:hover {
+  background: #fff;
+  color: #00a794;
+}
+
+/* white_container: remove excessive top/bottom padding from production.css */
+.white_container {
+  padding: 0;
+}
+
+/* welcome_section: remove excessive bottom margin from production.css */
+.welcome_section {
+  margin: 0;
+  padding: 64px 0;
+}
+
+/* Colour audit: replace off-brand teal (#088486) accent uses */
+.news-archive__count {
+  color: #7413dc;
+}
+
 .news-archive-card__image {
   display: block;
   background: linear-gradient(135deg, #088486 0%, #003982 100%);
