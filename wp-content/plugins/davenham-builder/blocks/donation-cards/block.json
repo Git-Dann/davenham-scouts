@@ -1,0 +1,16 @@
+{
+  "$schema": "https://schemas.wp.org/trunk/block.json",
+  "apiVersion": 3,
+  "name": "davenham/donation-cards",
+  "version": "1.0.0",
+  "title": "Donation Cards",
+  "category": "davenham",
+  "description": "Suggested giving tiers or sponsorship options.",
+  "textdomain": "davenham-blocks",
+  "editorScript": "davenham-blocks-editor",
+  "render": "file:./render.php",
+  "attributes": {
+    "heading": { "type": "string", "default": "Support our next project" },
+    "items": { "type": "array", "default": [], "items": { "type": "object" } }
+  }
+}

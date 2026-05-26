@@ -1,0 +1,16 @@
+{
+  "$schema": "https://schemas.wp.org/trunk/block.json",
+  "apiVersion": 3,
+  "name": "davenham/leaders",
+  "version": "1.0.0",
+  "title": "Leaders / Team",
+  "category": "davenham",
+  "description": "Photo cards for leaders, helpers and trustees.",
+  "textdomain": "davenham-blocks",
+  "editorScript": "davenham-blocks-editor",
+  "render": "file:./render.php",
+  "attributes": {
+    "heading": { "type": "string", "default": "Our Leaders" },
+    "leaders": { "type": "array",  "default": [], "items": { "type": "object" } }
+  }
+}

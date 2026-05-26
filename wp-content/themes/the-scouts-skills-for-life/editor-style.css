@@ -1,0 +1,53 @@
+body.block-editor-page .editor-styles-wrapper {
+  font-family: "Nunito Sans", sans-serif;
+  color: #1c2f45;
+  background: #f6f8fb;
+}
+
+.editor-styles-wrapper .wp-block {
+  max-width: 760px;
+}
+
+.editor-styles-wrapper .wp-block[data-align="wide"] {
+  max-width: 980px;
+}
+
+.editor-styles-wrapper h1,
+.editor-styles-wrapper h2,
+.editor-styles-wrapper h3,
+.editor-styles-wrapper h4,
+.editor-styles-wrapper h5,
+.editor-styles-wrapper h6 {
+  color: #003982;
+}
+
+.editor-styles-wrapper p,
+.editor-styles-wrapper li {
+  line-height: 1.75;
+}
+
+.editor-styles-wrapper .wp-block-button__link {
+  border-radius: 999px;
+  font-weight: 700;
+}
+
+.editor-styles-wrapper .wp-block-group,
+.editor-styles-wrapper .wp-block-columns {
+  box-sizing: border-box;
+}
+
+.editor-styles-wrapper .is-root-container {
+  padding-bottom: 60px;
+}
+
+.editor-styles-wrapper .wp-block[data-type="core/group"] {
+  border-radius: 8px;
+}
+
+.editor-styles-wrapper .has-scouts-blue-background-color,
+.editor-styles-wrapper .has-scouts-teal-background-color,
+.editor-styles-wrapper .has-scouts-orange-background-color,
+.editor-styles-wrapper .has-scouts-pink-background-color,
+.editor-styles-wrapper .has-scouts-navy-background-color {
+  color: #fff;
+}

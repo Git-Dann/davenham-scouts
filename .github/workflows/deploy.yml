@@ -28,3 +28,9 @@ jobs:
             **/.git*/**
             **/node_modules/**
             .github/**
+            website-core/**
+            tmp/**
+            CLAUDE.md
+            design.md
+            homepage-builder-example.html
+            **/.DS_Store

@@ -1,0 +1,16 @@
+{
+  "$schema": "https://schemas.wp.org/trunk/block.json",
+  "apiVersion": 3,
+  "name": "davenham/sponsors",
+  "version": "1.0.0",
+  "title": "Sponsors / Partners",
+  "category": "davenham",
+  "description": "Logo grid for sponsors, partners and supporters.",
+  "textdomain": "davenham-blocks",
+  "editorScript": "davenham-blocks-editor",
+  "render": "file:./render.php",
+  "attributes": {
+    "heading": { "type": "string", "default": "Our Supporters" },
+    "logos":   { "type": "array",  "default": [], "items": { "type": "object" } }
+  }
+}

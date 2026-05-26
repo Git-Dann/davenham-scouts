@@ -1,0 +1,23 @@
+{
+  "$schema": "https://schemas.wp.org/trunk/block.json",
+  "apiVersion": 3,
+  "name": "davenham/split-cta",
+  "version": "1.0.0",
+  "title": "Split CTA",
+  "category": "davenham",
+  "description": "Two side-by-side calls to action.",
+  "textdomain": "davenham-blocks",
+  "editorScript": "davenham-blocks-editor",
+  "render": "file:./render.php",
+  "attributes": {
+    "heading": { "type": "string", "default": "How can we help?" },
+    "leftTitle": { "type": "string", "default": "" },
+    "leftText": { "type": "string", "default": "" },
+    "leftButtonText": { "type": "string", "default": "" },
+    "leftButtonUrl": { "type": "string", "default": "" },
+    "rightTitle": { "type": "string", "default": "" },
+    "rightText": { "type": "string", "default": "" },
+    "rightButtonText": { "type": "string", "default": "" },
+    "rightButtonUrl": { "type": "string", "default": "" }
+  }
+}

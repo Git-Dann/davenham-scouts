@@ -1,0 +1,22 @@
+{
+  "$schema": "https://schemas.wp.org/trunk/block.json",
+  "apiVersion": 3,
+  "name": "davenham/contact-info",
+  "version": "1.0.0",
+  "title": "Contact Info",
+  "category": "davenham",
+  "description": "Address, phone, email, opening hours and optional map embed.",
+  "textdomain": "davenham-blocks",
+  "editorScript": "davenham-blocks-editor",
+  "render": "file:./render.php",
+  "attributes": {
+    "heading":      { "type": "string", "default": "Get in Touch" },
+    "address":      { "type": "string", "default": "" },
+    "phone":        { "type": "string", "default": "" },
+    "email":        { "type": "string", "default": "" },
+    "openingHours": { "type": "string", "default": "" },
+    "mapEmbedUrl":  { "type": "string", "default": "" },
+    "buttonText":   { "type": "string", "default": "Send us a message" },
+    "buttonUrl":    { "type": "string", "default": "/contact" }
+  }
+}

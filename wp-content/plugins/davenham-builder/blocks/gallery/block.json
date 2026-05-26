@@ -1,0 +1,16 @@
+{
+  "$schema": "https://schemas.wp.org/trunk/block.json",
+  "apiVersion": 3,
+  "name": "davenham/gallery",
+  "version": "1.0.0",
+  "title": "Photo Gallery",
+  "category": "davenham",
+  "description": "Responsive image grid with optional captions.",
+  "textdomain": "davenham-blocks",
+  "editorScript": "davenham-blocks-editor",
+  "render": "file:./render.php",
+  "attributes": {
+    "heading": { "type": "string", "default": "Photo Gallery" },
+    "images":  { "type": "array",  "default": [], "items": { "type": "object" } }
+  }
+}
