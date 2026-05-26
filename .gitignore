@@ -33,3 +33,8 @@ Thumbs.db
 # Dev tooling — local only, not deployed
 tmp/
 website-core/
+
+# Local deploy (replaces GitHub Actions)
+.ftp-credentials
+.deploy-state.json
+.ftp-deploy-sync-state.json
