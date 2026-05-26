@@ -1,0 +1,18 @@
+{
+  "$schema": "https://schemas.wp.org/trunk/block.json",
+  "apiVersion": 3,
+  "name": "davenham/featured-product",
+  "version": "1.0.0",
+  "title": "Featured Product",
+  "category": "davenham",
+  "description": "Promote a single shop product with an image, description and Add-to-cart link.",
+  "icon": "megaphone",
+  "keywords": ["featured", "product", "shop", "promo"],
+  "textdomain": "davenham-blocks",
+  "render": "file:./render.php",
+  "attributes": {
+    "productId": { "type": "number", "default": 0 },
+    "eyebrow": { "type": "string", "default": "Featured" },
+    "ctaText": { "type": "string", "default": "View product" }
+  }
+}

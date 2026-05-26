@@ -19,6 +19,9 @@ define( 'DB_URL',     plugin_dir_url( __FILE__ ) );
 // One-time page migration helpers (Builder → Page Migration admin screen).
 require_once DB_DIR . 'migrations.php';
 
+// Sample shop products seeder (Builder → Sample Shop Products admin screen).
+require_once DB_DIR . 'shop-seed.php';
+
 // ─── Shared helper — declared once here so render.php files can call it safely ─
 if ( ! function_exists( 'davenham_video_to_embed' ) ) {
 	function davenham_video_to_embed( $url ) {
@@ -74,7 +77,7 @@ function db_register_blocks() {
 		'steps', 'split-cta', 'newsletter-signup',
 		'tabs', 'logo-strip', 'key-facts',
 		'promo-banner', 'donation-cards', 'popup-promo',
-		'session-times',
+		'session-times', 'product-grid', 'featured-product',
 	);
 
 	foreach ( $blocks as $block ) {
@@ -127,6 +130,15 @@ function db_register_admin_menu() {
 		'manage_options',
 		'davenham-builder-migrate',
 		'db_render_migration_page'
+	);
+
+	add_submenu_page(
+		'davenham-builder',
+		__( 'Sample Shop Products', 'davenham-builder' ),
+		__( 'Sample Shop Products', 'davenham-builder' ),
+		'manage_options',
+		'davenham-builder-shop-seed',
+		'db_render_shop_seed_page'
 	);
 }
 

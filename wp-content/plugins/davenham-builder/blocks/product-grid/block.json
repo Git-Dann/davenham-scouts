@@ -1,0 +1,21 @@
+{
+  "$schema": "https://schemas.wp.org/trunk/block.json",
+  "apiVersion": 3,
+  "name": "davenham/product-grid",
+  "version": "1.0.0",
+  "title": "Product Grid",
+  "category": "davenham",
+  "description": "Display a grid of shop products from one or all categories — for fundraising, event tickets, or featured items.",
+  "icon": "store",
+  "keywords": ["shop", "products", "store", "woocommerce", "tickets", "fundraising"],
+  "textdomain": "davenham-blocks",
+  "render": "file:./render.php",
+  "attributes": {
+    "heading": { "type": "string", "default": "Shop" },
+    "subtitle": { "type": "string", "default": "" },
+    "category": { "type": "string", "default": "" },
+    "count": { "type": "number", "default": 6 },
+    "viewAllUrl": { "type": "string", "default": "/shop/" },
+    "viewAllText": { "type": "string", "default": "View all products" }
+  }
+}
