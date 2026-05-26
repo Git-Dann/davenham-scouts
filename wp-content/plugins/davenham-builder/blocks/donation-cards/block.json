@@ -6,11 +6,27 @@
   "title": "Donation Cards",
   "category": "davenham",
   "description": "Suggested giving tiers or sponsorship options.",
+  "icon": "heart",
+  "keywords": [
+    "donate",
+    "donation",
+    "fundraising",
+    "give"
+  ],
   "textdomain": "davenham-blocks",
   "editorScript": "davenham-blocks-editor",
   "render": "file:./render.php",
   "attributes": {
-    "heading": { "type": "string", "default": "Support our next project" },
-    "items": { "type": "array", "default": [], "items": { "type": "object" } }
+    "heading": {
+      "type": "string",
+      "default": "Support our next project"
+    },
+    "items": {
+      "type": "array",
+      "default": [],
+      "items": {
+        "type": "object"
+      }
+    }
   }
 }

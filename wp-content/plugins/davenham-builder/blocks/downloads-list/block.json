@@ -6,11 +6,27 @@
   "title": "Downloads List",
   "category": "davenham",
   "description": "A simple list of downloadable files or links.",
+  "icon": "download",
+  "keywords": [
+    "downloads",
+    "files",
+    "pdf",
+    "documents"
+  ],
   "textdomain": "davenham-blocks",
   "editorScript": "davenham-blocks-editor",
   "render": "file:./render.php",
   "attributes": {
-    "heading": { "type": "string", "default": "Downloads" },
-    "items": { "type": "array", "default": [], "items": { "type": "object" } }
+    "heading": {
+      "type": "string",
+      "default": "Downloads"
+    },
+    "items": {
+      "type": "array",
+      "default": [],
+      "items": {
+        "type": "object"
+      }
+    }
   }
 }

@@ -6,6 +6,13 @@
   "title": "Icon / Feature Row",
   "category": "davenham",
   "description": "A horizontal row of icon + text columns.",
+  "icon": "star-filled",
+  "keywords": [
+    "features",
+    "icons",
+    "row",
+    "highlights"
+  ],
   "textdomain": "davenham-blocks",
   "editorScript": "davenham-blocks-editor",
   "render": "file:./render.php",

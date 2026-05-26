@@ -6,18 +6,52 @@
   "title": "Split CTA",
   "category": "davenham",
   "description": "Two side-by-side calls to action.",
+  "icon": "columns",
+  "keywords": [
+    "split",
+    "cta",
+    "two-column",
+    "call-to-action"
+  ],
   "textdomain": "davenham-blocks",
   "editorScript": "davenham-blocks-editor",
   "render": "file:./render.php",
   "attributes": {
-    "heading": { "type": "string", "default": "How can we help?" },
-    "leftTitle": { "type": "string", "default": "" },
-    "leftText": { "type": "string", "default": "" },
-    "leftButtonText": { "type": "string", "default": "" },
-    "leftButtonUrl": { "type": "string", "default": "" },
-    "rightTitle": { "type": "string", "default": "" },
-    "rightText": { "type": "string", "default": "" },
-    "rightButtonText": { "type": "string", "default": "" },
-    "rightButtonUrl": { "type": "string", "default": "" }
+    "heading": {
+      "type": "string",
+      "default": "How can we help?"
+    },
+    "leftTitle": {
+      "type": "string",
+      "default": ""
+    },
+    "leftText": {
+      "type": "string",
+      "default": ""
+    },
+    "leftButtonText": {
+      "type": "string",
+      "default": ""
+    },
+    "leftButtonUrl": {
+      "type": "string",
+      "default": ""
+    },
+    "rightTitle": {
+      "type": "string",
+      "default": ""
+    },
+    "rightText": {
+      "type": "string",
+      "default": ""
+    },
+    "rightButtonText": {
+      "type": "string",
+      "default": ""
+    },
+    "rightButtonUrl": {
+      "type": "string",
+      "default": ""
+    }
   }
 }

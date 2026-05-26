@@ -6,6 +6,14 @@
   "title": "News Feed",
   "category": "davenham",
   "description": "Queries the latest posts and renders .news_block cards. Fully dynamic.",
+  "icon": "rss",
+  "keywords": [
+    "news",
+    "posts",
+    "feed",
+    "updates",
+    "stories"
+  ],
   "textdomain": "davenham-blocks",
   "editorScript": "davenham-blocks-editor",
   "render": "file:./render.php",

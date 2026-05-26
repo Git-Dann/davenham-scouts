@@ -5,12 +5,25 @@
   "version": "1.0.0",
   "title": "Rich Text",
   "category": "davenham",
-  "description": "Full-width HTML content area — great for long copy, policies, or structured info.",
+  "description": "Full-width HTML content area \u2014 great for long copy, policies, or structured info.",
+  "icon": "text",
+  "keywords": [
+    "text",
+    "html",
+    "content",
+    "wysiwyg"
+  ],
   "textdomain": "davenham-blocks",
   "editorScript": "davenham-blocks-editor",
   "render": "file:./render.php",
   "attributes": {
-    "content":    { "type": "string", "default": "<p>Enter your content here.</p>" },
-    "background": { "type": "string", "default": "white" }
+    "content": {
+      "type": "string",
+      "default": "<p>Enter your content here.</p>"
+    },
+    "background": {
+      "type": "string",
+      "default": "white"
+    }
   }
 }

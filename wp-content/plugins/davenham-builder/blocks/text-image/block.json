@@ -5,7 +5,14 @@
   "version": "1.0.0",
   "title": "Text + Image",
   "category": "davenham",
-  "description": "Flexible 50/50 layout inside .white_container — image left or right.",
+  "description": "Flexible 50/50 layout inside .white_container \u2014 image left or right.",
+  "icon": "align-center",
+  "keywords": [
+    "text",
+    "image",
+    "split",
+    "two-column"
+  ],
   "textdomain": "davenham-blocks",
   "editorScript": "davenham-blocks-editor",
   "render": "file:./render.php",

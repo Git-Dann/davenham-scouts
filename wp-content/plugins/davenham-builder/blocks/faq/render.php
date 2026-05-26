@@ -44,7 +44,7 @@ $block_id = 'faq-' . substr( md5( serialize( $attributes ) ), 0, 8 );
 			<?php endforeach; ?>
 		</div><!-- .faq_list -->
 		<?php else : ?>
-			<p style="padding:20px 0;color:#aaa;">No FAQ items added yet.</p>
+			<p class="faq_empty"><?php esc_html_e( 'No FAQ items added yet.', 'davenham-builder' ); ?></p>
 		<?php endif; ?>
 	</div><!-- .wrapper -->
 </section><!-- .faq_section -->

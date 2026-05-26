@@ -948,3 +948,15 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* ── Block empty states ─────────────────────────────────── */
+.faq_empty,
+.events_empty,
+.news_block__empty {
+  padding: 40px 20px;
+  text-align: center;
+  color: #6E6E6E;
+  font-size: 16px;
+  background: #F1F1F1;
+  border-radius: 10px;
+}

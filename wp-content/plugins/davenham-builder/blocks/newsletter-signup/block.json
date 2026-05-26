@@ -6,14 +6,36 @@
   "title": "Newsletter Signup",
   "category": "davenham",
   "description": "Newsletter form embed or fallback signup CTA.",
+  "icon": "email-alt",
+  "keywords": [
+    "newsletter",
+    "signup",
+    "subscribe",
+    "email"
+  ],
   "textdomain": "davenham-blocks",
   "editorScript": "davenham-blocks-editor",
   "render": "file:./render.php",
   "attributes": {
-    "heading": { "type": "string", "default": "Stay in the loop" },
-    "text": { "type": "string", "default": "" },
-    "embedCode": { "type": "string", "default": "" },
-    "buttonText": { "type": "string", "default": "" },
-    "buttonUrl": { "type": "string", "default": "" }
+    "heading": {
+      "type": "string",
+      "default": "Stay in the loop"
+    },
+    "text": {
+      "type": "string",
+      "default": ""
+    },
+    "embedCode": {
+      "type": "string",
+      "default": ""
+    },
+    "buttonText": {
+      "type": "string",
+      "default": ""
+    },
+    "buttonUrl": {
+      "type": "string",
+      "default": ""
+    }
   }
 }

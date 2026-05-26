@@ -6,6 +6,13 @@
   "title": "Events List",
   "category": "davenham",
   "description": "Upcoming events. Supports The Events Calendar (tribe_events), a custom 'event' CPT, or plain posts with event meta.",
+  "icon": "calendar-alt",
+  "keywords": [
+    "events",
+    "calendar",
+    "schedule",
+    "dates"
+  ],
   "textdomain": "davenham-blocks",
   "editorScript": "davenham-blocks-editor",
   "render": "file:./render.php",

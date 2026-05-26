@@ -6,12 +6,28 @@
   "title": "Popup Promo",
   "category": "davenham",
   "description": "A simple modal popup with a trigger button.",
+  "icon": "megaphone",
+  "keywords": [
+    "popup",
+    "modal",
+    "promo",
+    "announcement"
+  ],
   "textdomain": "davenham-blocks",
   "editorScript": "davenham-blocks-editor",
   "render": "file:./render.php",
   "attributes": {
-    "heading": { "type": "string", "default": "Open popup" },
-    "buttonText": { "type": "string", "default": "Open details" },
-    "body": { "type": "string", "default": "" }
+    "heading": {
+      "type": "string",
+      "default": "Open popup"
+    },
+    "buttonText": {
+      "type": "string",
+      "default": "Open details"
+    },
+    "body": {
+      "type": "string",
+      "default": ""
+    }
   }
 }

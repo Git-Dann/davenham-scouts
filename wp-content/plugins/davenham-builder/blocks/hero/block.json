@@ -6,6 +6,13 @@
   "title": "Hero Section",
   "category": "davenham",
   "description": "Full-width hero with background image, heading, subtext and CTA buttons.",
+  "icon": "cover-image",
+  "keywords": [
+    "hero",
+    "banner",
+    "header",
+    "splash"
+  ],
   "textdomain": "davenham-blocks",
   "editorScript": "davenham-blocks-editor",
   "render": "file:./render.php",

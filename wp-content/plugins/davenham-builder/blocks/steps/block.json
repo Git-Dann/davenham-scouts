@@ -6,11 +6,27 @@
   "title": "Steps / Process",
   "category": "davenham",
   "description": "A clean step-by-step process layout.",
+  "icon": "list-view",
+  "keywords": [
+    "steps",
+    "how-to",
+    "process",
+    "numbered"
+  ],
   "textdomain": "davenham-blocks",
   "editorScript": "davenham-blocks-editor",
   "render": "file:./render.php",
   "attributes": {
-    "heading": { "type": "string", "default": "How it works" },
-    "items": { "type": "array", "default": [], "items": { "type": "object" } }
+    "heading": {
+      "type": "string",
+      "default": "How it works"
+    },
+    "items": {
+      "type": "array",
+      "default": [],
+      "items": {
+        "type": "object"
+      }
+    }
   }
 }

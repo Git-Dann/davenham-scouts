@@ -126,31 +126,31 @@ if ( post_type_exists( 'tribe_events' ) ) {
 						}
 						?>
 						<div class="event">
-							<a href="<?php echo esc_url( $event_url ); ?>" class="full-block"></a>
+							<a href="<?php echo esc_url( $event_url ); ?>" class="full-block" aria-label="<?php echo esc_attr( sprintf( /* translators: %s: event title */ __( 'Read more about %s', 'davenham-builder' ), get_the_title() ) ); ?>"></a>
 							<div class="col one">
-								<span class="title">Event</span>
+								<span class="title"><?php esc_html_e( 'Event', 'davenham-builder' ); ?></span>
 								<h5><?php the_title(); ?></h5>
 							</div><!-- .col -->
 							<div class="col two">
-								<span class="title">When</span>
+								<span class="title"><?php esc_html_e( 'When', 'davenham-builder' ); ?></span>
 								<p><?php echo $date_display; ?></p>
 							</div><!-- .col -->
 							<div class="col three">
-								<span class="title">Time</span>
+								<span class="title"><?php esc_html_e( 'Time', 'davenham-builder' ); ?></span>
 								<p><?php echo esc_html( $time_display ); ?></p>
 							</div><!-- .col -->
 							<div class="col four">
-								<span class="title">Location</span>
+								<span class="title"><?php esc_html_e( 'Location', 'davenham-builder' ); ?></span>
 								<p><?php echo esc_html( $location ); ?></p>
 							</div><!-- .col -->
 							<div class="col five">
-								<a class="link blue" href="<?php echo esc_url( $event_url ); ?>">More Info</a>
+								<a class="link blue" href="<?php echo esc_url( $event_url ); ?>"><?php esc_html_e( 'More Info', 'davenham-builder' ); ?></a>
 							</div><!-- .col -->
 						</div><!-- .event -->
 					<?php endwhile; ?>
 					<?php wp_reset_postdata(); ?>
 				<?php else : ?>
-					<p style="padding:20px 0;">No upcoming events found.</p>
+					<p class="events_empty"><?php esc_html_e( 'No upcoming events found.', 'davenham-builder' ); ?></p>
 				<?php endif; ?>
 			</div><!-- .events_list -->
 		</div><!-- .events_blocks -->

@@ -6,14 +6,36 @@
   "title": "Promo Banner",
   "category": "davenham",
   "description": "A bold campaign banner with one clear CTA.",
+  "icon": "megaphone",
+  "keywords": [
+    "promo",
+    "banner",
+    "announcement",
+    "highlight"
+  ],
   "textdomain": "davenham-blocks",
   "editorScript": "davenham-blocks-editor",
   "render": "file:./render.php",
   "attributes": {
-    "eyebrow": { "type": "string", "default": "" },
-    "heading": { "type": "string", "default": "" },
-    "text": { "type": "string", "default": "" },
-    "buttonText": { "type": "string", "default": "" },
-    "buttonUrl": { "type": "string", "default": "" }
+    "eyebrow": {
+      "type": "string",
+      "default": ""
+    },
+    "heading": {
+      "type": "string",
+      "default": ""
+    },
+    "text": {
+      "type": "string",
+      "default": ""
+    },
+    "buttonText": {
+      "type": "string",
+      "default": ""
+    },
+    "buttonUrl": {
+      "type": "string",
+      "default": ""
+    }
   }
 }

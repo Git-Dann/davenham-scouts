@@ -6,11 +6,28 @@
   "title": "FAQ Accordion",
   "category": "davenham",
   "description": "Collapsible question & answer accordion section.",
+  "icon": "editor-help",
+  "keywords": [
+    "faq",
+    "questions",
+    "answers",
+    "accordion",
+    "help"
+  ],
   "textdomain": "davenham-blocks",
   "editorScript": "davenham-blocks-editor",
   "render": "file:./render.php",
   "attributes": {
-    "heading": { "type": "string", "default": "Frequently Asked Questions" },
-    "items":   { "type": "array",  "default": [], "items": { "type": "object" } }
+    "heading": {
+      "type": "string",
+      "default": "Frequently Asked Questions"
+    },
+    "items": {
+      "type": "array",
+      "default": [],
+      "items": {
+        "type": "object"
+      }
+    }
   }
 }

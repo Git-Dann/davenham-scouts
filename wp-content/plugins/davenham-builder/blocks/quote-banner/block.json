@@ -6,11 +6,23 @@
   "title": "Quote Banner",
   "category": "davenham",
   "description": "A strong full-width quote with attribution.",
+  "icon": "format-quote",
+  "keywords": [
+    "quote",
+    "testimonial",
+    "banner"
+  ],
   "textdomain": "davenham-blocks",
   "editorScript": "davenham-blocks-editor",
   "render": "file:./render.php",
   "attributes": {
-    "quote": { "type": "string", "default": "" },
-    "attribution": { "type": "string", "default": "" }
+    "quote": {
+      "type": "string",
+      "default": ""
+    },
+    "attribution": {
+      "type": "string",
+      "default": ""
+    }
   }
 }

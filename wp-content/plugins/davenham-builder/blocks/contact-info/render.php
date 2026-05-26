@@ -27,7 +27,7 @@ $has_map       = ! empty( $map_url );
 				<div class="contact_row">
 					<span class="contact_icon">📍</span>
 					<div>
-						<strong>Address</strong>
+						<strong><?php esc_html_e( 'Address', 'davenham-builder' ); ?></strong>
 						<address><?php echo nl2br( esc_html( $address ) ); ?></address>
 					</div>
 				</div>
@@ -37,7 +37,7 @@ $has_map       = ! empty( $map_url );
 				<div class="contact_row">
 					<span class="contact_icon">📞</span>
 					<div>
-						<strong>Phone</strong>
+						<strong><?php esc_html_e( 'Phone', 'davenham-builder' ); ?></strong>
 						<a href="tel:<?php echo esc_attr( preg_replace( '/\s+/', '', $phone ) ); ?>"><?php echo esc_html( $phone ); ?></a>
 					</div>
 				</div>
@@ -47,7 +47,7 @@ $has_map       = ! empty( $map_url );
 				<div class="contact_row">
 					<span class="contact_icon">✉️</span>
 					<div>
-						<strong>Email</strong>
+						<strong><?php esc_html_e( 'Email', 'davenham-builder' ); ?></strong>
 						<a href="mailto:<?php echo esc_attr( $email ); ?>"><?php echo esc_html( $email ); ?></a>
 					</div>
 				</div>
@@ -57,7 +57,7 @@ $has_map       = ! empty( $map_url );
 				<div class="contact_row">
 					<span class="contact_icon">🕐</span>
 					<div>
-						<strong>Meetings</strong>
+						<strong><?php esc_html_e( 'Meetings', 'davenham-builder' ); ?></strong>
 						<p><?php echo esc_html( $opening_hours ); ?></p>
 					</div>
 				</div>
@@ -76,11 +76,11 @@ $has_map       = ! empty( $map_url );
 					src="<?php echo esc_url( $map_url ); ?>"
 					width="100%"
 					height="380"
-					style="border:0;border-radius:8px;"
+					style="border:0;border-radius:5px;"
 					allowfullscreen=""
 					loading="lazy"
 					referrerpolicy="no-referrer-when-downgrade"
-					title="Map"
+					title="<?php esc_attr_e( 'Location map', 'davenham-builder' ); ?>"
 				></iframe>
 			</div><!-- .contact_map -->
 			<?php endif; ?>

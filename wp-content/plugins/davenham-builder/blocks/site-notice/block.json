@@ -6,6 +6,13 @@
   "title": "Site Notice Bar",
   "category": "davenham",
   "description": "Dismissable banner with text and an optional CTA button.",
+  "icon": "warning",
+  "keywords": [
+    "notice",
+    "alert",
+    "banner",
+    "announcement"
+  ],
   "textdomain": "davenham-blocks",
   "editorScript": "davenham-blocks-editor",
   "render": "file:./render.php",

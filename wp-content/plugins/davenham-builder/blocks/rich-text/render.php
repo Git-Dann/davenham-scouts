@@ -10,9 +10,9 @@ $background = $attributes['background'] ?? 'white';
 
 $bg_styles = [
 	'white'  => 'background:#fff;',
-	'grey'   => 'background:#f5f5f5;',
-	'navy'   => 'background:#003f87;color:#fff;',
-	'purple' => 'background:#7413dc;color:#fff;',
+	'grey'   => 'background:#F1F1F1;',
+	'navy'   => 'background:#003982;color:#fff;',
+	'purple' => 'background:#590FA9;color:#fff;',
 ];
 $inline_style = $bg_styles[ $background ] ?? $bg_styles['white'];
 ?>

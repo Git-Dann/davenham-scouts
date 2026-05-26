@@ -6,11 +6,27 @@
   "title": "Timeline",
   "category": "davenham",
   "description": "A chronological set of milestones.",
+  "icon": "backup",
+  "keywords": [
+    "timeline",
+    "history",
+    "milestones",
+    "dates"
+  ],
   "textdomain": "davenham-blocks",
   "editorScript": "davenham-blocks-editor",
   "render": "file:./render.php",
   "attributes": {
-    "heading": { "type": "string", "default": "Our journey" },
-    "items": { "type": "array", "default": [], "items": { "type": "object" } }
+    "heading": {
+      "type": "string",
+      "default": "Our journey"
+    },
+    "items": {
+      "type": "array",
+      "default": [],
+      "items": {
+        "type": "object"
+      }
+    }
   }
 }

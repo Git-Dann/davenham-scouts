@@ -6,11 +6,27 @@
   "title": "Leaders / Team",
   "category": "davenham",
   "description": "Photo cards for leaders, helpers and trustees.",
+  "icon": "businessperson",
+  "keywords": [
+    "leaders",
+    "team",
+    "people",
+    "staff"
+  ],
   "textdomain": "davenham-blocks",
   "editorScript": "davenham-blocks-editor",
   "render": "file:./render.php",
   "attributes": {
-    "heading": { "type": "string", "default": "Our Leaders" },
-    "leaders": { "type": "array",  "default": [], "items": { "type": "object" } }
+    "heading": {
+      "type": "string",
+      "default": "Our Leaders"
+    },
+    "leaders": {
+      "type": "array",
+      "default": [],
+      "items": {
+        "type": "object"
+      }
+    }
   }
 }

@@ -6,6 +6,13 @@
   "title": "Page Hero",
   "category": "davenham",
   "description": "Inner-page banner (.hero.standard) with title and optional subtext.",
+  "icon": "format-aside",
+  "keywords": [
+    "page",
+    "hero",
+    "banner",
+    "title"
+  ],
   "textdomain": "davenham-blocks",
   "editorScript": "davenham-blocks-editor",
   "render": "file:./render.php",

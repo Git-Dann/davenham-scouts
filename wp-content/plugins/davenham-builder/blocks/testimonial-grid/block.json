@@ -6,11 +6,27 @@
   "title": "Testimonials",
   "category": "davenham",
   "description": "A grid of supporter or parent quotes.",
+  "icon": "format-quote",
+  "keywords": [
+    "testimonials",
+    "quotes",
+    "reviews",
+    "grid"
+  ],
   "textdomain": "davenham-blocks",
   "editorScript": "davenham-blocks-editor",
   "render": "file:./render.php",
   "attributes": {
-    "heading": { "type": "string", "default": "What people say" },
-    "items": { "type": "array", "default": [], "items": { "type": "object" } }
+    "heading": {
+      "type": "string",
+      "default": "What people say"
+    },
+    "items": {
+      "type": "array",
+      "default": [],
+      "items": {
+        "type": "object"
+      }
+    }
   }
 }

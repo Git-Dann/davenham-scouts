@@ -6,11 +6,27 @@
   "title": "Card Grid",
   "category": "davenham",
   "description": "Flexible cards with optional images and buttons.",
+  "icon": "screenoptions",
+  "keywords": [
+    "cards",
+    "grid",
+    "columns",
+    "tiles"
+  ],
   "textdomain": "davenham-blocks",
   "editorScript": "davenham-blocks-editor",
   "render": "file:./render.php",
   "attributes": {
-    "heading": { "type": "string", "default": "Explore more" },
-    "cards": { "type": "array", "default": [], "items": { "type": "object" } }
+    "heading": {
+      "type": "string",
+      "default": "Explore more"
+    },
+    "cards": {
+      "type": "array",
+      "default": [],
+      "items": {
+        "type": "object"
+      }
+    }
   }
 }

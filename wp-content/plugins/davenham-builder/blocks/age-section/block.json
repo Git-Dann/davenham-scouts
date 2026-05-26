@@ -5,7 +5,16 @@
   "version": "1.0.0",
   "title": "Age Section",
   "category": "davenham",
-  "description": "Six age-group blocks (Squirrels → Network) with SVG icons from the theme.",
+  "description": "Six age-group blocks (Squirrels \u2192 Network) with SVG icons from the theme.",
+  "icon": "groups",
+  "keywords": [
+    "age",
+    "groups",
+    "squirrels",
+    "beavers",
+    "cubs",
+    "scouts"
+  ],
   "textdomain": "davenham-blocks",
   "editorScript": "davenham-blocks-editor",
   "render": "file:./render.php",
@@ -14,11 +23,29 @@
       "type": "string",
       "default": "Aged 6 to 25?"
     },
-    "showSquirrels": { "type": "boolean", "default": true },
-    "showBeavers":   { "type": "boolean", "default": true },
-    "showCubs":      { "type": "boolean", "default": true },
-    "showScouts":    { "type": "boolean", "default": true },
-    "showExplorers": { "type": "boolean", "default": true },
-    "showNetwork":   { "type": "boolean", "default": true }
+    "showSquirrels": {
+      "type": "boolean",
+      "default": true
+    },
+    "showBeavers": {
+      "type": "boolean",
+      "default": true
+    },
+    "showCubs": {
+      "type": "boolean",
+      "default": true
+    },
+    "showScouts": {
+      "type": "boolean",
+      "default": true
+    },
+    "showExplorers": {
+      "type": "boolean",
+      "default": true
+    },
+    "showNetwork": {
+      "type": "boolean",
+      "default": true
+    }
   }
 }
