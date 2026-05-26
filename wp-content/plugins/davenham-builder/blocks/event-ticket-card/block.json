@@ -1,0 +1,27 @@
+{
+  "$schema": "https://schemas.wp.org/trunk/block.json",
+  "apiVersion": 3,
+  "name": "davenham/event-ticket-card",
+  "version": "1.0.0",
+  "title": "Event Ticket Card",
+  "category": "davenham",
+  "description": "Promote a ticketed event (camp, sleepover, fair) with date, location, age range and a Book Now link to the WooCommerce product.",
+  "icon": "tickets-alt",
+  "keywords": ["ticket", "event", "camp", "shop", "booking", "date"],
+  "textdomain": "davenham-blocks",
+  "render": "file:./render.php",
+  "attributes": {
+    "eyebrow":      { "type": "string", "default": "Event" },
+    "title":        { "type": "string", "default": "" },
+    "productId":    { "type": "number", "default": 0 },
+    "dateLine":     { "type": "string", "default": "" },
+    "timeLine":     { "type": "string", "default": "" },
+    "location":     { "type": "string", "default": "" },
+    "ageRange":     { "type": "string", "default": "" },
+    "included":     { "type": "string", "default": "" },
+    "bring":        { "type": "string", "default": "" },
+    "ctaText":      { "type": "string", "default": "Book your place" },
+    "secondaryUrl": { "type": "string", "default": "" },
+    "secondaryText":{ "type": "string", "default": "" }
+  }
+}

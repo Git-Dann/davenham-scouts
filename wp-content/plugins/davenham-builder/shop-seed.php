@@ -278,6 +278,143 @@ function db_shop_seed_run(): array {
 }
 
 /**
+ * Shop policy / FAQ pages to create. Each becomes a real WP page using
+ * Davenham Builder block markup so editors can refine in the builder.
+ */
+function db_shop_pages_catalogue(): array {
+	return array(
+		'shop-faq' => array(
+			'title' => 'Shop FAQ',
+			'pattern' => 'faq',
+			'hero_subtext' => 'Answers to the most common questions about ordering from our group shop.',
+			'faq_items' => array(
+				array( 'q' => 'How do I pay?', 'a' => 'We accept card payments online and direct bank transfer. Once your order is placed you\'ll receive a confirmation email with payment details if you\'ve chosen bank transfer.' ),
+				array( 'q' => 'Can I collect my order locally instead of paying for postage?', 'a' => 'Yes — choose "Free local pickup at Peckmill Scout Wood" at checkout. We\'ll bring your order to the next section meeting your young person attends, or arrange a separate collection slot if you\'re ordering as a supporter rather than a member.' ),
+				array( 'q' => 'How long does delivery take?', 'a' => 'Local pickup is usually ready within 3-5 days. Royal Mail postage typically arrives within 5-7 working days. Larger items and bespoke kit may take longer — we\'ll let you know if so.' ),
+				array( 'q' => 'How do I cancel an order?', 'a' => 'Get in touch via the contact form within 14 days of placing your order and we\'ll arrange a refund (see Returns & Refunds for the full policy). Event tickets are non-refundable once paid.' ),
+				array( 'q' => 'Are event tickets refundable?', 'a' => 'Tickets for camps, sleepovers and group events are non-refundable once paid, in line with how most Scout groups handle event bookings. If your young person can\'t attend due to illness please let your section leader know — we\'ll do our best to help.' ),
+				array( 'q' => 'Can I transfer my ticket to someone else?', 'a' => 'Sometimes — get in touch and we\'ll do what we can. The transfer must be to another member of our group, and we need to know any allergies or medical info for the new attendee.' ),
+				array( 'q' => 'I need help with sizing on a hoodie/polo', 'a' => 'Sizes vary by garment. Use the contact form and we\'ll send you the relevant size chart, or you can try on samples at the next group event.' ),
+				array( 'q' => 'My order arrived damaged or didn\'t arrive', 'a' => 'Use the contact form and we\'ll sort it. Include your order number and a photo of any damage where possible.' ),
+				array( 'q' => 'Where does the money from the shop go?', 'a' => 'Every penny stays with 1st Davenham Scout Group and funds local Scouting — equipment, badge programmes, camp subsidies, and Peckmill Scout Wood upkeep.' ),
+			),
+		),
+		'shop-shipping' => array(
+			'title' => 'Shipping & Pickup',
+			'pattern' => 'simple',
+			'hero_subtext' => 'How orders reach you — by post or by collecting from us locally.',
+			'content' => "<h3>Free local pickup</h3>\n<p>If your young person attends a section, the easiest option is <strong>free local pickup at Peckmill Scout Wood</strong>. We'll bring your order to the next meeting of the section your young person attends, or arrange a separate collection slot for supporters.</p>\n<p>Pickup is usually ready within 3-5 days of ordering.</p>\n\n<h3>Royal Mail postage</h3>\n<p>We post smaller items via Royal Mail 2nd Class signed-for service. Typical delivery: 5-7 working days. Postage is charged per order, not per item — most orders are £3.50.</p>\n\n<h3>Larger items and bulk orders</h3>\n<p>For larger items (or bulk orders for fundraising events) we'll be in touch directly after your order to agree a sensible delivery or collection arrangement.</p>\n\n<h3>Event tickets</h3>\n<p>Event tickets are emailed to you on order — no postage involved. Keep the confirmation handy as proof of booking.</p>\n\n<h3>If something goes wrong</h3>\n<p>Use the <a href=\"/contact/\">contact form</a> if your order is late, damaged or missing. Include your order number and we'll sort it.</p>",
+		),
+		'shop-returns' => array(
+			'title' => 'Returns & Refunds',
+			'pattern' => 'simple',
+			'hero_subtext' => 'Our returns policy in plain English.',
+			'content' => "<p>1st Davenham Scout Group is a registered charity (1029781). We follow UK consumer law for returns and refunds, with one variation: <strong>event tickets are non-refundable once paid</strong>.</p>\n\n<h3>14-day cooling-off period</h3>\n<p>You have <strong>14 days from receiving a physical product</strong> to let us know you want to return it. After that, you have a further 14 days to send it back. Items must be unused, in their original packaging, and in resaleable condition.</p>\n<p>The cost of returning the item is your responsibility unless the item arrived faulty or wasn't what you ordered.</p>\n\n<h3>Damaged or wrong items</h3>\n<p>If your order arrived damaged, faulty, or isn't what you ordered, get in touch within 30 days. We'll cover the cost of returning it and either replace it or issue a full refund.</p>\n\n<h3>Refund timeframe</h3>\n<p>Once we've received the returned item and confirmed it's in resaleable condition, we'll refund you within 14 days via your original payment method. Bank transfer refunds may take an extra 3-5 working days to land.</p>\n\n<h3>Event tickets</h3>\n<p><strong>Tickets for camps, sleepovers, fairs and other group events are non-refundable once paid.</strong> This is standard practice for Scout group events — once a place is paid for, we commit to that young person's space and the costs that flow from it (food, supplies, transport).</p>\n<p>If your young person can't attend due to illness or family circumstances, please let your section leader know. We'll do what we can to help — sometimes a transfer to another member is possible, but never assume the booking can be moved without checking first.</p>\n\n<h3>How to start a return</h3>\n<p>Use the <a href=\"/contact/\">contact form</a> and tell us:</p>\n<ul><li>Your order number</li><li>What you want to return and why</li><li>Whether you'd like a refund or replacement</li></ul>\n<p>We'll come back to you with a return address and any other details within 2-3 days.</p>",
+		),
+	);
+}
+
+/**
+ * Build builder block markup for the FAQ page.
+ */
+function db_shop_pages_build_faq( $title, $hero_subtext, $faq_items ) {
+	$hero_attrs = array( 'heading' => $title, 'subtext' => $hero_subtext );
+	$hero = '<!-- wp:davenham/page-hero ' . wp_json_encode( $hero_attrs, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE ) . ' /-->';
+	$faq_attrs = array(
+		'heading' => 'Common questions',
+		'items'   => $faq_items,
+	);
+	$faq = '<!-- wp:davenham/faq ' . wp_json_encode( $faq_attrs, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE ) . ' /-->';
+	return $hero . "\n\n" . $faq;
+}
+
+/**
+ * Build builder block markup for a simple text page.
+ */
+function db_shop_pages_build_simple( $title, $hero_subtext, $content ) {
+	$hero_attrs = array( 'heading' => $title, 'subtext' => $hero_subtext );
+	$hero = '<!-- wp:davenham/page-hero ' . wp_json_encode( $hero_attrs, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE ) . ' /-->';
+	$rt_attrs = array( 'content' => $content, 'background' => 'white' );
+	$rt = '<!-- wp:davenham/rich-text ' . wp_json_encode( $rt_attrs, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE ) . ' /-->';
+	return $hero . "\n\n" . $rt;
+}
+
+/**
+ * Seed the shop policy pages (FAQ, Shipping, Returns).
+ */
+function db_shop_pages_seed(): array {
+	$catalogue = db_shop_pages_catalogue();
+	$created = 0;
+	$skipped = 0;
+	$ids = array();
+
+	foreach ( $catalogue as $slug => $plan ) {
+		// Skip if a page with this slug already exists
+		$existing = get_page_by_path( $slug );
+		if ( $existing ) {
+			$skipped++;
+			$ids[ $slug ] = $existing->ID;
+			continue;
+		}
+
+		switch ( $plan['pattern'] ) {
+			case 'faq':
+				$content = db_shop_pages_build_faq( $plan['title'], $plan['hero_subtext'], $plan['faq_items'] );
+				break;
+			case 'simple':
+			default:
+				$content = db_shop_pages_build_simple( $plan['title'], $plan['hero_subtext'], $plan['content'] );
+				break;
+		}
+
+		$pid = wp_insert_post( array(
+			'post_title'   => $plan['title'],
+			'post_name'    => $slug,
+			'post_content' => $content,
+			'post_status'  => 'publish',
+			'post_type'    => 'page',
+		), true );
+
+		if ( is_wp_error( $pid ) ) {
+			continue;
+		}
+
+		update_post_meta( $pid, '_db_sample_shop_page', '1' );
+		$created++;
+		$ids[ $slug ] = $pid;
+	}
+
+	// Wire up WC settings if the pages exist
+	if ( ! empty( $ids['shop-returns'] ) && '' === (string) get_option( 'woocommerce_terms_page_id', '' ) ) {
+		update_option( 'woocommerce_terms_page_id', (int) $ids['shop-returns'] );
+	}
+
+	return array( 'created' => $created, 'skipped' => $skipped, 'ids' => $ids );
+}
+
+/**
+ * Remove the seeded shop policy pages.
+ */
+function db_shop_pages_remove(): array {
+	$q = new WP_Query( array(
+		'post_type'      => 'page',
+		'post_status'    => 'any',
+		'posts_per_page' => -1,
+		'meta_key'       => '_db_sample_shop_page',
+		'meta_value'     => '1',
+		'fields'         => 'ids',
+	) );
+	$deleted = 0;
+	foreach ( $q->posts as $pid ) {
+		if ( wp_delete_post( $pid, true ) ) {
+			$deleted++;
+		}
+	}
+	wp_reset_postdata();
+	return array( 'deleted' => $deleted );
+}
+
+/**
  * Delete all seeded sample products (anything tagged _db_sample_product = 1).
  */
 function db_shop_seed_remove(): array {
@@ -327,6 +464,12 @@ function db_render_shop_seed_page() {
 		} elseif ( 'remove' === $action ) {
 			$r = db_shop_seed_remove();
 			$msg = sprintf( 'Removed %d seeded sample products.', $r['deleted'] );
+		} elseif ( 'seed_pages' === $action ) {
+			$r = db_shop_pages_seed();
+			$msg = sprintf( 'Created %d shop policy page(s). Skipped %d (already existed).', $r['created'], $r['skipped'] );
+		} elseif ( 'remove_pages' === $action ) {
+			$r = db_shop_pages_remove();
+			$msg = sprintf( 'Removed %d seeded shop policy page(s).', $r['deleted'] );
 		}
 	}
 
@@ -397,6 +540,25 @@ function db_render_shop_seed_page() {
 				<?php endforeach; ?>
 				</tbody>
 			</table>
+		</section>
+
+		<section class="db-settings-card">
+			<h2><?php esc_html_e( 'Shop policy pages', 'davenham-builder' ); ?></h2>
+			<p class="db-settings-card__desc">
+				<?php esc_html_e( 'Creates three real pages that every shop needs: Shop FAQ, Shipping & Pickup, and Returns & Refunds. Content is pre-written for a UK Scout group (charity-compliant, plain-English, includes the standard 14-day cooling-off period). Builds them with builder blocks so editors can refine in the page builder.', 'davenham-builder' ); ?>
+			</p>
+			<form method="post" style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
+				<?php wp_nonce_field( 'db_shop_seed_action' ); ?>
+				<button type="submit" name="db_action" value="seed_pages" class="button button-primary">
+					Seed shop policy pages
+				</button>
+				<button type="submit" name="db_action" value="remove_pages" class="button" onclick="return confirm('Remove the three seeded shop policy pages? This deletes only pages tagged as samples — your real pages are safe.');">
+					Remove seeded pages
+				</button>
+			</form>
+			<p style="margin-top:14px;font-size:13px;color:#6E6E6E;">
+				<strong>What gets created:</strong> /shop-faq/ · /shop-shipping/ · /shop-returns/ — all published, ready to link from the footer or shop sidebar. The Returns page is also auto-wired as WooCommerce's terms page if you haven't set one.
+			</p>
 		</section>
 
 		<section class="db-settings-card">
