@@ -32,8 +32,12 @@ $shop_post       = $is_shop_landing && function_exists( 'wc_get_page_id' )
     ? get_post( wc_get_page_id( 'shop' ) )
     : null;
 $shop_has_blocks = $shop_post && false !== strpos( (string) $shop_post->post_content, '<!-- wp:davenham/' );
+// If the Shop landing has its own shop-hero block, suppress the standard
+// theme hero so we don't render two heroes in a row.
+$shop_has_own_hero = $shop_post && false !== strpos( (string) $shop_post->post_content, '<!-- wp:davenham/shop-hero' );
 ?>
 
+<?php if ( ! $shop_has_own_hero ) : ?>
 <section class="hero standard cf">
     <?php if ( ! empty( $hero['image'] ) ) : ?>
         <img src="<?php echo esc_url( $hero['image'] ); ?>" class="bg" alt="" decoding="async" />
@@ -48,6 +52,7 @@ $shop_has_blocks = $shop_post && false !== strpos( (string) $shop_post->post_con
         </div>
     </div>
 </section>
+<?php endif; ?>
 
 <?php if ( $shop_has_blocks ) : ?>
 

@@ -1,0 +1,17 @@
+{
+  "$schema": "https://schemas.wp.org/trunk/block.json",
+  "apiVersion": 3,
+  "name": "davenham/section-shop-grid",
+  "version": "1.0.0",
+  "title": "Shop by Section",
+  "category": "davenham",
+  "description": "The six Scout-section coloured tiles (Squirrels/Beavers/Cubs/Scouts/Explorers/Network). Matches the national Scouts shop's 'Shop by section' pattern.",
+  "icon": "image-flip-horizontal",
+  "keywords": ["shop", "sections", "beavers", "cubs", "scouts", "explorers"],
+  "textdomain": "davenham-blocks",
+  "render": "file:./render.php",
+  "attributes": {
+    "heading":  { "type": "string", "default": "Shop by section" },
+    "subtitle": { "type": "string", "default": "Pick a section to find kit, tickets and resources for that age group." }
+  }
+}

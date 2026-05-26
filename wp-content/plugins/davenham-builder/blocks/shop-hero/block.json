@@ -1,0 +1,23 @@
+{
+  "$schema": "https://schemas.wp.org/trunk/block.json",
+  "apiVersion": 3,
+  "name": "davenham/shop-hero",
+  "version": "1.0.0",
+  "title": "Shop Hero",
+  "category": "davenham",
+  "description": "Large retail-style shop hero with optional background image, gradient overlay, and two CTA buttons.",
+  "icon": "format-image",
+  "keywords": ["shop", "hero", "banner", "retail", "header"],
+  "textdomain": "davenham-blocks",
+  "render": "file:./render.php",
+  "attributes": {
+    "eyebrow":        { "type": "string", "default": "Davenham Scouts shop" },
+    "heading":        { "type": "string", "default": "Every penny stays with us." },
+    "subtext":        { "type": "string", "default": "Tickets, kit and fundraising for 1st Davenham Scouts. Skip the postage — pick up free at Peckmill." },
+    "imageUrl":       { "type": "string", "default": "" },
+    "primaryText":    { "type": "string", "default": "Shop event tickets" },
+    "primaryUrl":     { "type": "string", "default": "/product-category/event-tickets/" },
+    "secondaryText":  { "type": "string", "default": "Browse merchandise" },
+    "secondaryUrl":   { "type": "string", "default": "/product-category/group-merchandise/" }
+  }
+}

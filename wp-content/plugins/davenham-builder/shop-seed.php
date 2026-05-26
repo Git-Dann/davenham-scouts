@@ -401,10 +401,22 @@ function db_shop_pages_seed(): array {
 function db_shop_landing_build_content(): string {
 	$blocks = array();
 
-	// Category tiles
+	// 1) Full-bleed shop hero — replaces flat plain page title
+	$blocks[] = '<!-- wp:davenham/shop-hero ' . wp_json_encode( array(
+		'eyebrow'       => 'Davenham Scouts shop',
+		'heading'       => 'Skills for life — kit, tickets, and adventures.',
+		'subtext'       => 'Everything we sell goes straight back into local Scouting. Skip the postage with free local pickup at Peckmill Scout Wood.',
+		'imageUrl'      => '',
+		'primaryText'   => 'Shop event tickets',
+		'primaryUrl'    => '/product-category/event-tickets/',
+		'secondaryText' => 'Browse merchandise',
+		'secondaryUrl'  => '/product-category/group-merchandise/',
+	), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE ) . ' /-->';
+
+	// 2) Large visual category tiles (replaces flat 2-col text list)
 	$blocks[] = '<!-- wp:davenham/category-grid ' . wp_json_encode( array(
 		'heading'    => 'Shop by category',
-		'subtitle'   => 'Pick a section to browse — every penny stays with 1st Davenham Scouts.',
+		'subtitle'   => 'Four ways to support the group — and find what you need for the next adventure.',
 		'categories' => 'event-tickets,group-merchandise,fundraising,equipment-kit',
 	), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE ) . ' /-->';
 
@@ -475,6 +487,13 @@ function db_shop_landing_build_content(): string {
 		'count'       => 4,
 		'viewAllUrl'  => '/product-category/fundraising/',
 		'viewAllText' => 'View all fundraising items',
+	), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE ) . ' /-->';
+
+	// Shop-by-section tiles — the signature shop.scouts.org.uk pattern,
+	// 6 coloured tiles with each section's logo.
+	$blocks[] = '<!-- wp:davenham/section-shop-grid ' . wp_json_encode( array(
+		'heading'  => 'Shop by section',
+		'subtitle' => 'Find kit, tickets and resources tagged for your young person\'s section.',
 	), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE ) . ' /-->';
 
 	// Trust strip
@@ -867,7 +886,7 @@ function db_shop_seed_maybe_autorun() {
 	}
 
 	// ── Landing page: seed only if the Shop page doesn't have builder blocks
-	if ( '1' !== get_option( 'db_shop_landing_seeded', '' ) ) {
+	if ( '1' !== get_option( 'db_shop_landing_seeded_v2', '' ) ) {
 		if ( function_exists( 'wc_get_page_id' ) ) {
 			$shop_id   = (int) wc_get_page_id( 'shop' );
 			$shop_post = $shop_id > 0 ? get_post( $shop_id ) : null;
@@ -878,7 +897,7 @@ function db_shop_seed_maybe_autorun() {
 				$did_anything = true;
 			}
 		}
-		update_option( 'db_shop_landing_seeded', '1', false );
+		update_option( 'db_shop_landing_seeded_v2', '1', false );
 	}
 
 	// Keep the legacy umbrella flag in sync
