@@ -98,30 +98,31 @@ if ( $notice_text ) : ?>
     if ( $news_query->have_posts() ) : ?>
     <section class="news_section">
         <div class="wrapper">
-            <div class="title_bar">
-                <h3>Latest News</h3>
-                <?php $news_page = get_option( 'page_for_posts' );
-                if ( $news_page ) : ?>
-                    <a href="<?php echo esc_url( get_permalink( $news_page ) ); ?>" class="btn outline">All News</a>
-                <?php endif; ?>
+            <div class="news_section__header">
+                <h3>What's happening</h3>
+                <p class="news_section__subtitle">All the latest news for you and your Scouts</p>
             </div>
             <div class="news_blocks cf">
                 <?php while ( $news_query->have_posts() ) : $news_query->the_post(); ?>
-                <div class="news_block">
+                <a href="<?php the_permalink(); ?>" class="news_block<?php echo has_post_thumbnail() ? '' : ' news_block--no-image'; ?>">
                     <?php if ( has_post_thumbnail() ) : ?>
-                        <a href="<?php the_permalink(); ?>" class="news_block__image" tabindex="-1" aria-hidden="true">
-                            <?php the_post_thumbnail( 'medium_large' ); ?>
-                        </a>
+                        <div class="news_block__image">
+                            <?php the_post_thumbnail( 'large' ); ?>
+                        </div>
                     <?php endif; ?>
                     <div class="news_block__body">
-                        <time datetime="<?php echo esc_attr( get_the_date( 'c' ) ); ?>"><?php echo esc_html( get_the_date( 'jS M Y' ) ); ?></time>
-                        <h4><a href="<?php the_permalink(); ?>"><?php the_title(); ?></a></h4>
+                        <h4><?php the_title(); ?></h4>
                         <div class="news_block__excerpt"><?php the_excerpt(); ?></div>
-                        <a href="<?php the_permalink(); ?>" class="btn outline">Read more</a>
                     </div>
-                </div>
+                </a>
                 <?php endwhile; wp_reset_postdata(); ?>
             </div>
+            <?php $news_page = get_option( 'page_for_posts' );
+            if ( $news_page ) : ?>
+            <div class="news_section__footer">
+                <a href="<?php echo esc_url( get_permalink( $news_page ) ); ?>" class="btn news_section__btn">View all</a>
+            </div>
+            <?php endif; ?>
         </div>
     </section>
     <?php endif; ?>
