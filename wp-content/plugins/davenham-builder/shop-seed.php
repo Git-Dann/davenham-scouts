@@ -632,6 +632,10 @@ function db_render_shop_seed_page() {
 			$r = db_shop_landing_restore();
 			$msg = isset( $r['ok'] ) ? 'Shop landing page reverted to its previous content.' : ( 'Failed: ' . ( $r['error'] ?? 'unknown' ) );
 			if ( ! isset( $r['ok'] ) ) { $msg_kind = 'error'; }
+		} elseif ( 'launch_store' === $action ) {
+			update_option( 'woocommerce_coming_soon', 'no' );
+			update_option( 'woocommerce_store_pages_only', 'no' );
+			$msg = 'Shop is now live. WooCommerce "Coming Soon" mode disabled.';
 		}
 	}
 
@@ -703,6 +707,24 @@ function db_render_shop_seed_page() {
 				</tbody>
 			</table>
 		</section>
+
+		<?php
+		$is_coming_soon = function_exists( 'get_option' ) && 'yes' === get_option( 'woocommerce_coming_soon', 'no' );
+		?>
+		<?php if ( $is_coming_soon ) : ?>
+		<section class="db-settings-card" style="border-left:4px solid #ED3F23;">
+			<h2 style="color:#ED3F23;"><?php esc_html_e( 'Your shop is hidden by WooCommerce "Coming Soon" mode', 'davenham-builder' ); ?></h2>
+			<p class="db-settings-card__desc">
+				<?php esc_html_e( 'WooCommerce 9+ ships with a "Launch Your Store" feature that hides the entire shop behind a placeholder until you turn it on. Your shop is currently hidden. Click the button below to make it visible.', 'davenham-builder' ); ?>
+			</p>
+			<form method="post">
+				<?php wp_nonce_field( 'db_shop_seed_action' ); ?>
+				<button type="submit" name="db_action" value="launch_store" class="button button-primary" style="background:#ED3F23;border-color:#ED3F23;">
+					🚀 Launch the shop (turn off Coming Soon)
+				</button>
+			</form>
+		</section>
+		<?php endif; ?>
 
 		<section class="db-settings-card">
 			<h2><?php esc_html_e( 'Shop landing page', 'davenham-builder' ); ?></h2>
@@ -783,43 +805,89 @@ function db_shop_seed_maybe_autorun() {
 	if ( ! db_shop_seed_woocommerce_active() ) {
 		return;
 	}
-	if ( '1' === get_option( 'db_shop_autoseeded', '' ) ) {
-		return;
+
+	$notice = array( 'products' => 0, 'pages' => 0, 'landing' => false, 'launched' => false );
+	$did_anything = false;
+
+	// ── Auto-disable WooCommerce "Coming Soon" / "Launch Your Store" mode
+	// once products exist. WC 9+ ships with this enabled by default — it
+	// hides the entire shop with a placeholder regardless of the theme.
+	// We turn it off automatically when an admin visits and products are
+	// present, so the freshly-seeded shop is actually visible.
+	if ( '1' !== get_option( 'db_shop_launch_handled', '' ) ) {
+		$product_check = new WP_Query( array(
+			'post_type'      => 'product',
+			'post_status'    => 'publish',
+			'posts_per_page' => 1,
+			'fields'         => 'ids',
+			'no_found_rows'  => true,
+		) );
+		if ( ! empty( $product_check->posts ) ) {
+			$was_coming_soon = 'yes' === get_option( 'woocommerce_coming_soon', 'no' );
+			if ( $was_coming_soon ) {
+				update_option( 'woocommerce_coming_soon', 'no' );
+				update_option( 'woocommerce_store_pages_only', 'no' );
+				$notice['launched'] = true;
+				$did_anything = true;
+			}
+			update_option( 'db_shop_launch_handled', '1', false );
+		}
+		wp_reset_postdata();
 	}
 
-	// Safety: only auto-seed when there are no products at all.
-	$existing = new WP_Query( array(
-		'post_type'      => 'product',
-		'post_status'    => 'any',
-		'posts_per_page' => 1,
-		'fields'         => 'ids',
-		'no_found_rows'  => true,
-	) );
-	$has_products = ! empty( $existing->posts );
-	wp_reset_postdata();
+	// ── Products: seed only if there are zero existing products ────────────
+	if ( '1' !== get_option( 'db_shop_products_seeded', '' ) ) {
+		$existing = new WP_Query( array(
+			'post_type'      => 'product',
+			'post_status'    => 'any',
+			'posts_per_page' => 1,
+			'fields'         => 'ids',
+			'no_found_rows'  => true,
+		) );
+		$has_products = ! empty( $existing->posts );
+		wp_reset_postdata();
 
-	if ( $has_products ) {
-		// There are products already — don't auto-seed. Just mark done so
-		// we don't keep checking on every admin page load.
-		update_option( 'db_shop_autoseeded', '1', false );
-		return;
+		if ( ! $has_products ) {
+			$r = db_shop_seed_run();
+			$notice['products'] = (int) ( $r['created'] ?? 0 );
+			$did_anything = true;
+		}
+		update_option( 'db_shop_products_seeded', '1', false );
 	}
 
-	// Run the seeders — products first so featured-product on the landing
-	// has something to link to.
-	$products_result = db_shop_seed_run();
-	$pages_result    = db_shop_pages_seed();
-	$landing_result  = db_shop_landing_seed();
+	// ── Policy pages: seed only if Shop FAQ doesn't already exist ──────────
+	if ( '1' !== get_option( 'db_shop_pages_seeded', '' ) ) {
+		$faq = get_page_by_path( 'shop-faq' );
+		if ( ! $faq ) {
+			$r = db_shop_pages_seed();
+			$notice['pages'] = (int) ( $r['created'] ?? 0 );
+			$did_anything = true;
+		}
+		update_option( 'db_shop_pages_seeded', '1', false );
+	}
 
+	// ── Landing page: seed only if the Shop page doesn't have builder blocks
+	if ( '1' !== get_option( 'db_shop_landing_seeded', '' ) ) {
+		if ( function_exists( 'wc_get_page_id' ) ) {
+			$shop_id   = (int) wc_get_page_id( 'shop' );
+			$shop_post = $shop_id > 0 ? get_post( $shop_id ) : null;
+			$has_blocks = $shop_post && false !== strpos( (string) $shop_post->post_content, '<!-- wp:davenham/' );
+			if ( $shop_post && ! $has_blocks ) {
+				$r = db_shop_landing_seed();
+				$notice['landing'] = ! empty( $r['ok'] );
+				$did_anything = true;
+			}
+		}
+		update_option( 'db_shop_landing_seeded', '1', false );
+	}
+
+	// Keep the legacy umbrella flag in sync
 	update_option( 'db_shop_autoseeded', '1', false );
 	update_option( 'db_shop_autoseeded_at', current_time( 'mysql' ), false );
 
-	// Stash a one-shot admin notice
-	set_transient( 'db_shop_autoseed_notice', array(
-		'products' => (int) ( $products_result['created'] ?? 0 ),
-		'pages'    => (int) ( $pages_result['created']    ?? 0 ),
-		'landing'  => ! empty( $landing_result['ok'] ),
-	), HOUR_IN_SECONDS );
+	if ( $did_anything ) {
+		set_transient( 'db_shop_autoseed_notice', $notice, HOUR_IN_SECONDS );
+	}
 }
 add_action( 'admin_init', 'db_shop_seed_maybe_autorun', 99 );
 
@@ -832,12 +900,17 @@ function db_shop_seed_autoseed_notice() {
 		return;
 	}
 	delete_transient( 'db_shop_autoseed_notice' );
+	$bits = array();
+	if ( ! empty( $notice['products'] ) ) { $bits[] = sprintf( '%d sample product(s)', (int) $notice['products'] ); }
+	if ( ! empty( $notice['pages'] ) )    { $bits[] = sprintf( '%d policy page(s)',  (int) $notice['pages'] ); }
+	if ( ! empty( $notice['landing'] ) )  { $bits[] = 'shop landing page layout'; }
+	if ( ! empty( $notice['launched'] ) ) { $bits[] = '<strong>disabled WooCommerce "Coming Soon" mode</strong>'; }
 	?>
 	<div class="notice notice-success is-dismissible">
 		<p>
 			<strong>Davenham shop set up automatically.</strong>
-			Seeded <?php echo (int) $notice['products']; ?> sample product(s) and <?php echo (int) $notice['pages']; ?> policy page(s).
-			Manage them under
+			<?php echo $bits ? 'Done: ' . wp_kses( implode( ', ', $bits ), array( 'strong' => array() ) ) . '.' : ''; ?>
+			Manage products under
 			<a href="<?php echo esc_url( admin_url( 'edit.php?post_type=product' ) ); ?>">Products</a>
 			or the
 			<a href="<?php echo esc_url( admin_url( 'admin.php?page=davenham-builder-shop-seed' ) ); ?>">Sample Shop Products</a>
