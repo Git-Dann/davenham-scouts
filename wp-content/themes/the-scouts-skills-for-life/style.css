@@ -386,11 +386,23 @@ Text Domain: the-scouts-skills-for-life
 
 .scouts-woocommerce ul.products {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 28px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 24px;
   margin: 0;
   padding: 0;
   list-style: none;
+}
+
+@media (max-width: 900px) {
+  .scouts-woocommerce ul.products {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 600px) {
+  .scouts-woocommerce ul.products {
+    grid-template-columns: 1fr;
+  }
 }
 
 .scouts-woocommerce ul.products li.product {
@@ -411,32 +423,75 @@ Text Domain: the-scouts-skills-for-life
 
 .scouts-woocommerce ul.products li.product img {
   width: 100%;
-  height: 300px;
+  height: 240px;
   object-fit: cover;
   margin: 0;
+}
+
+/* Product card hover lift */
+.scouts-woocommerce ul.products li.product {
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+
+.scouts-woocommerce ul.products li.product:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.12);
+}
+
+.scouts-woocommerce ul.products li.product .onsale {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: #ED3F23;
+  color: #fff;
+  font-weight: 700;
+  font-size: 12px;
+  padding: 4px 10px;
+  border-radius: 0;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  z-index: 2;
+}
+
+.scouts-woocommerce ul.products li.product {
+  position: relative;
 }
 
 .scouts-woocommerce ul.products li.product .woocommerce-loop-product__title,
 .scouts-woocommerce ul.products li.product h2 {
   margin: 0;
-  padding: 20px 20px 10px;
-  font-size: 26px;
-  line-height: 1.2;
+  padding: 16px 18px 6px;
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1.3;
+  color: #333333;
 }
 
 .scouts-woocommerce ul.products li.product .price,
 .scouts-woocommerce ul.products li.product .button,
 .scouts-woocommerce .woocommerce-loop-category__title {
-  margin-left: 20px;
-  margin-right: 20px;
+  margin-left: 18px;
+  margin-right: 18px;
 }
 
 .scouts-woocommerce ul.products li.product .price {
   display: block;
-  margin-bottom: 16px;
-  color: #404040;
+  margin-bottom: 14px;
+  color: #590FA9;
   font-weight: 800;
-  font-size: 20px;
+  font-size: 22px;
+}
+
+.scouts-woocommerce ul.products li.product .price del {
+  color: #999999;
+  font-weight: 400;
+  font-size: 16px;
+  margin-right: 6px;
+}
+
+.scouts-woocommerce ul.products li.product .price ins {
+  text-decoration: none;
+  color: #ED3F23;
 }
 
 .scouts-woocommerce ul.products li.product .button,
@@ -518,6 +573,326 @@ Text Domain: the-scouts-skills-for-life
 .scouts-woocommerce .shop-sidebar .support-list li {
   margin-bottom: 10px;
   line-height: 1.6;
+}
+
+/* ── Shop empty state ──────────────────────────────────── */
+.scouts-woocommerce .shop-intro-card {
+  background: #F1F1F1;
+  border-left: 3px solid #590FA9;
+  padding: 18px 22px;
+  margin: 0 0 28px;
+  border-radius: 6px;
+}
+
+.scouts-woocommerce .shop-intro-card p {
+  margin: 0 0 10px;
+  color: #404040;
+  line-height: 1.6;
+}
+
+.scouts-woocommerce .shop-intro-card p:last-child {
+  margin-bottom: 0;
+}
+
+/* ── Cart page polish ──────────────────────────────────── */
+.scouts-woocommerce .woocommerce-cart-form table.shop_table {
+  width: 100%;
+  border: 1px solid #CCCCCC;
+  border-radius: 10px;
+  overflow: hidden;
+  background: #fff;
+}
+
+.scouts-woocommerce table.shop_table th {
+  background: #F1F1F1;
+  color: #333333;
+  font-weight: 700;
+  text-align: left;
+  border-bottom: 1px solid #CCCCCC;
+}
+
+.scouts-woocommerce table.shop_table td {
+  border-bottom: 1px solid #F1F1F1;
+  vertical-align: middle;
+}
+
+.scouts-woocommerce table.shop_table tr:last-child td {
+  border-bottom: 0;
+}
+
+.scouts-woocommerce table.shop_table .product-thumbnail img {
+  max-width: 80px;
+  height: auto;
+  border-radius: 6px;
+}
+
+.scouts-woocommerce table.shop_table .product-name a {
+  color: #333333;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.scouts-woocommerce table.shop_table .product-name a:hover {
+  color: #590FA9;
+}
+
+.scouts-woocommerce .quantity input[type="number"] {
+  width: 70px;
+  padding: 8px 10px;
+  border: 1px solid #CCCCCC;
+  border-radius: 5px;
+  font-size: 14px;
+}
+
+.scouts-woocommerce .quantity input[type="number"]:focus {
+  outline: none;
+  border-color: #590FA9;
+  box-shadow: 0 0 0 3px rgba(89, 15, 169, 0.15);
+}
+
+.scouts-woocommerce .cart_totals,
+.scouts-woocommerce .cross-sells {
+  margin-top: 32px;
+}
+
+.scouts-woocommerce .cart_totals h2,
+.scouts-woocommerce .cross-sells h2 {
+  font-size: 20px;
+  font-weight: 800;
+  color: #333333;
+  margin: 0 0 14px;
+}
+
+.scouts-woocommerce .cart_totals table.shop_table {
+  width: 100%;
+  background: #fff;
+  border: 1px solid #CCCCCC;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+/* ── Checkout page polish ──────────────────────────────── */
+.scouts-woocommerce .woocommerce-checkout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+  gap: 32px;
+  align-items: start;
+}
+
+@media (max-width: 900px) {
+  .scouts-woocommerce .woocommerce-checkout {
+    grid-template-columns: 1fr;
+  }
+}
+
+.scouts-woocommerce .woocommerce-checkout h3 {
+  font-size: 20px;
+  font-weight: 800;
+  color: #333333;
+  margin: 0 0 16px;
+  padding-bottom: 8px;
+  border-bottom: 2px solid #F1F1F1;
+}
+
+.scouts-woocommerce .woocommerce-checkout .form-row {
+  margin-bottom: 14px;
+}
+
+.scouts-woocommerce .woocommerce-checkout .form-row label {
+  display: block;
+  font-weight: 700;
+  color: #333333;
+  margin-bottom: 6px;
+  font-size: 13px;
+}
+
+.scouts-woocommerce .woocommerce-checkout input[type="text"],
+.scouts-woocommerce .woocommerce-checkout input[type="email"],
+.scouts-woocommerce .woocommerce-checkout input[type="tel"],
+.scouts-woocommerce .woocommerce-checkout input[type="password"],
+.scouts-woocommerce .woocommerce-checkout select,
+.scouts-woocommerce .woocommerce-checkout textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #CCCCCC;
+  border-radius: 5px;
+  font-size: 14px;
+  background: #fff;
+}
+
+.scouts-woocommerce .woocommerce-checkout input:focus,
+.scouts-woocommerce .woocommerce-checkout select:focus,
+.scouts-woocommerce .woocommerce-checkout textarea:focus {
+  outline: none;
+  border-color: #590FA9;
+  box-shadow: 0 0 0 3px rgba(89, 15, 169, 0.15);
+}
+
+#order_review {
+  background: #fff;
+  border: 1px solid #CCCCCC;
+  border-radius: 10px;
+  padding: 24px;
+}
+
+#order_review_heading {
+  font-size: 20px;
+  font-weight: 800;
+  color: #333333;
+  margin: 0 0 16px;
+}
+
+.scouts-woocommerce .wc_payment_methods {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 20px;
+}
+
+.scouts-woocommerce .wc_payment_method {
+  background: #F1F1F1;
+  border: 1px solid #CCCCCC;
+  border-radius: 6px;
+  padding: 12px 14px;
+  margin-bottom: 10px;
+}
+
+.scouts-woocommerce .wc_payment_method label {
+  font-weight: 700;
+  color: #333333;
+  margin-left: 6px;
+}
+
+.scouts-woocommerce .payment_box {
+  background: #fff;
+  border-radius: 6px;
+  padding: 14px;
+  margin-top: 10px;
+  font-size: 14px;
+  color: #6E6E6E;
+}
+
+/* ── Single product page polish ────────────────────────── */
+.scouts-woocommerce div.product div.summary .price del {
+  color: #999999;
+  font-weight: 400;
+  font-size: 20px;
+  margin-right: 8px;
+}
+
+.scouts-woocommerce div.product div.summary .price ins {
+  text-decoration: none;
+  color: #ED3F23;
+}
+
+.scouts-woocommerce div.product .product_meta {
+  margin-top: 28px;
+  padding-top: 20px;
+  border-top: 1px solid #CCCCCC;
+  font-size: 13px;
+  color: #6E6E6E;
+}
+
+.scouts-woocommerce div.product .product_meta > span {
+  display: block;
+  margin-bottom: 6px;
+}
+
+.scouts-woocommerce div.product .product_meta a {
+  color: #590FA9;
+  font-weight: 700;
+}
+
+.scouts-woocommerce div.product .woocommerce-tabs {
+  margin-top: 40px;
+}
+
+.scouts-woocommerce div.product .woocommerce-tabs ul.tabs {
+  list-style: none;
+  display: flex;
+  gap: 0;
+  padding: 0;
+  margin: 0 0 0 0;
+  border-bottom: 2px solid #F1F1F1;
+}
+
+.scouts-woocommerce div.product .woocommerce-tabs ul.tabs li {
+  margin: 0;
+  padding: 0;
+}
+
+.scouts-woocommerce div.product .woocommerce-tabs ul.tabs li a {
+  display: block;
+  padding: 12px 18px;
+  color: #6E6E6E;
+  font-weight: 700;
+  text-decoration: none;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+  transition: color 0.15s ease, border-color 0.15s ease;
+}
+
+.scouts-woocommerce div.product .woocommerce-tabs ul.tabs li.active a,
+.scouts-woocommerce div.product .woocommerce-tabs ul.tabs li a:hover {
+  color: #590FA9;
+  border-bottom-color: #590FA9;
+}
+
+.scouts-woocommerce div.product .woocommerce-tabs .panel {
+  padding: 24px 0;
+}
+
+/* ── My Account polish ─────────────────────────────────── */
+.scouts-woocommerce .woocommerce-MyAccount-navigation {
+  background: #F1F1F1;
+  border-radius: 10px;
+  padding: 16px 0;
+  margin-bottom: 24px;
+}
+
+.scouts-woocommerce .woocommerce-MyAccount-navigation ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.scouts-woocommerce .woocommerce-MyAccount-navigation li {
+  margin: 0;
+}
+
+.scouts-woocommerce .woocommerce-MyAccount-navigation a {
+  display: block;
+  padding: 10px 18px;
+  color: #404040;
+  text-decoration: none;
+  font-weight: 600;
+  border-left: 3px solid transparent;
+  transition: background 0.15s, color 0.15s, border-left-color 0.15s;
+}
+
+.scouts-woocommerce .woocommerce-MyAccount-navigation a:hover,
+.scouts-woocommerce .woocommerce-MyAccount-navigation .is-active a {
+  background: #fff;
+  color: #590FA9;
+  border-left-color: #590FA9;
+}
+
+/* ── Category strip on shop landing ────────────────────── */
+.scouts-woocommerce .woocommerce-loop-category__title {
+  font-size: 18px;
+  font-weight: 700;
+  color: #333333;
+  text-align: center;
+  padding: 14px 18px 18px;
+}
+
+.scouts-woocommerce ul.products li.product-category .count {
+  background: #590FA9;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 999px;
+  margin-left: 6px;
 }
 
 .scouts-woocommerce .shop-intro-card {

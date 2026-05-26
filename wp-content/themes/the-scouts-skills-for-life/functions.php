@@ -462,6 +462,37 @@ function scouts_customize_woocommerce() {
 }
 add_action( 'wp', 'scouts_customize_woocommerce' );
 
+/**
+ * Brand WooCommerce transactional emails with Scouts purple.
+ * Filters apply at plugin load — no need for is_woocommerce() guard.
+ */
+function scouts_woocommerce_email_options( $value, $option = '' ) {
+    // Used as a single-arg filter; we just override values directly via add_filter below.
+    return $value;
+}
+
+add_filter( 'pre_option_woocommerce_email_base_color',         function () { return '#590FA9'; } );
+add_filter( 'pre_option_woocommerce_email_background_color',   function () { return '#F1F1F1'; } );
+add_filter( 'pre_option_woocommerce_email_body_background_color', function () { return '#FFFFFF'; } );
+add_filter( 'pre_option_woocommerce_email_text_color',         function () { return '#404040'; } );
+add_filter( 'pre_option_woocommerce_email_footer_text',        function () { return '1st Davenham Scout Group · Registered charity 1029781 · davenhamscouts.org.uk'; } );
+add_filter( 'pre_option_woocommerce_email_from_name',          function ( $value ) {
+    return $value && $value !== '' ? $value : '1st Davenham Scouts';
+}, 10, 1 );
+
+/**
+ * Helper: returns the four canonical shop product categories.
+ * Used by the seeder and by the Product Grid block to suggest filters.
+ */
+function scouts_shop_canonical_categories(): array {
+    return array(
+        'event-tickets'      => array( 'name' => 'Event Tickets',      'description' => 'Camps, trips, fairs, and ticketed group events.' ),
+        'group-merchandise'  => array( 'name' => 'Group Merchandise',  'description' => 'Davenham-branded clothing and accessories — neckers, hoodies, polos.' ),
+        'fundraising'        => array( 'name' => 'Fundraising',        'description' => 'Calendars, raffles, and one-off items that fund our adventures.' ),
+        'equipment-kit'      => array( 'name' => 'Equipment & Kit',    'description' => 'Section-specific kit, badge packs, and resources we sell directly.' ),
+    );
+}
+
 function scouts_register_submission_cpt() {
     register_post_type( 'scouts_submission', [
         'labels' => [
