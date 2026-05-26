@@ -72,19 +72,27 @@ if ( $notice_text ) : ?>
             <h2 class="age_groups_section__heading">Explore our age groups</h2>
             <div class="age_groups_grid">
                 <?php
+                // Each entry: [ logo, label, age range, slug ]. We try the slug as both
+                // a top-level page and a child of /about-us/ so the link works no matter
+                // how the site is structured.
                 $age_groups = array(
-                    array( 'logo-squirrels.svg', 'Squirrels',  '4–6 years',     get_page_by_path( 'squirrels' ) ),
-                    array( 'logo-beavers.svg',   'Beavers',    '6–8 years',     get_page_by_path( 'beavers' ) ),
-                    array( 'logo-cubs.svg',       'Cubs',       '8–10½ years',   get_page_by_path( 'cubs' ) ),
-                    array( 'logo-scouts.svg',     'Scouts',     '10½–14 years',  get_page_by_path( 'scouts' ) ),
-                    array( 'logo-explorers.svg',  'Explorers',  '14–18 years',   get_page_by_path( 'explorers' ) ),
-                    array( 'logo-network.svg',    'Network',    '18–25 years',   get_page_by_path( 'network' ) ),
+                    array( 'logo-squirrels.svg', 'Squirrels',  '4–6 years',     'squirrels' ),
+                    array( 'logo-beavers.svg',   'Beavers',    '6–8 years',     'beavers' ),
+                    array( 'logo-cubs.svg',      'Cubs',       '8–10½ years',   'cubs' ),
+                    array( 'logo-scouts.svg',    'Scouts',     '10½–14 years',  'scouts' ),
+                    array( 'logo-explorers.svg', 'Explorers',  '14–18 years',   'explorers' ),
+                    array( 'logo-network.svg',   'Network',    '18–25 years',   'network' ),
                 );
                 $img_dir = get_template_directory_uri() . '/images/';
                 foreach ( $age_groups as $group ) :
-                    $url = $group[3] ? get_permalink( $group[3] ) : false;
+                    $slug = $group[3];
+                    $page = get_page_by_path( $slug );
+                    if ( ! $page ) {
+                        $page = get_page_by_path( 'about-us/' . $slug );
+                    }
+                    $url = $page ? get_permalink( $page ) : false;
                 ?>
-                <<?php echo $url ? 'a href="' . esc_url( $url ) . '"' : 'div'; ?> class="age_group_card">
+                <<?php echo $url ? 'a href="' . esc_url( $url ) . '"' : 'div'; ?> class="age_group_card<?php echo $url ? ' age_group_card--linked' : ''; ?>" aria-label="<?php echo esc_attr( $group[1] . ', ' . $group[2] ); ?>">
                     <img src="<?php echo esc_url( $img_dir . $group[0] ); ?>" alt="<?php echo esc_attr( $group[1] ); ?>" />
                     <span class="age_group_card__range"><?php echo esc_html( $group[2] ); ?></span>
                 </<?php echo $url ? 'a' : 'div'; ?>>

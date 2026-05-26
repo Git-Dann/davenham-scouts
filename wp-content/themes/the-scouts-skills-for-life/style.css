@@ -497,12 +497,39 @@ Text Domain: the-scouts-skills-for-life
   gap: 10px;
   text-decoration: none;
   color: inherit;
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
 }
 
-a.age_group_card:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.10);
+a.age_group_card,
+.age_group_card--linked {
+  cursor: pointer;
+}
+
+a.age_group_card:hover,
+.age_group_card--linked:hover,
+a.age_group_card:focus-visible,
+.age_group_card--linked:focus-visible {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.12);
+  border-color: #590FA9;
+  outline: none;
+}
+
+a.age_group_card:focus-visible,
+.age_group_card--linked:focus-visible {
+  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.12), 0 0 0 3px rgba(89, 15, 169, 0.25);
+}
+
+a.age_group_card:hover img,
+.age_group_card--linked:hover img,
+a.age_group_card:focus-visible img,
+.age_group_card--linked:focus-visible img {
+  transform: scale(1.06);
+}
+
+a.age_group_card:hover .age_group_card__range,
+.age_group_card--linked:hover .age_group_card__range {
+  color: #590FA9;
 }
 
 .age_group_card img {
@@ -511,6 +538,27 @@ a.age_group_card:hover {
   max-height: 52px;
   object-fit: contain;
   display: block;
+  transition: transform 0.2s ease;
+}
+
+.age_group_card__range {
+  transition: color 0.2s ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .age_group_card,
+  .age_group_card img,
+  .age_group_card__range {
+    transition: none;
+  }
+  a.age_group_card:hover,
+  .age_group_card--linked:hover {
+    transform: none;
+  }
+  a.age_group_card:hover img,
+  .age_group_card--linked:hover img {
+    transform: none;
+  }
 }
 
 .age_group_card__range {
