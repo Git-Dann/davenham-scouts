@@ -698,7 +698,14 @@ a.age_group_card:hover .age_group_card__range,
 .news-archive-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 28px;
+  gap: 20px;
+}
+
+@media (max-width: 900px) {
+  .news-archive-grid {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
 }
 
 .news-archive__intro {
@@ -707,42 +714,48 @@ a.age_group_card:hover .age_group_card__range,
   justify-content: space-between;
   gap: 24px;
   margin-bottom: 32px;
+  flex-wrap: wrap;
 }
 
 .news-archive__count {
   display: inline-block;
   margin-bottom: 10px;
-  color: #088486;
-  font-size: 14px;
-  font-weight: 800;
-  letter-spacing: 1px;
+  color: #590FA9;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
   text-transform: uppercase;
 }
 
 .news-archive__intro p {
   margin: 0;
   max-width: 62ch;
-  color: #3f516b;
-  font-size: 17px;
-  line-height: 1.7;
+  color: #404040;
+  font-size: 16px;
+  line-height: 1.6;
 }
 
 .news-archive-card {
   background: #fff;
   border-radius: 10px;
   overflow: hidden;
-  box-shadow: 0 12px 30px rgba(9, 31, 66, 0.08);
+  box-shadow: rgba(0, 0, 0, 0.1) 0px 0px 9px 2px;
   display: flex;
   flex-direction: column;
   height: 100%;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
 }
 
 .news-archive-card:hover,
 .event-card:hover,
 .gallery-card:hover {
   transform: translateY(-4px);
-  box-shadow: 0 18px 40px rgba(9, 31, 66, 0.12);
+  box-shadow: 0 8px 28px rgba(15, 23, 42, 0.12);
+}
+
+.news-archive-card:focus-within {
+  outline: none;
+  box-shadow: 0 8px 28px rgba(15, 23, 42, 0.12), 0 0 0 3px rgba(89, 15, 169, 0.25);
 }
 
 /* ============================================================
@@ -796,87 +809,154 @@ a.age_group_card:hover .age_group_card__range,
   padding: 64px 0;
 }
 
-/* Colour audit: align accent uses with national brand */
-.news-archive__count {
-  color: #590FA9;
-}
-
+/* News archive — matches design.md §10 news section card pattern */
 .news-archive-card__image {
   display: block;
-  background: linear-gradient(135deg, #088486 0%, #003982 100%);
+  background: linear-gradient(135deg, #003982 0%, #590FA9 100%);
+  overflow: hidden;
 }
 
 .news-archive-card__image img {
   width: 100%;
-  height: 230px;
+  height: 240px;
   object-fit: cover;
   display: block;
+  transition: transform 0.3s ease;
+}
+
+.news-archive-card:hover .news-archive-card__image img {
+  transform: scale(1.04);
 }
 
 .news-archive-card__placeholder {
-  min-height: 230px;
+  min-height: 240px;
   display: grid;
   place-items: center;
   color: #fff;
-  font-size: 30px;
-  font-weight: 800;
-  letter-spacing: 1px;
+  font-size: 28px;
+  font-weight: 900;
+  letter-spacing: 0.8px;
   text-transform: uppercase;
 }
 
 .news-archive-card__body {
-  padding: 24px;
+  padding: 16px 30px 24px;
   display: flex;
   flex: 1 1 auto;
   flex-direction: column;
+  background: #F6F6F6;
 }
 
 .news-archive-card__tag {
   display: inline-flex;
   align-self: flex-start;
   margin-bottom: 12px;
-  padding: 6px 10px;
-  border-radius: 999px;
-  background: #eef7fb;
-  color: #003982;
+  padding: 4px 10px;
+  border-radius: 0;
+  background: #590FA9;
+  color: #fff;
   font-size: 11px;
-  font-weight: 800;
-  letter-spacing: 1px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
   text-transform: uppercase;
 }
 
 .news-archive-card__body time {
   display: block;
-  margin-bottom: 12px;
+  margin-bottom: 10px;
   font-size: 12px;
-  font-weight: 800;
-  letter-spacing: 1px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
   text-transform: uppercase;
-  color: #088486;
+  color: #6E6E6E;
 }
 
 .news-archive-card__body h2 {
   margin: 0 0 14px;
-  font-size: 28px;
+  font-size: 32px;
+  font-weight: 700;
   line-height: 1.15;
+  color: #404040;
 }
 
 .news-archive-card__body h2 a {
   color: inherit;
+  text-decoration: none;
+  transition: color 0.15s ease;
+}
+
+.news-archive-card__body h2 a:hover {
+  color: #590FA9;
 }
 
 .news-archive-card__body .entry-content,
 .news-archive-card__body .entry-summary {
   margin-bottom: 20px;
-  color: #42566f;
+  color: #404040;
+  font-size: 16px;
+  line-height: 1.5;
 }
 
 .news-archive-card__body .btn {
   margin-top: auto;
+  align-self: flex-start;
 }
 
-.news-archive__pagination {
-  margin-top: 32px;
+.news-archive__pagination,
+.pagination,
+nav.pagination {
+  margin-top: 44px;
+}
+
+.news-archive__pagination .nav-links,
+.pagination .nav-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+  align-items: center;
+}
+
+.news-archive__pagination .page-numbers,
+.pagination .page-numbers {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 40px;
+  height: 40px;
+  padding: 0 12px;
+  border: 1px solid #CCCCCC;
+  color: #404040;
+  font-weight: 700;
+  text-decoration: none;
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+.news-archive__pagination .page-numbers:hover,
+.pagination .page-numbers:hover {
+  background: #F1F1F1;
+  border-color: #590FA9;
+  color: #590FA9;
+}
+
+.news-archive__pagination .page-numbers.current,
+.pagination .page-numbers.current {
+  background: #590FA9;
+  border-color: #590FA9;
+  color: #fff;
+}
+
+.news-archive__pagination .page-numbers.dots,
+.pagination .page-numbers.dots {
+  border: 0;
+  background: transparent;
+}
+
+.news-archive__empty {
+  padding: 60px 20px;
+  text-align: center;
+  color: #6E6E6E;
+  font-size: 18px;
 }
 
 .news-single .post__header {
@@ -887,18 +967,24 @@ a.age_group_card:hover .age_group_card__range,
   display: inline-flex;
   align-items: center;
   margin-bottom: 24px;
-  color: #003982;
-  font-size: 14px;
-  font-weight: 800;
-  letter-spacing: 0.6px;
+  color: #006DDF;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
   text-transform: uppercase;
+  text-decoration: none;
+  transition: color 0.15s ease;
+}
+
+.news-single__back-link:hover {
+  color: #003982;
 }
 
 .news-single .post__details {
   display: flex;
   flex-wrap: wrap;
   gap: 14px 24px;
-  color: #42566f;
+  color: #6E6E6E;
   font-size: 15px;
 }
 
