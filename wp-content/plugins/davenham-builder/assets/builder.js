@@ -1476,9 +1476,14 @@
 	}
 
 	// ─── Component Library ────────────────────────────────────────────────────
-	function ComponentLibrary( { onAdd, insertAfterLabel, onApplyPreset, simpleMode, guideDismissed, onDismissGuide, hasSections } ) {
+	function ComponentLibrary( { onAdd, insertAfterLabel, insertAtIndex, onClearInsertAt, onApplyPreset, simpleMode, guideDismissed, onDismissGuide, hasSections } ) {
 		const [ search, setSearch ] = useState( '' );
-		const [ libraryMode, setLibraryMode ] = useState( 'templates' );
+		// In "insert at index" mode we hide templates (they replace everything).
+		const insertingAt = insertAtIndex !== null && insertAtIndex !== undefined;
+		const [ libraryMode, setLibraryMode ] = useState( insertingAt ? 'sections' : 'templates' );
+		useEffect( function () {
+			if ( insertingAt && libraryMode !== 'sections' ) setLibraryMode( 'sections' );
+		}, [ insertingAt ] );
 		const canAddSections = ! simpleMode || ! hasSections;
 		const q = search.toLowerCase();
 		const filtered = q
@@ -1501,6 +1506,14 @@
 					title: 'New section will be inserted after the selected one',
 				}, '↓ after "' + insertAfterLabel + '"' )
 			),
+			insertAtIndex !== null && insertAtIndex !== undefined && el( 'div', { className: 'db-insert-banner' },
+				el( 'span', null, '↳ Inserting a section at position ' + ( insertAtIndex + 1 ) + '. Pick a block below.' ),
+				el( 'button', {
+					type: 'button',
+					className: 'db-insert-banner__cancel',
+					onClick: onClearInsertAt,
+				}, 'Cancel' )
+			),
 			! guideDismissed && el( 'div', { className: 'db-guide' },
 				el( 'div', { className: 'db-guide__header' },
 					el( 'strong', null, 'How to use this builder' ),
@@ -1513,7 +1526,7 @@
 					el( 'li', null, 'Visit Site Settings to update your logo, footer, cookie notice, and newsletter.' )
 				)
 			),
-			canAddSections && el( 'div', { className: 'db-library-switcher' },
+			canAddSections && ! insertingAt && el( 'div', { className: 'db-library-switcher' },
 				el( 'button', {
 					type: 'button',
 					className: 'db-library-switcher__tab' + ( libraryMode === 'templates' ? ' is-active' : '' ),
@@ -1592,7 +1605,7 @@
 	}
 
 	// ─── Section Card ─────────────────────────────────────────────────────────
-	function SectionCard( { section, isSelected, onSelect, onMoveUp, onMoveDown, onDelete, canMoveUp, canMoveDown, simpleMode } ) {
+	function SectionCard( { section, index, isSelected, onSelect, onMoveUp, onMoveDown, onDelete, onDuplicate, canMoveUp, canMoveDown, simpleMode } ) {
 		const schema = BLOCKS.find( b => b.type === section.type );
 		const preview = sectionPreview( section );
 
@@ -1603,51 +1616,83 @@
 		},
 			el( 'div', { className: 'db-section__stripe' } ),
 			el( 'div', { className: 'db-section__header' },
+				el( 'span', { className: 'db-section__index', 'aria-hidden': 'true' }, String( index + 1 ) ),
 				el( 'div', { className: 'db-section__icon' }, schema ? schema.icon : '📦' ),
 				el( 'div', { className: 'db-section__info' },
 					el( 'span', { className: 'db-section__name' }, schema ? schema.label : section.type ),
 					el( 'span', { className: 'db-section__preview' }, preview )
 				),
 				! simpleMode && el( 'div', { className: 'db-section__actions', onClick: e => e.stopPropagation() },
-					el( 'button', { type: 'button', className: 'db-section__btn db-section__btn--up',     title: 'Move up',   'aria-label': 'Move section up',   disabled: ! canMoveUp,   onClick: onMoveUp   }, '↑' ),
-					el( 'button', { type: 'button', className: 'db-section__btn db-section__btn--down',   title: 'Move down', 'aria-label': 'Move section down', disabled: ! canMoveDown, onClick: onMoveDown }, '↓' ),
-					el( 'button', { type: 'button', className: 'db-section__btn db-section__btn--delete', title: 'Delete',    'aria-label': 'Delete this section', onClick: () => { if ( window.confirm( 'Delete this section? This can\'t be undone unless you discard your unsaved changes.' ) ) onDelete(); } }, '🗑' )
+					el( 'button', { type: 'button', className: 'db-section__btn db-section__btn--up',        title: 'Move up',        'aria-label': 'Move section up',        disabled: ! canMoveUp,   onClick: onMoveUp        }, '↑' ),
+					el( 'button', { type: 'button', className: 'db-section__btn db-section__btn--down',      title: 'Move down',      'aria-label': 'Move section down',      disabled: ! canMoveDown, onClick: onMoveDown      }, '↓' ),
+					el( 'button', { type: 'button', className: 'db-section__btn db-section__btn--duplicate', title: 'Duplicate',      'aria-label': 'Duplicate this section', onClick: onDuplicate                    }, '⎘' ),
+					el( 'button', { type: 'button', className: 'db-section__btn db-section__btn--delete',    title: 'Delete',         'aria-label': 'Delete this section',    onClick: () => { if ( window.confirm( 'Delete this section? This can\'t be undone unless you discard your unsaved changes.' ) ) onDelete(); } }, '🗑' )
 				)
 			)
 		);
 	}
 
+	// Inline "+ Add section here" rail between (and around) sections.
+	function InsertRail( { index, onClick, label } ) {
+		return el( 'button', {
+			type: 'button',
+			className: 'db-insert-rail',
+			onClick: function () { onClick( index ); },
+			'aria-label': 'Insert a section at position ' + ( index + 1 ),
+			title: 'Click to add a section here',
+		},
+			el( 'span', { className: 'db-insert-rail__line' } ),
+			el( 'span', { className: 'db-insert-rail__btn' }, '＋ ', label || 'Add section' ),
+			el( 'span', { className: 'db-insert-rail__line' } )
+		);
+	}
+
 	// ─── Canvas ───────────────────────────────────────────────────────────────
-	function Canvas( { sections, selectedId, onSelect, onMove, onDelete, simpleMode } ) {
+	function Canvas( { sections, selectedId, onSelect, onMove, onDelete, onDuplicate, onInsertAt, simpleMode, viewportMode } ) {
+		const viewportClass = viewportMode ? ' db-canvas--' + viewportMode : '';
+
 		if ( sections.length === 0 ) {
-			return el( 'div', { className: 'db-canvas' },
+			return el( 'div', { className: 'db-canvas' + viewportClass },
 				el( 'div', { className: 'db-canvas__inner' },
-						el( 'div', { className: 'db-canvas__empty' },
-							el( 'div', { className: 'db-canvas__empty-icon' },
-								el( 'img', { src: SCOUTS_MARK_URL, alt: 'Scouts', className: 'db-canvas__empty-logo' } )
-							),
-							el( 'h3', null, 'Your page is empty' ),
-							el( 'p', null, 'Pick a section from the left panel to get started.' )
-						)
+					el( 'div', { className: 'db-canvas__empty' },
+						el( 'div', { className: 'db-canvas__empty-icon' },
+							el( 'img', { src: SCOUTS_MARK_URL, alt: '', 'aria-hidden': 'true', className: 'db-canvas__empty-logo' } )
+						),
+						el( 'h3', null, 'Start building your page' ),
+						el( 'p', null, 'Pick a starter template for a head start, or add an individual section. You can rearrange, duplicate or remove any section later.' ),
+						el( 'div', { className: 'db-canvas__empty-actions' },
+							el( 'button', {
+								type: 'button',
+								className: 'db-btn db-btn--save',
+								onClick: function () { onInsertAt( 0 ); },
+							}, '＋ Add a section' )
+						),
+						el( 'p', { className: 'db-canvas__empty-hint' }, 'Tip: press Cmd/Ctrl + S any time to save.' )
+					)
 				)
 			);
 		}
 
-		return el( 'div', { className: 'db-canvas' },
+		return el( 'div', { className: 'db-canvas' + viewportClass },
 			el( 'div', { className: 'db-canvas__inner' },
+				simpleMode ? null : el( InsertRail, { index: 0, onClick: onInsertAt, label: 'Add section at top' } ),
 				sections.map( ( section, i ) =>
-					el( SectionCard, {
-						key: section.id,
-						section,
-						isSelected: section.id === selectedId,
-						onSelect:   () => onSelect( section.id ),
-						onMoveUp:   () => onMove( i, i - 1 ),
-						onMoveDown: () => onMove( i, i + 1 ),
-						onDelete:   () => onDelete( section.id ),
-						canMoveUp:   i > 0,
-						canMoveDown: i < sections.length - 1,
-						simpleMode,
-					} )
+					el( Fragment, { key: section.id },
+						el( SectionCard, {
+							section,
+							index: i,
+							isSelected: section.id === selectedId,
+							onSelect:    () => onSelect( section.id ),
+							onMoveUp:    () => onMove( i, i - 1 ),
+							onMoveDown:  () => onMove( i, i + 1 ),
+							onDelete:    () => onDelete( section.id ),
+							onDuplicate: () => onDuplicate( section.id ),
+							canMoveUp:   i > 0,
+							canMoveDown: i < sections.length - 1,
+							simpleMode,
+						} ),
+						simpleMode ? null : el( InsertRail, { index: i + 1, onClick: onInsertAt, label: i === sections.length - 1 ? 'Add section at end' : 'Add section here' } )
+					)
 				)
 			)
 		);
@@ -1736,7 +1781,7 @@
 	}
 
 	// ─── Top Bar ──────────────────────────────────────────────────────────────
-	function TopBar( { pages, pageId, onPageChange, status, isDirty, onSave, pageLink, onNewPage, simpleMode, onToggleSimpleMode } ) {
+	function TopBar( { pages, pageId, onPageChange, status, isDirty, onSave, pageLink, onNewPage, simpleMode, onToggleSimpleMode, viewportMode, onViewportChange } ) {
 		const statusText  = { saving: 'Saving…', saved: '✓ Saved', error: '✕ Error' }[ status ]
 			|| ( isDirty ? '● Unsaved changes' : '' );
 		const statusClass = { saving: 'db-topbar__status--saving', saved: 'db-topbar__status--saved', error: 'db-topbar__status--error' }[ status ]
@@ -1791,6 +1836,25 @@
 			}, simpleMode ? 'Simple mode: On' : 'Simple mode: Off' ),
 
 			el( 'div', { className: 'db-topbar__spacer' } ),
+
+			// Viewport preview toggle — desktop / tablet / mobile
+			el( 'div', { className: 'db-viewport-toggle', role: 'group', 'aria-label': 'Preview viewport' },
+				[
+					{ key: 'desktop', icon: '🖥', label: 'Desktop' },
+					{ key: 'tablet',  icon: '📱', label: 'Tablet (768px)' },
+					{ key: 'mobile',  icon: '📱', label: 'Mobile (375px)' },
+				].map( function ( opt ) {
+					return el( 'button', {
+						key: opt.key,
+						type: 'button',
+						className: 'db-viewport-toggle__btn' + ( viewportMode === opt.key ? ' is-active' : '' ),
+						onClick: function () { onViewportChange( opt.key ); },
+						title: opt.label,
+						'aria-label': 'Preview at ' + opt.label,
+						'aria-pressed': viewportMode === opt.key ? 'true' : 'false',
+					}, opt.icon );
+				} )
+			),
 
 			statusText && el( 'span', { className: 'db-topbar__status ' + statusClass }, statusText ),
 
@@ -1970,6 +2034,35 @@
 			setIsDirty( true );
 		}, [] );
 
+		const duplicateSection = useCallback( id => {
+			setSections( prev => {
+				const idx = prev.findIndex( s => s.id === id );
+				if ( idx === -1 ) return prev;
+				const copy = { id: uid(), type: prev[ idx ].type, attrs: { ...prev[ idx ].attrs } };
+				const next = prev.slice();
+				next.splice( idx + 1, 0, copy );
+				return next;
+			} );
+			setIsDirty( true );
+			showToast( '✓ Section duplicated', 'success' );
+		}, [] );
+
+		// Inline "+ Add" between sections — opens picker at a specific position.
+		const [ insertAtIndex, setInsertAtIndex ] = useState( null );
+		const insertSectionAt = useCallback( ( type, index ) => {
+			const schema = BLOCKS.find( b => b.type === type );
+			const newSec = { id: uid(), type, attrs: { ...( schema ? schema.defaults : {} ) } };
+			setSections( prev => {
+				const next = prev.slice();
+				const i = Math.max( 0, Math.min( index, next.length ) );
+				next.splice( i, 0, newSec );
+				return next;
+			} );
+			setSelectedId( newSec.id );
+			setIsDirty( true );
+			setInsertAtIndex( null );
+		}, [] );
+
 		const moveSection = useCallback( ( from, to ) => {
 			setSections( prev => {
 				if ( to < 0 || to >= prev.length ) return prev;
@@ -1980,6 +2073,9 @@
 			} );
 			setIsDirty( true );
 		}, [] );
+
+		// Viewport preview mode — adjusts canvas width to mimic device sizes.
+		const [ viewportMode, setViewportMode ] = useState( 'desktop' );
 
 		const applyPreset = useCallback( function ( preset ) {
 			if ( ! preset || typeof preset.sections !== 'function' ) {
@@ -2005,6 +2101,12 @@
 			: null;
 		const hasSections = sections.length > 0;
 
+		// When user clicked "+ Add section here" between sections, the library's
+		// onAdd inserts at that index instead of appending after the selected one.
+		const libraryAddHandler = insertAtIndex !== null
+			? function ( type ) { insertSectionAt( type, insertAtIndex ); }
+			: addSection;
+
 		const sidebarContent = selectedSection
 			? el( SettingsPanel, {
 				section: selectedSection,
@@ -2013,8 +2115,10 @@
 				simpleMode,
 			} )
 			: el( ComponentLibrary, {
-				onAdd: addSection,
+				onAdd: libraryAddHandler,
 				insertAfterLabel: insertAfterLabel,
+				insertAtIndex,
+				onClearInsertAt: () => setInsertAtIndex( null ),
 				onApplyPreset: applyPreset,
 				simpleMode,
 				guideDismissed,
@@ -2035,10 +2139,13 @@
 			  )
 			: el( Canvas, {
 				sections, selectedId,
-				onSelect: setSelectedId,
-				onMove:   moveSection,
-				onDelete: deleteSection,
+				onSelect: function ( id ) { setInsertAtIndex( null ); setSelectedId( id ); },
+				onMove:        moveSection,
+				onDelete:      deleteSection,
+				onDuplicate:   duplicateSection,
+				onInsertAt:    function ( idx ) { setSelectedId( null ); setInsertAtIndex( idx ); },
 				simpleMode,
+				viewportMode,
 			} );
 
 		return el( 'div', { className: 'db-app' },
@@ -2049,6 +2156,8 @@
 				onNewPage: () => setShowNewPage( true ),
 				simpleMode,
 				onToggleSimpleMode: toggleSimpleMode,
+				viewportMode,
+				onViewportChange: setViewportMode,
 			} ),
 			el( 'div', { className: 'db-body' },
 				el( 'div', { className: 'db-sidebar' }, sidebarContent ),
