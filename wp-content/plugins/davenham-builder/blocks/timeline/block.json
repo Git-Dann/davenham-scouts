@@ -1,0 +1,16 @@
+{
+  "$schema": "https://schemas.wp.org/trunk/block.json",
+  "apiVersion": 3,
+  "name": "davenham/timeline",
+  "version": "1.0.0",
+  "title": "Timeline",
+  "category": "davenham",
+  "description": "A chronological set of milestones.",
+  "textdomain": "davenham-blocks",
+  "editorScript": "davenham-blocks-editor",
+  "render": "file:./render.php",
+  "attributes": {
+    "heading": { "type": "string", "default": "Our journey" },
+    "items": { "type": "array", "default": [], "items": { "type": "object" } }
+  }
+}

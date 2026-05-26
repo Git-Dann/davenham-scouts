@@ -1,0 +1,16 @@
+{
+  "$schema": "https://schemas.wp.org/trunk/block.json",
+  "apiVersion": 3,
+  "name": "davenham/quote-banner",
+  "version": "1.0.0",
+  "title": "Quote Banner",
+  "category": "davenham",
+  "description": "A strong full-width quote with attribution.",
+  "textdomain": "davenham-blocks",
+  "editorScript": "davenham-blocks-editor",
+  "render": "file:./render.php",
+  "attributes": {
+    "quote": { "type": "string", "default": "" },
+    "attribution": { "type": "string", "default": "" }
+  }
+}

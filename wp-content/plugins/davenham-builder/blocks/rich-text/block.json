@@ -1,0 +1,16 @@
+{
+  "$schema": "https://schemas.wp.org/trunk/block.json",
+  "apiVersion": 3,
+  "name": "davenham/rich-text",
+  "version": "1.0.0",
+  "title": "Rich Text",
+  "category": "davenham",
+  "description": "Full-width HTML content area — great for long copy, policies, or structured info.",
+  "textdomain": "davenham-blocks",
+  "editorScript": "davenham-blocks-editor",
+  "render": "file:./render.php",
+  "attributes": {
+    "content":    { "type": "string", "default": "<p>Enter your content here.</p>" },
+    "background": { "type": "string", "default": "white" }
+  }
+}

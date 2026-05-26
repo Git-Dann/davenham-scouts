@@ -1,0 +1,42 @@
+{
+  "$schema": "https://schemas.wp.org/trunk/block.json",
+  "apiVersion": 3,
+  "name": "davenham/welcome-section",
+  "version": "1.0.0",
+  "title": "Welcome Section",
+  "category": "davenham",
+  "description": "Text left + image right with the shapes overlay. Heading supports a highlighted span.",
+  "textdomain": "davenham-blocks",
+  "editorScript": "davenham-blocks-editor",
+  "render": "file:./render.php",
+  "attributes": {
+    "heading": {
+      "type": "string",
+      "default": "Welcome to"
+    },
+    "headingHighlight": {
+      "type": "string",
+      "default": "1st Davenham"
+    },
+    "content": {
+      "type": "string",
+      "default": ""
+    },
+    "buttonText": {
+      "type": "string",
+      "default": "Find out more"
+    },
+    "buttonUrl": {
+      "type": "string",
+      "default": "/about-us"
+    },
+    "imageUrl": {
+      "type": "string",
+      "default": ""
+    },
+    "imageId": {
+      "type": "integer",
+      "default": 0
+    }
+  }
+}

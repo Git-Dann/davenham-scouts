@@ -1,0 +1,16 @@
+{
+  "$schema": "https://schemas.wp.org/trunk/block.json",
+  "apiVersion": 3,
+  "name": "davenham/section-divider",
+  "version": "1.0.0",
+  "title": "Spacer / Divider",
+  "category": "davenham",
+  "description": "Blank space or a thin horizontal rule between sections.",
+  "textdomain": "davenham-blocks",
+  "editorScript": "davenham-blocks-editor",
+  "render": "file:./render.php",
+  "attributes": {
+    "height": { "type": "integer", "default": 48 },
+    "style":  { "type": "string",  "default": "blank" }
+  }
+}
