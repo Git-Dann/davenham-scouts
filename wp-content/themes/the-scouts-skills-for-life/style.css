@@ -66,13 +66,13 @@ Text Domain: the-scouts-skills-for-life
 
 .main_content.playground article th,
 .main_content.playground article td {
-  border: 1px solid #d7dfeb;
+  border: 1px solid #CCCCCC;
   padding: 12px 14px;
   text-align: left;
 }
 
 .main_content.playground article th {
-  background: #eff6ff;
+  background: #F1F1F1;
 }
 
 .main_content.playground article img {
@@ -184,13 +184,15 @@ Text Domain: the-scouts-skills-for-life
 }
 
 .scouts-form-message--success {
-  background: #dff7e8;
-  color: #145a32;
+  background: rgba(0, 138, 28, 0.10);
+  color: #008A1C;
+  border-left: 4px solid #008A1C;
 }
 
 .scouts-form-message--error {
-  background: #fde7e7;
-  color: #8c1c13;
+  background: rgba(237, 63, 35, 0.10);
+  color: #ED3F23;
+  border-left: 4px solid #ED3F23;
 }
 
 .scouts-form .scouts-honeypot {
@@ -311,11 +313,11 @@ Text Domain: the-scouts-skills-for-life
 .scouts-woocommerce ul.products li.product {
   margin: 0;
   padding: 0;
-  border: 1px solid #d7dfeb;
-  border-radius: 14px;
+  border: 1px solid #CCCCCC;
+  border-radius: 10px;
   overflow: hidden;
   background: #fff;
-  box-shadow: 0 14px 40px rgba(19, 34, 55, 0.06);
+  box-shadow: rgba(0, 0, 0, 0.1) 0px 0px 9px 2px;
 }
 
 .scouts-woocommerce ul.products li.product a {
@@ -349,7 +351,7 @@ Text Domain: the-scouts-skills-for-life
 .scouts-woocommerce ul.products li.product .price {
   display: block;
   margin-bottom: 16px;
-  color: #088486;
+  color: #404040;
   font-weight: 800;
   font-size: 20px;
 }
@@ -363,14 +365,23 @@ Text Domain: the-scouts-skills-for-life
   justify-content: center;
   gap: 8px;
   margin: 0 20px 22px;
-  padding: 14px 18px;
-  border: 0;
-  border-radius: 999px;
-  background: #f36d00;
+  padding: 12px 14px;
+  border: 1px solid #006DDF;
+  border-radius: 0px;
+  background: #006DDF;
   color: #fff;
-  font-weight: 800;
+  font-weight: 700;
   text-decoration: none;
   cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.scouts-woocommerce ul.products li.product .button:hover,
+.scouts-woocommerce .single_add_to_cart_button:hover,
+.scouts-woocommerce .checkout-button:hover,
+.scouts-woocommerce .button.alt:hover {
+  background: #003982;
+  border-color: #003982;
 }
 
 .scouts-woocommerce div.product {
@@ -429,9 +440,9 @@ Text Domain: the-scouts-skills-for-life
 .scouts-woocommerce .shop-intro-card {
   margin-bottom: 28px;
   padding: 24px 26px;
-  border-radius: 14px;
-  background: linear-gradient(135deg, #eff6ff 0%, #f7fbff 100%);
-  border: 1px solid #d7dfeb;
+  border-radius: 10px;
+  background: #F1F1F1;
+  border: 1px solid #CCCCCC;
 }
 
 .scouts-woocommerce .shop-intro-card p:last-child {
@@ -489,7 +500,7 @@ Text Domain: the-scouts-skills-for-life
 .age_group_card {
   background: #fff;
   border: 1px solid #e5e7eb;
-  border-radius: 8px;
+  border-radius: 0px;
   padding: 20px 12px 18px;
   display: flex;
   flex-direction: column;
@@ -696,7 +707,7 @@ a.age_group_card:hover .age_group_card__range,
 }
 
 .btn:before {
-  background: #0055b3;
+  background: #003982;
 }
 
 /* news_section__btn: restore white outline after .btn override */
@@ -1120,7 +1131,7 @@ a.age_group_card:hover .age_group_card__range,
   width: min(92vw, 620px);
   margin: 10vh auto 0;
   background: #fff;
-  border-radius: 24px;
+  border-radius: 22px;
   padding: 28px;
   box-shadow: 0 24px 80px rgba(0,0,0,.25);
 }
