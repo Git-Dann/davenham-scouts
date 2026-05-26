@@ -723,6 +723,27 @@
 			],
 		},
 		{
+			type: 'davenham/session-times',
+			label: 'Session Times',
+			icon: '🕐',
+			category: 'story',
+			desc: 'Day / time / age / location card for a Beavers, Cubs or Scouts section page.',
+			defaults: {
+				day: 'Monday',
+				time: '17:30 – 18:45',
+				ageRange: '5¾ – 8 years',
+				location: '',
+				leaders: '',
+			},
+			fields: [
+				{ key: 'day',      label: 'Day',      type: 'text', help: 'e.g. Monday' },
+				{ key: 'time',     label: 'Time',     type: 'text', help: 'e.g. 17:30 – 18:45' },
+				{ key: 'ageRange', label: 'Age range',type: 'text', help: 'e.g. 5¾ – 8 years' },
+				{ key: 'location', label: 'Location (optional)', type: 'text', help: 'Where you meet — Peckmill Scout Wood, Bostock Farm, etc.' },
+				{ key: 'leaders',  label: 'Leadership team (optional)', type: 'text', help: 'Comma-separated names — e.g. Gwenda, Dan, Thomas' },
+			],
+		},
+		{
 			type: 'davenham/key-facts',
 			label: 'Key Facts',
 			icon: '📌',

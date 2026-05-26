@@ -71,6 +71,7 @@ function db_register_blocks() {
 		'steps', 'split-cta', 'newsletter-signup',
 		'tabs', 'logo-strip', 'key-facts',
 		'promo-banner', 'donation-cards', 'popup-promo',
+		'session-times',
 	);
 
 	foreach ( $blocks as $block ) {

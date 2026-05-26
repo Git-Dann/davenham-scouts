@@ -1,0 +1,42 @@
+{
+  "$schema": "https://schemas.wp.org/trunk/block.json",
+  "apiVersion": 3,
+  "name": "davenham/session-times",
+  "version": "1.0.0",
+  "title": "Session Times",
+  "category": "davenham",
+  "description": "Meeting day, time, age range and location card for a Beavers/Cubs/Scouts section page.",
+  "icon": "schedule",
+  "keywords": [
+    "session",
+    "meeting",
+    "times",
+    "schedule",
+    "day"
+  ],
+  "textdomain": "davenham-blocks",
+  "editorScript": "davenham-blocks-editor",
+  "render": "file:./render.php",
+  "attributes": {
+    "day": {
+      "type": "string",
+      "default": ""
+    },
+    "time": {
+      "type": "string",
+      "default": ""
+    },
+    "ageRange": {
+      "type": "string",
+      "default": ""
+    },
+    "location": {
+      "type": "string",
+      "default": ""
+    },
+    "leaders": {
+      "type": "string",
+      "default": ""
+    }
+  }
+}
