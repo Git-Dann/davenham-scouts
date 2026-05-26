@@ -102,7 +102,7 @@ if ( $notice_text ) : ?>
                 <h3>What's happening</h3>
                 <p class="news_section__subtitle">All the latest news for you and your Scouts</p>
             </div>
-            <div class="news_blocks cf">
+            <div class="news_blocks">
                 <?php while ( $news_query->have_posts() ) : $news_query->the_post(); ?>
                 <a href="<?php the_permalink(); ?>" class="news_block<?php echo has_post_thumbnail() ? '' : ' news_block--no-image'; ?>">
                     <?php if ( has_post_thumbnail() ) : ?>

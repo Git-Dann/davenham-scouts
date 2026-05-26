@@ -80,15 +80,15 @@ Text Domain: the-scouts-skills-for-life
 }
 
 .footer .top .wrapper.footer-grid {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr;
   gap: 36px;
-  align-items: flex-start;
+  align-items: start;
 }
 
 .footer .footer-brand {
-  width: 30%;
-  min-width: 280px;
+  width: auto;
+  min-width: 0;
 }
 
 .footer .footer-brand .footer-logo-wrap {
@@ -128,7 +128,7 @@ Text Domain: the-scouts-skills-for-life
 }
 
 .footer .col {
-  width: calc(23.333% - 27px);
+  width: auto;
   margin: 0;
 }
 
@@ -137,10 +137,8 @@ Text Domain: the-scouts-skills-for-life
 }
 
 @media only screen and (max-width: 960px) {
-  .footer .footer-brand,
-  .footer .col {
-    width: calc(50% - 18px);
-    min-width: 0;
+  .footer .top .wrapper.footer-grid {
+    grid-template-columns: 1fr 1fr;
   }
 }
 
@@ -160,12 +158,8 @@ Text Domain: the-scouts-skills-for-life
   }
 
   .footer .top .wrapper.footer-grid {
+    grid-template-columns: 1fr;
     gap: 28px;
-  }
-
-  .footer .footer-brand,
-  .footer .col {
-    width: 100% !important;
   }
 }
 
@@ -546,6 +540,13 @@ a.age_group_card:hover {
   gap: 20px;
   white-space: normal;
   overflow-x: visible;
+}
+
+/* Suppress clearfix pseudo-elements that become unwanted grid items */
+.home .news_section .news_blocks::before,
+.home .news_section .news_blocks::after {
+  display: none !important;
+  content: none;
 }
 
 @media (max-width: 900px) {
