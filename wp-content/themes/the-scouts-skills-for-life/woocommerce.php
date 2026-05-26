@@ -78,6 +78,9 @@ if ( $cat_term && ! is_wp_error( $cat_term ) ) {
     </div>
 </section>
 
+<?php elseif ( function_exists( 'is_product' ) && is_product() ) : ?>
+<?php // Single product pages — no themed hero, breadcrumb handles it inline. ?>
+
 <?php elseif ( ! $shop_has_own_hero ) : ?>
 <section class="hero standard cf">
     <?php if ( ! empty( $hero['image'] ) ) : ?>
@@ -138,6 +141,32 @@ if ( $cat_term && ! is_wp_error( $cat_term ) ) {
         </div>
     </section>
     <?php endif; endif; ?>
+</div>
+
+<?php elseif ( function_exists( 'is_product' ) && is_product() ) : ?>
+
+<div class="scouts-woocommerce scouts-woocommerce--product cf">
+    <div class="wrapper">
+        <nav class="product_crumbs" aria-label="Breadcrumb">
+            <a href="<?php echo esc_url( wc_get_page_permalink( 'shop' ) ); ?>">Shop</a>
+            <?php
+            $primary_term = null;
+            $terms = get_the_terms( get_the_ID(), 'product_cat' );
+            if ( $terms && ! is_wp_error( $terms ) ) {
+                $primary_term = $terms[0];
+                $term_url = get_term_link( $primary_term );
+                if ( ! is_wp_error( $term_url ) ) {
+                    echo ' <span aria-hidden="true">/</span> <a href="' . esc_url( $term_url ) . '">' . esc_html( $primary_term->name ) . '</a>';
+                }
+            }
+            ?>
+            <span aria-hidden="true">/</span>
+            <span><?php the_title(); ?></span>
+        </nav>
+        <div class="scouts-woocommerce__product-main">
+            <?php woocommerce_content(); ?>
+        </div>
+    </div>
 </div>
 
 <?php else : ?>

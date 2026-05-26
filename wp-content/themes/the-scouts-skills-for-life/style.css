@@ -575,6 +575,639 @@ Text Domain: the-scouts-skills-for-life
   line-height: 1.6;
 }
 
+/* ══════════════════════════════════════════════════════════
+   News archive (/news/) — magazine-style with lead card
+   ══════════════════════════════════════════════════════════ */
+.news_archive_hero {
+  position: relative;
+  background: linear-gradient(135deg, #003982 0%, #590FA9 100%);
+  color: #fff;
+  padding: 64px 0 56px;
+  overflow: hidden;
+}
+
+.news_archive_hero__overlay {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at 90% 15%, rgba(255, 180, 229, 0.20), transparent 50%),
+    radial-gradient(circle at 10% 90%, rgba(255, 230, 39, 0.10), transparent 40%);
+  pointer-events: none;
+}
+
+.news_archive_hero .wrapper {
+  position: relative;
+  z-index: 1;
+  max-width: 760px;
+}
+
+.news_archive_hero__eyebrow {
+  display: inline-block;
+  background: rgba(255, 255, 255, 0.16);
+  color: #fff;
+  padding: 5px 14px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 16px;
+}
+
+.news_archive_hero__title {
+  margin: 0 0 14px;
+  font-size: clamp(36px, 5vw, 56px);
+  font-weight: 900;
+  line-height: 1.05;
+  color: #FFB4E5;
+  letter-spacing: -0.02em;
+}
+
+.news_archive_hero__desc {
+  margin: 0;
+  font-size: clamp(15px, 1.5vw, 17px);
+  line-height: 1.5;
+  color: rgba(255,255,255,0.92);
+  max-width: 640px;
+}
+
+.news_archive {
+  background: #fff;
+  padding: 56px 0 80px;
+}
+
+.news_archive__grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 24px;
+}
+
+@media (max-width: 900px) {
+  .news_archive__grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Lead card — spans all 3 columns, image left + body right */
+.news_card--lead {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+  gap: 0;
+  background: #fff;
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.06);
+  border: 1px solid #F1F1F1;
+  margin-bottom: 12px;
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+
+@media (max-width: 900px) {
+  .news_card--lead {
+    grid-template-columns: 1fr;
+  }
+}
+
+.news_card--lead:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 14px 32px rgba(15, 23, 42, 0.12);
+}
+
+.news_card--lead .news_card__image {
+  height: auto;
+  min-height: 320px;
+}
+
+.news_card--lead .news_card__body {
+  padding: 36px 40px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 12px;
+}
+
+.news_card--lead .news_card__title {
+  font-size: clamp(24px, 2.5vw, 32px);
+  line-height: 1.2;
+}
+
+.news_card--lead .news_card__excerpt {
+  font-size: 16px;
+}
+
+/* Standard news card */
+.news_card {
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid #F1F1F1;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+
+.news_card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.10);
+}
+
+.news_card__image {
+  display: block;
+  width: 100%;
+  height: 220px;
+  overflow: hidden;
+  background: #F1F1F1;
+  text-decoration: none;
+}
+
+.news_card__image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.news_card:hover .news_card__image img {
+  transform: scale(1.04);
+}
+
+.news_card__placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  font-size: 64px;
+  color: #590FA9;
+  opacity: 0.25;
+}
+
+.news_card__body {
+  padding: 22px 24px 26px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  flex: 1;
+}
+
+.news_card__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 14px;
+  align-items: center;
+  font-size: 13px;
+}
+
+.news_card__tag {
+  display: inline-block;
+  padding: 3px 12px;
+  background: #f3eaff;
+  color: #590FA9;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.news_card__time {
+  color: #6E6E6E;
+  font-weight: 600;
+}
+
+.news_card__title {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 800;
+  line-height: 1.25;
+  color: #333333;
+  letter-spacing: -0.01em;
+}
+
+.news_card__title a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.news_card:hover .news_card__title a {
+  color: #590FA9;
+}
+
+.news_card__excerpt {
+  font-size: 15px;
+  line-height: 1.55;
+  color: #404040;
+}
+
+.news_card__excerpt p {
+  margin: 0;
+}
+
+.news_card__cta {
+  margin-top: auto;
+  align-self: flex-start;
+  color: #590FA9;
+  font-weight: 700;
+  text-decoration: none;
+  font-size: 14px;
+  transition: transform 0.15s ease;
+}
+
+.news_card__cta:hover {
+  text-decoration: underline;
+}
+
+.news_card:hover .news_card__cta {
+  transform: translateX(3px);
+}
+
+.news_archive__pagination {
+  margin-top: 48px;
+  text-align: center;
+}
+
+.news_archive__pagination .page-numbers {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 40px;
+  height: 40px;
+  padding: 0 12px;
+  background: #F1F1F1;
+  color: #404040;
+  border-radius: 6px;
+  font-weight: 700;
+  text-decoration: none;
+  margin: 0 2px;
+  transition: background 0.15s, color 0.15s;
+}
+
+.news_archive__pagination .page-numbers:hover {
+  background: #f3eaff;
+  color: #590FA9;
+}
+
+.news_archive__pagination .page-numbers.current {
+  background: #590FA9;
+  color: #fff;
+}
+
+.news_archive__empty {
+  text-align: center;
+  padding: 60px 20px;
+  background: #F1F1F1;
+  border-radius: 14px;
+  color: #6E6E6E;
+}
+
+/* ══════════════════════════════════════════════════════════
+   News single article — full-width modern editorial treatment
+   ══════════════════════════════════════════════════════════ */
+.post_hero {
+  position: relative;
+  overflow: hidden;
+  min-height: 420px;
+  display: flex;
+  align-items: flex-end;
+  color: #fff;
+  background: linear-gradient(135deg, #003982 0%, #590FA9 100%);
+}
+
+@media (max-width: 700px) {
+  .post_hero {
+    min-height: 320px;
+  }
+}
+
+.post_hero__bg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: 0;
+}
+
+.post_hero__overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(0, 57, 130, 0.55) 0%, rgba(89, 15, 169, 0.85) 100%);
+  z-index: 1;
+}
+
+.post_hero .wrapper {
+  position: relative;
+  z-index: 2;
+  padding: 80px 0 56px;
+  width: 100%;
+}
+
+.post_hero__inner {
+  max-width: 760px;
+}
+
+.post_hero__crumbs {
+  display: flex;
+  gap: 8px;
+  font-size: 13px;
+  margin-bottom: 18px;
+  color: rgba(255,255,255,0.7);
+  font-weight: 600;
+}
+
+.post_hero__crumbs a {
+  color: rgba(255,255,255,0.85);
+  text-decoration: none;
+  transition: color 0.15s ease;
+}
+
+.post_hero__crumbs a:hover { color: #fff; text-decoration: underline; }
+
+.post_hero__eyebrow {
+  display: inline-block;
+  background: rgba(255, 255, 255, 0.16);
+  color: #fff;
+  padding: 5px 14px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 16px;
+}
+
+.post_hero__title {
+  margin: 0 0 18px;
+  font-size: clamp(32px, 5vw, 56px);
+  font-weight: 900;
+  line-height: 1.1;
+  color: #FFB4E5;
+  letter-spacing: -0.02em;
+}
+
+.post_hero__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.92);
+  font-weight: 600;
+}
+
+.post_hero__meta-sep { opacity: 0.5; }
+
+/* Article body — centred column for readability */
+.post_article {
+  background: #fff;
+  padding: 56px 0 40px;
+}
+
+.post_article__body {
+  max-width: 720px;
+  margin: 0 auto;
+  font-size: 17px;
+  line-height: 1.75;
+  color: #404040;
+}
+
+.post_article__body > p {
+  margin: 0 0 20px;
+}
+
+.post_article__body > h2 {
+  font-size: 28px;
+  font-weight: 900;
+  color: #333333;
+  margin: 40px 0 14px;
+  line-height: 1.2;
+}
+
+.post_article__body > h3 {
+  font-size: 22px;
+  font-weight: 800;
+  color: #333333;
+  margin: 32px 0 12px;
+}
+
+.post_article__body > h4 {
+  font-size: 18px;
+  font-weight: 800;
+  color: #333333;
+  margin: 24px 0 10px;
+}
+
+.post_article__body a {
+  color: #590FA9;
+  text-decoration: underline;
+}
+
+.post_article__body a:hover { color: #490499; }
+
+.post_article__body img,
+.post_article__body .wp-block-image {
+  margin: 28px 0;
+  border-radius: 10px;
+  overflow: hidden;
+  max-width: 100%;
+  height: auto;
+}
+
+.post_article__body blockquote {
+  margin: 28px 0;
+  padding: 16px 22px;
+  border-left: 4px solid #590FA9;
+  background: #f3eaff;
+  border-radius: 0 8px 8px 0;
+  font-style: italic;
+  color: #404040;
+}
+
+.post_article__body ul,
+.post_article__body ol {
+  margin: 0 0 20px;
+  padding-left: 24px;
+}
+
+.post_article__body li {
+  margin-bottom: 8px;
+}
+
+.post_article__tags {
+  margin-top: 36px;
+  padding-top: 24px;
+  border-top: 1px solid #F1F1F1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+  align-items: baseline;
+}
+
+.post_article__tags-label {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: #590FA9;
+}
+
+.post_article__tag-list a {
+  display: inline-block;
+  padding: 4px 12px;
+  background: #F1F1F1;
+  color: #404040;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  text-decoration: none;
+  margin-right: 6px;
+}
+
+.post_article__tag-list a:hover {
+  background: #590FA9;
+  color: #fff;
+}
+
+.post_article__footer {
+  margin-top: 36px;
+  padding-top: 24px;
+  border-top: 1px solid #F1F1F1;
+}
+
+.post_article__back {
+  display: inline-block;
+  color: #590FA9;
+  font-weight: 700;
+  text-decoration: none;
+  font-size: 14px;
+}
+
+.post_article__back:hover { text-decoration: underline; }
+
+/* Related posts — clean grid of cards at the foot of the article */
+.post_related {
+  background: #F1F1F1;
+  padding: 64px 0 72px;
+}
+
+.post_related__header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 32px;
+}
+
+.post_related__heading {
+  margin: 0;
+  font-size: clamp(22px, 2.5vw, 30px);
+  font-weight: 900;
+  color: #333333;
+  letter-spacing: -0.01em;
+}
+
+.post_related__view-all {
+  color: #590FA9;
+  font-weight: 700;
+  text-decoration: none;
+  font-size: 14px;
+  transition: transform 0.15s ease;
+  display: inline-block;
+}
+
+.post_related__view-all:hover {
+  text-decoration: underline;
+  transform: translateX(2px);
+}
+
+.post_related__grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 20px;
+}
+
+@media (max-width: 900px) {
+  .post_related__grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.post_related__card {
+  background: #fff;
+  border-radius: 10px;
+  overflow: hidden;
+  text-decoration: none;
+  color: inherit;
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+  box-shadow: rgba(0,0,0,0.06) 0 1px 3px;
+}
+
+.post_related__card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.12);
+}
+
+.post_related__card-image {
+  height: 200px;
+  overflow: hidden;
+  background: #F1F1F1;
+}
+
+.post_related__card-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.post_related__card:hover .post_related__card-image img {
+  transform: scale(1.04);
+}
+
+.post_related__card-body {
+  padding: 18px 22px 22px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.post_related__card--no-image .post_related__card-body {
+  padding-top: 22px;
+}
+
+.post_related__card-tag {
+  align-self: flex-start;
+  font-size: 11px;
+  font-weight: 700;
+  color: #590FA9;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+}
+
+.post_related__card-title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 800;
+  line-height: 1.3;
+  color: #333333;
+}
+
+.post_related__card:hover .post_related__card-title {
+  color: #590FA9;
+}
+
+.post_related__card-time {
+  margin-top: auto;
+  font-size: 13px;
+  color: #6E6E6E;
+  font-weight: 600;
+}
+
 /* ── Shop landing (block-composed) — no sidebar, full-width ── */
 .scouts-woocommerce--landing {
   background: #fff;
@@ -960,26 +1593,71 @@ Text Domain: the-scouts-skills-for-life
 }
 
 /* ══════════════════════════════════════════════════════════
-   Single product page — slick treatment
+   Single product page — full-width modern treatment
    ══════════════════════════════════════════════════════════ */
-.scouts-woocommerce div.product {
-  padding: 0;
+.scouts-woocommerce--product {
+  background: #fff;
+  padding: 32px 0 64px;
 }
 
-.scouts-woocommerce div.product div.images {
+.product_crumbs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  font-size: 13px;
+  margin-bottom: 28px;
+  color: #6E6E6E;
+  font-weight: 600;
+}
+
+.product_crumbs a {
+  color: #590FA9;
+  text-decoration: none;
+}
+
+.product_crumbs a:hover {
+  text-decoration: underline;
+}
+
+.scouts-woocommerce--product div.product {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr) !important;
+  gap: 48px !important;
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+@media (max-width: 900px) {
+  .scouts-woocommerce--product div.product {
+    grid-template-columns: 1fr !important;
+    gap: 28px !important;
+  }
+}
+
+.scouts-woocommerce--product div.product div.images {
+  width: auto !important;
+  float: none !important;
+  margin: 0 !important;
   border-radius: 14px;
   overflow: hidden;
   background: #F1F1F1;
   border: 1px solid #CCCCCC;
 }
 
-.scouts-woocommerce div.product div.images img {
+.scouts-woocommerce--product div.product div.images img {
   display: block;
   width: 100%;
   height: auto;
 }
 
-.scouts-woocommerce div.product div.summary .product_title {
+.scouts-woocommerce--product div.product div.summary {
+  width: auto !important;
+  float: none !important;
+  margin: 0 !important;
+  padding: 0;
+}
+
+.scouts-woocommerce--product div.product .product_title {
   font-size: clamp(28px, 3.5vw, 40px);
   font-weight: 900;
   margin: 0 0 14px;
@@ -988,7 +1666,21 @@ Text Domain: the-scouts-skills-for-life
   line-height: 1.1;
 }
 
-.scouts-woocommerce div.product .stock {
+.scouts-woocommerce--product div.product .price {
+  font-size: 28px;
+  font-weight: 800;
+  color: #590FA9;
+  margin: 0 0 18px;
+}
+
+.scouts-woocommerce--product div.product .price del {
+  color: #999999;
+  font-weight: 400;
+  font-size: 20px;
+  margin-right: 8px;
+}
+
+.scouts-woocommerce--product div.product .stock {
   display: inline-block;
   padding: 4px 10px;
   background: #008A1C;
@@ -998,34 +1690,172 @@ Text Domain: the-scouts-skills-for-life
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  margin-top: 8px;
+  margin-bottom: 16px;
 }
 
-.scouts-woocommerce div.product .out-of-stock {
+.scouts-woocommerce--product div.product .out-of-stock {
   background: #ED3F23;
 }
 
-.scouts-woocommerce div.product form.cart {
-  margin: 24px 0;
-  padding: 20px;
+.scouts-woocommerce--product div.product .woocommerce-product-details__short-description {
+  font-size: 16px;
+  line-height: 1.6;
+  color: #404040;
+  margin-bottom: 24px;
+}
+
+.scouts-woocommerce--product div.product form.cart {
+  margin: 0 0 24px !important;
+  padding: 20px !important;
   background: #F1F1F1;
   border-radius: 10px;
-  display: flex;
-  flex-wrap: wrap;
+  display: flex !important;
+  flex-wrap: wrap !important;
   align-items: center;
   gap: 12px;
+  float: none !important;
 }
 
-.scouts-woocommerce div.product form.cart .quantity {
-  margin: 0;
+.scouts-woocommerce--product div.product form.cart .quantity {
+  margin: 0 !important;
+  float: none !important;
 }
 
-.scouts-woocommerce div.product form.cart .single_add_to_cart_button {
-  flex: 1;
-  min-width: 200px;
-  margin: 0;
-  padding: 14px 22px;
+.scouts-woocommerce--product div.product form.cart .quantity input.qty {
+  width: 70px;
+  padding: 10px 12px;
+  border: 1px solid #CCCCCC;
+  border-radius: 6px;
   font-size: 15px;
+  font-weight: 700;
+  text-align: center;
+}
+
+.scouts-woocommerce--product div.product form.cart .single_add_to_cart_button {
+  flex: 1 !important;
+  min-width: 200px;
+  margin: 0 !important;
+  padding: 14px 22px !important;
+  font-size: 15px !important;
+}
+
+.scouts-woocommerce--product div.product .product_meta {
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid #F1F1F1;
+  font-size: 13px;
+  color: #6E6E6E;
+}
+
+.scouts-woocommerce--product div.product .product_meta > span {
+  display: block;
+  margin-bottom: 6px;
+}
+
+/* ── Product tabs (Description / Reviews / Additional info) ── */
+.scouts-woocommerce--product div.product .woocommerce-tabs {
+  grid-column: 1 / -1 !important;
+  margin-top: 56px;
+  width: 100%;
+}
+
+.scouts-woocommerce--product div.product .woocommerce-tabs ul.tabs {
+  list-style: none;
+  display: flex !important;
+  flex-wrap: wrap;
+  gap: 0;
+  padding: 0 !important;
+  margin: 0 0 24px !important;
+  border-bottom: 2px solid #F1F1F1 !important;
+}
+
+.scouts-woocommerce--product div.product .woocommerce-tabs ul.tabs::before,
+.scouts-woocommerce--product div.product .woocommerce-tabs ul.tabs::after {
+  display: none !important;
+}
+
+.scouts-woocommerce--product div.product .woocommerce-tabs ul.tabs li {
+  margin: 0 !important;
+  padding: 0 !important;
+  background: transparent !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  position: static !important;
+}
+
+.scouts-woocommerce--product div.product .woocommerce-tabs ul.tabs li a {
+  display: block !important;
+  padding: 12px 22px !important;
+  color: #6E6E6E !important;
+  font-weight: 700 !important;
+  text-decoration: none !important;
+  border-bottom: 2px solid transparent !important;
+  margin-bottom: -2px !important;
+  background: transparent !important;
+  transition: color 0.15s ease, border-color 0.15s ease;
+}
+
+.scouts-woocommerce--product div.product .woocommerce-tabs ul.tabs li.active a,
+.scouts-woocommerce--product div.product .woocommerce-tabs ul.tabs li a:hover {
+  color: #590FA9 !important;
+  border-bottom-color: #590FA9 !important;
+}
+
+.scouts-woocommerce--product div.product .woocommerce-tabs .panel {
+  padding: 0 !important;
+  font-size: 16px;
+  line-height: 1.6;
+  color: #404040;
+}
+
+.scouts-woocommerce--product div.product .woocommerce-tabs .panel h2 {
+  font-size: 22px;
+  font-weight: 900;
+  color: #333333;
+  margin: 0 0 16px;
+}
+
+/* ── Related Products section under the tabs ──────────────── */
+.scouts-woocommerce--product div.product .related.products {
+  grid-column: 1 / -1 !important;
+  margin-top: 56px;
+  padding-top: 48px;
+  border-top: 1px solid #F1F1F1;
+  width: 100%;
+}
+
+.scouts-woocommerce--product div.product .related.products > h2 {
+  font-size: 24px;
+  font-weight: 900;
+  color: #333333;
+  margin: 0 0 24px;
+}
+
+.scouts-woocommerce--product div.product .related.products ul.products {
+  display: grid !important;
+  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  gap: 20px !important;
+  list-style: none;
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+@media (max-width: 1100px) {
+  .scouts-woocommerce--product div.product .related.products ul.products {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  }
+}
+
+@media (max-width: 800px) {
+  .scouts-woocommerce--product div.product .related.products ul.products {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .scouts-woocommerce--product div.product .related.products ul.products {
+    grid-template-columns: 1fr !important;
+  }
 }
 
 /* ══════════════════════════════════════════════════════════
