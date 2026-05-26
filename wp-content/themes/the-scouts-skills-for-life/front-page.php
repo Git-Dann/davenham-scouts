@@ -102,25 +102,27 @@ if ( $notice_text ) : ?>
     $news_query = new WP_Query( [ 'post_type' => 'post', 'posts_per_page' => 3, 'post_status' => 'publish' ] );
     if ( $news_query->have_posts() ) : ?>
     <section class="news_section">
-        <div class="wrapper cf">
+        <div class="wrapper">
             <div class="title_bar">
                 <h3>Latest News</h3>
                 <?php $news_page = get_option( 'page_for_posts' );
                 if ( $news_page ) : ?>
-                    <a href="<?php echo esc_url( get_permalink( $news_page ) ); ?>" class="btn green">All News</a>
+                    <a href="<?php echo esc_url( get_permalink( $news_page ) ); ?>" class="btn outline">All News</a>
                 <?php endif; ?>
             </div>
             <div class="news_blocks cf">
                 <?php while ( $news_query->have_posts() ) : $news_query->the_post(); ?>
                 <div class="news_block">
                     <?php if ( has_post_thumbnail() ) : ?>
-                        <a href="<?php the_permalink(); ?>"><?php the_post_thumbnail( 'medium_large' ); ?></a>
+                        <a href="<?php the_permalink(); ?>" class="news_block__image" tabindex="-1" aria-hidden="true">
+                            <?php the_post_thumbnail( 'medium_large' ); ?>
+                        </a>
                     <?php endif; ?>
-                    <div class="text">
+                    <div class="news_block__body">
+                        <time datetime="<?php echo esc_attr( get_the_date( 'c' ) ); ?>"><?php echo esc_html( get_the_date( 'jS M Y' ) ); ?></time>
                         <h4><a href="<?php the_permalink(); ?>"><?php the_title(); ?></a></h4>
-                        <time datetime="<?php echo esc_attr( get_the_date( 'c' ) ); ?>"><?php echo esc_html( get_the_date() ); ?></time>
-                        <?php the_excerpt(); ?>
-                        <a href="<?php the_permalink(); ?>" class="btn green">Read more</a>
+                        <div class="news_block__excerpt"><?php the_excerpt(); ?></div>
+                        <a href="<?php the_permalink(); ?>" class="btn outline">Read more</a>
                     </div>
                 </div>
                 <?php endwhile; wp_reset_postdata(); ?>
