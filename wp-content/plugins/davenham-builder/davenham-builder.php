@@ -85,8 +85,8 @@ function db_register_blocks() {
 add_action( 'admin_menu', 'db_register_admin_menu' );
 function db_register_admin_menu() {
 	add_menu_page(
-		'Davenham Builder',
-		'Builder',
+		__( 'Davenham Builder', 'davenham-builder' ),
+		__( 'Builder', 'davenham-builder' ),
 		'edit_pages',
 		'davenham-builder',
 		'db_render_builder_page',
@@ -94,10 +94,14 @@ function db_register_admin_menu() {
 		3
 	);
 
+	// First submenu duplicates the parent slug — WordPress shows it as the
+	// default sub-item label. "Page Builder" reads accurately (the screen IS
+	// the page builder), unlike the previous misleading "Starter Presets"
+	// (the screen does not open straight onto presets).
 	add_submenu_page(
 		'davenham-builder',
-		'Starter Presets',
-		'Starter Presets',
+		__( 'Page Builder', 'davenham-builder' ),
+		__( 'Page Builder', 'davenham-builder' ),
 		'edit_pages',
 		'davenham-builder',
 		'db_render_builder_page'
@@ -105,8 +109,8 @@ function db_register_admin_menu() {
 
 	add_submenu_page(
 		'davenham-builder',
-		'Site Settings',
-		'Site Settings',
+		__( 'Site Settings', 'davenham-builder' ),
+		__( 'Site Settings', 'davenham-builder' ),
 		'manage_options',
 		'davenham-builder-site-settings',
 		'db_render_site_settings_page'
@@ -218,68 +222,102 @@ function db_register_site_settings() {
 
 function db_render_site_settings_page() {
 	if ( ! current_user_can( 'manage_options' ) ) {
-		wp_die( 'Not allowed.' );
+		wp_die( esc_html__( 'You do not have permission to access this page.', 'davenham-builder' ) );
 	}
 
 	$settings = db_get_site_settings();
 	?>
-	<div class="wrap">
-		<h1>Davenham Builder Site Settings</h1>
-		<p>Manage the site-wide pieces that sit around the page builder: header logo and CTAs, footer content, cookie banner, popup promo, and newsletter defaults.</p>
+	<div class="wrap db-settings-wrap">
+		<h1><?php esc_html_e( 'Site Settings', 'davenham-builder' ); ?></h1>
+		<p class="db-settings-lede">
+			<?php esc_html_e( 'These are the site-wide pieces that wrap around your pages — header, footer, the cookie banner, an optional welcome popup, and your newsletter defaults. Changes save together.', 'davenham-builder' ); ?>
+		</p>
+
 		<form method="post" action="options.php" class="db-site-settings">
 			<?php settings_fields( 'davenham_builder_site_settings' ); ?>
-			<h2>Header</h2>
-			<table class="form-table" role="presentation">
-				<tr>
-					<th scope="row"><label for="db_logo_url">Logo</label></th>
-					<td>
-						<input type="hidden" id="db_logo_id" name="davenham_builder_site_settings[logo_id]" value="<?php echo esc_attr( (string) $settings['logo_id'] ); ?>" />
-						<input type="url" class="regular-text" id="db_logo_url" name="davenham_builder_site_settings[logo_url]" value="<?php echo esc_attr( $settings['logo_url'] ); ?>" />
-						<button type="button" class="button db-media-open" data-target="#db_logo_url" data-id-target="#db_logo_id">Choose image</button>
-						<button type="button" class="button db-media-clear" data-target="#db_logo_url" data-id-target="#db_logo_id">Remove</button>
-					</td>
-				</tr>
-				<tr><th scope="row">Primary CTA</th><td><input type="text" class="regular-text" name="davenham_builder_site_settings[header_primary_cta_text]" value="<?php echo esc_attr( $settings['header_primary_cta_text'] ); ?>" /> <input type="url" class="regular-text" name="davenham_builder_site_settings[header_primary_cta_url]" value="<?php echo esc_attr( $settings['header_primary_cta_url'] ); ?>" /></td></tr>
-				<tr><th scope="row">Secondary CTA</th><td><input type="text" class="regular-text" name="davenham_builder_site_settings[header_secondary_cta_text]" value="<?php echo esc_attr( $settings['header_secondary_cta_text'] ); ?>" /> <input type="url" class="regular-text" name="davenham_builder_site_settings[header_secondary_cta_url]" value="<?php echo esc_attr( $settings['header_secondary_cta_url'] ); ?>" /></td></tr>
-			</table>
 
-			<h2>Footer</h2>
-			<table class="form-table" role="presentation">
-				<tr><th scope="row">Title line</th><td><input type="text" class="large-text" name="davenham_builder_site_settings[footer_title]" value="<?php echo esc_attr( $settings['footer_title'] ); ?>" /></td></tr>
-				<tr><th scope="row">Intro</th><td><textarea class="large-text" rows="3" name="davenham_builder_site_settings[footer_intro]"><?php echo esc_textarea( $settings['footer_intro'] ); ?></textarea></td></tr>
-				<tr><th scope="row">Address</th><td><textarea class="large-text" rows="3" name="davenham_builder_site_settings[footer_address]"><?php echo esc_textarea( $settings['footer_address'] ); ?></textarea></td></tr>
-				<tr><th scope="row">Contact link</th><td><input type="text" class="regular-text" name="davenham_builder_site_settings[footer_contact_text]" value="<?php echo esc_attr( $settings['footer_contact_text'] ); ?>" /> <input type="url" class="regular-text" name="davenham_builder_site_settings[footer_contact_url]" value="<?php echo esc_attr( $settings['footer_contact_url'] ); ?>" /></td></tr>
-				<tr><th scope="row">Facebook</th><td><input type="url" class="regular-text" name="davenham_builder_site_settings[footer_social_facebook]" value="<?php echo esc_attr( $settings['footer_social_facebook'] ); ?>" /></td></tr>
-				<tr><th scope="row">X / Twitter</th><td><input type="url" class="regular-text" name="davenham_builder_site_settings[footer_social_x]" value="<?php echo esc_attr( $settings['footer_social_x'] ); ?>" /></td></tr>
-				<tr><th scope="row">Charity number</th><td><input type="text" class="regular-text" name="davenham_builder_site_settings[charity_number]" value="<?php echo esc_attr( $settings['charity_number'] ); ?>" /></td></tr>
-			</table>
+			<section class="db-settings-card">
+				<h2><?php esc_html_e( 'Header', 'davenham-builder' ); ?></h2>
+				<p class="db-settings-card__desc"><?php esc_html_e( 'The logo and call-to-action buttons that appear at the top of every page.', 'davenham-builder' ); ?></p>
+				<table class="form-table" role="presentation">
+					<tr>
+						<th scope="row"><label for="db_logo_url"><?php esc_html_e( 'Logo', 'davenham-builder' ); ?></label></th>
+						<td>
+							<input type="hidden" id="db_logo_id" name="davenham_builder_site_settings[logo_id]" value="<?php echo esc_attr( (string) $settings['logo_id'] ); ?>" />
+							<input type="url" class="regular-text" id="db_logo_url" name="davenham_builder_site_settings[logo_url]" value="<?php echo esc_attr( $settings['logo_url'] ); ?>" />
+							<button type="button" class="button db-media-open" data-target="#db_logo_url" data-id-target="#db_logo_id"><?php esc_html_e( 'Choose image', 'davenham-builder' ); ?></button>
+							<button type="button" class="button db-media-clear" data-target="#db_logo_url" data-id-target="#db_logo_id"><?php esc_html_e( 'Remove', 'davenham-builder' ); ?></button>
+							<p class="description"><?php esc_html_e( 'Upload your group logo (SVG or PNG, ideally white-on-transparent for the header).', 'davenham-builder' ); ?></p>
+						</td>
+					</tr>
+					<tr>
+						<th scope="row"><label><?php esc_html_e( 'Primary CTA', 'davenham-builder' ); ?></label></th>
+						<td>
+							<input type="text" class="regular-text" name="davenham_builder_site_settings[header_primary_cta_text]" placeholder="<?php esc_attr_e( 'Button label', 'davenham-builder' ); ?>" value="<?php echo esc_attr( $settings['header_primary_cta_text'] ); ?>" />
+							<input type="url" class="regular-text" name="davenham_builder_site_settings[header_primary_cta_url]" placeholder="https://…" value="<?php echo esc_attr( $settings['header_primary_cta_url'] ); ?>" />
+							<p class="description"><?php esc_html_e( 'Main call-to-action in the header (e.g. "Volunteer").', 'davenham-builder' ); ?></p>
+						</td>
+					</tr>
+					<tr>
+						<th scope="row"><label><?php esc_html_e( 'Secondary CTA', 'davenham-builder' ); ?></label></th>
+						<td>
+							<input type="text" class="regular-text" name="davenham_builder_site_settings[header_secondary_cta_text]" placeholder="<?php esc_attr_e( 'Button label', 'davenham-builder' ); ?>" value="<?php echo esc_attr( $settings['header_secondary_cta_text'] ); ?>" />
+							<input type="url" class="regular-text" name="davenham_builder_site_settings[header_secondary_cta_url]" placeholder="https://…" value="<?php echo esc_attr( $settings['header_secondary_cta_url'] ); ?>" />
+							<p class="description"><?php esc_html_e( 'Secondary call-to-action (e.g. "Join Scouts").', 'davenham-builder' ); ?></p>
+						</td>
+					</tr>
+				</table>
+			</section>
 
-			<h2>Cookie Banner</h2>
-			<table class="form-table" role="presentation">
-				<tr><th scope="row">Enable cookie banner</th><td><label><input type="checkbox" name="davenham_builder_site_settings[cookie_enabled]" value="1" <?php checked( $settings['cookie_enabled'], '1' ); ?> /> Show the site-wide cookie banner.</label></td></tr>
-				<tr><th scope="row">Cookie text</th><td><textarea class="large-text" rows="3" name="davenham_builder_site_settings[cookie_text]"><?php echo esc_textarea( $settings['cookie_text'] ); ?></textarea></td></tr>
-				<tr><th scope="row">Buttons</th><td><input type="text" class="regular-text" name="davenham_builder_site_settings[cookie_accept_label]" value="<?php echo esc_attr( $settings['cookie_accept_label'] ); ?>" /> <input type="text" class="regular-text" name="davenham_builder_site_settings[cookie_reject_label]" value="<?php echo esc_attr( $settings['cookie_reject_label'] ); ?>" /></td></tr>
-				<tr><th scope="row">Policy link</th><td><input type="text" class="regular-text" name="davenham_builder_site_settings[cookie_policy_label]" value="<?php echo esc_attr( $settings['cookie_policy_label'] ); ?>" /> <input type="url" class="regular-text" name="davenham_builder_site_settings[cookie_policy_url]" value="<?php echo esc_attr( $settings['cookie_policy_url'] ); ?>" /></td></tr>
-			</table>
+			<section class="db-settings-card">
+				<h2><?php esc_html_e( 'Footer', 'davenham-builder' ); ?></h2>
+				<p class="db-settings-card__desc"><?php esc_html_e( 'Group identity, address, social links and the registered charity number shown at the bottom of every page.', 'davenham-builder' ); ?></p>
+				<table class="form-table" role="presentation">
+					<tr><th scope="row"><label><?php esc_html_e( 'Title line', 'davenham-builder' ); ?></label></th><td><input type="text" class="large-text" name="davenham_builder_site_settings[footer_title]" value="<?php echo esc_attr( $settings['footer_title'] ); ?>" /><p class="description"><?php esc_html_e( 'Short tagline shown next to your logo in the footer.', 'davenham-builder' ); ?></p></td></tr>
+					<tr><th scope="row"><label><?php esc_html_e( 'Intro', 'davenham-builder' ); ?></label></th><td><textarea class="large-text" rows="3" name="davenham_builder_site_settings[footer_intro]"><?php echo esc_textarea( $settings['footer_intro'] ); ?></textarea></td></tr>
+					<tr><th scope="row"><label><?php esc_html_e( 'Address', 'davenham-builder' ); ?></label></th><td><textarea class="large-text" rows="3" name="davenham_builder_site_settings[footer_address]"><?php echo esc_textarea( $settings['footer_address'] ); ?></textarea><p class="description"><?php esc_html_e( 'One line per row — appears in the Contact column.', 'davenham-builder' ); ?></p></td></tr>
+					<tr><th scope="row"><label><?php esc_html_e( 'Contact link', 'davenham-builder' ); ?></label></th><td><input type="text" class="regular-text" name="davenham_builder_site_settings[footer_contact_text]" placeholder="<?php esc_attr_e( 'Link label', 'davenham-builder' ); ?>" value="<?php echo esc_attr( $settings['footer_contact_text'] ); ?>" /> <input type="url" class="regular-text" name="davenham_builder_site_settings[footer_contact_url]" placeholder="https://…" value="<?php echo esc_attr( $settings['footer_contact_url'] ); ?>" /></td></tr>
+					<tr><th scope="row"><label><?php esc_html_e( 'Facebook', 'davenham-builder' ); ?></label></th><td><input type="url" class="regular-text" name="davenham_builder_site_settings[footer_social_facebook]" placeholder="https://www.facebook.com/…" value="<?php echo esc_attr( $settings['footer_social_facebook'] ); ?>" /></td></tr>
+					<tr><th scope="row"><label><?php esc_html_e( 'X / Twitter', 'davenham-builder' ); ?></label></th><td><input type="url" class="regular-text" name="davenham_builder_site_settings[footer_social_x]" placeholder="https://twitter.com/…" value="<?php echo esc_attr( $settings['footer_social_x'] ); ?>" /></td></tr>
+					<tr><th scope="row"><label><?php esc_html_e( 'Charity number', 'davenham-builder' ); ?></label></th><td><input type="text" class="regular-text" name="davenham_builder_site_settings[charity_number]" value="<?php echo esc_attr( $settings['charity_number'] ); ?>" /><p class="description"><?php esc_html_e( 'Registered charity number — appears next to copyright in the footer.', 'davenham-builder' ); ?></p></td></tr>
+				</table>
+			</section>
 
-			<h2>Popup Promo</h2>
-			<table class="form-table" role="presentation">
-				<tr><th scope="row">Enable popup</th><td><label><input type="checkbox" name="davenham_builder_site_settings[popup_enabled]" value="1" <?php checked( $settings['popup_enabled'], '1' ); ?> /> Show a site-wide popup once per browser.</label></td></tr>
-				<tr><th scope="row">Popup title</th><td><input type="text" class="large-text" name="davenham_builder_site_settings[popup_title]" value="<?php echo esc_attr( $settings['popup_title'] ); ?>" /></td></tr>
-				<tr><th scope="row">Popup content</th><td><textarea class="large-text" rows="5" name="davenham_builder_site_settings[popup_content]"><?php echo esc_textarea( $settings['popup_content'] ); ?></textarea></td></tr>
-				<tr><th scope="row">Popup CTA</th><td><input type="text" class="regular-text" name="davenham_builder_site_settings[popup_button_text]" value="<?php echo esc_attr( $settings['popup_button_text'] ); ?>" /> <input type="url" class="regular-text" name="davenham_builder_site_settings[popup_button_url]" value="<?php echo esc_attr( $settings['popup_button_url'] ); ?>" /></td></tr>
-				<tr><th scope="row">Delay</th><td><input type="number" min="0" max="60" class="small-text" name="davenham_builder_site_settings[popup_delay]" value="<?php echo esc_attr( (string) $settings['popup_delay'] ); ?>" /> seconds after page load</td></tr>
-			</table>
+			<section class="db-settings-card">
+				<h2><?php esc_html_e( 'Cookie Banner', 'davenham-builder' ); ?></h2>
+				<p class="db-settings-card__desc"><?php esc_html_e( 'The GDPR-friendly cookie notice that appears once per visitor. Disable if your hosting handles this another way.', 'davenham-builder' ); ?></p>
+				<table class="form-table" role="presentation">
+					<tr><th scope="row"><label><?php esc_html_e( 'Enable cookie banner', 'davenham-builder' ); ?></label></th><td><label><input type="checkbox" name="davenham_builder_site_settings[cookie_enabled]" value="1" <?php checked( $settings['cookie_enabled'], '1' ); ?> /> <?php esc_html_e( 'Show the site-wide cookie banner.', 'davenham-builder' ); ?></label></td></tr>
+					<tr><th scope="row"><label><?php esc_html_e( 'Cookie text', 'davenham-builder' ); ?></label></th><td><textarea class="large-text" rows="3" name="davenham_builder_site_settings[cookie_text]"><?php echo esc_textarea( $settings['cookie_text'] ); ?></textarea></td></tr>
+					<tr><th scope="row"><label><?php esc_html_e( 'Buttons', 'davenham-builder' ); ?></label></th><td><input type="text" class="regular-text" name="davenham_builder_site_settings[cookie_accept_label]" placeholder="<?php esc_attr_e( 'Accept label', 'davenham-builder' ); ?>" value="<?php echo esc_attr( $settings['cookie_accept_label'] ); ?>" /> <input type="text" class="regular-text" name="davenham_builder_site_settings[cookie_reject_label]" placeholder="<?php esc_attr_e( 'Reject label', 'davenham-builder' ); ?>" value="<?php echo esc_attr( $settings['cookie_reject_label'] ); ?>" /></td></tr>
+					<tr><th scope="row"><label><?php esc_html_e( 'Policy link', 'davenham-builder' ); ?></label></th><td><input type="text" class="regular-text" name="davenham_builder_site_settings[cookie_policy_label]" placeholder="<?php esc_attr_e( 'Link label', 'davenham-builder' ); ?>" value="<?php echo esc_attr( $settings['cookie_policy_label'] ); ?>" /> <input type="url" class="regular-text" name="davenham_builder_site_settings[cookie_policy_url]" placeholder="https://…" value="<?php echo esc_attr( $settings['cookie_policy_url'] ); ?>" /></td></tr>
+				</table>
+			</section>
 
-			<h2>Newsletter Defaults</h2>
-			<table class="form-table" role="presentation">
-				<tr><th scope="row">Newsletter title</th><td><input type="text" class="large-text" name="davenham_builder_site_settings[newsletter_title]" value="<?php echo esc_attr( $settings['newsletter_title'] ); ?>" /></td></tr>
-				<tr><th scope="row">Newsletter text</th><td><textarea class="large-text" rows="3" name="davenham_builder_site_settings[newsletter_text]"><?php echo esc_textarea( $settings['newsletter_text'] ); ?></textarea></td></tr>
-				<tr><th scope="row">Embed / shortcode</th><td><textarea class="large-text code" rows="5" name="davenham_builder_site_settings[newsletter_embed]"><?php echo esc_textarea( $settings['newsletter_embed'] ); ?></textarea></td></tr>
-				<tr><th scope="row">Fallback CTA</th><td><input type="text" class="regular-text" name="davenham_builder_site_settings[newsletter_button_text]" value="<?php echo esc_attr( $settings['newsletter_button_text'] ); ?>" /> <input type="url" class="regular-text" name="davenham_builder_site_settings[newsletter_button_url]" value="<?php echo esc_attr( $settings['newsletter_button_url'] ); ?>" /></td></tr>
-			</table>
+			<section class="db-settings-card">
+				<h2><?php esc_html_e( 'Popup Promo', 'davenham-builder' ); ?></h2>
+				<p class="db-settings-card__desc"><?php esc_html_e( 'A one-time popup shown to each visitor (handy for event announcements). Stays dismissed in their browser after they close it.', 'davenham-builder' ); ?></p>
+				<table class="form-table" role="presentation">
+					<tr><th scope="row"><label><?php esc_html_e( 'Enable popup', 'davenham-builder' ); ?></label></th><td><label><input type="checkbox" name="davenham_builder_site_settings[popup_enabled]" value="1" <?php checked( $settings['popup_enabled'], '1' ); ?> /> <?php esc_html_e( 'Show a site-wide popup once per browser.', 'davenham-builder' ); ?></label></td></tr>
+					<tr><th scope="row"><label><?php esc_html_e( 'Popup title', 'davenham-builder' ); ?></label></th><td><input type="text" class="large-text" name="davenham_builder_site_settings[popup_title]" value="<?php echo esc_attr( $settings['popup_title'] ); ?>" /></td></tr>
+					<tr><th scope="row"><label><?php esc_html_e( 'Popup content', 'davenham-builder' ); ?></label></th><td><textarea class="large-text" rows="5" name="davenham_builder_site_settings[popup_content]"><?php echo esc_textarea( $settings['popup_content'] ); ?></textarea><p class="description"><?php esc_html_e( 'Basic HTML is allowed (paragraphs, links, line breaks).', 'davenham-builder' ); ?></p></td></tr>
+					<tr><th scope="row"><label><?php esc_html_e( 'Popup CTA', 'davenham-builder' ); ?></label></th><td><input type="text" class="regular-text" name="davenham_builder_site_settings[popup_button_text]" placeholder="<?php esc_attr_e( 'Button label', 'davenham-builder' ); ?>" value="<?php echo esc_attr( $settings['popup_button_text'] ); ?>" /> <input type="url" class="regular-text" name="davenham_builder_site_settings[popup_button_url]" placeholder="https://…" value="<?php echo esc_attr( $settings['popup_button_url'] ); ?>" /></td></tr>
+					<tr><th scope="row"><label><?php esc_html_e( 'Delay', 'davenham-builder' ); ?></label></th><td><input type="number" min="0" max="60" class="small-text" name="davenham_builder_site_settings[popup_delay]" value="<?php echo esc_attr( (string) $settings['popup_delay'] ); ?>" /> <?php esc_html_e( 'seconds after page load', 'davenham-builder' ); ?></td></tr>
+				</table>
+			</section>
 
-			<?php submit_button( 'Save Site Settings' ); ?>
+			<section class="db-settings-card">
+				<h2><?php esc_html_e( 'Newsletter Defaults', 'davenham-builder' ); ?></h2>
+				<p class="db-settings-card__desc"><?php esc_html_e( 'Default copy used by the newsletter strip and Newsletter Signup block when they have no per-instance content set.', 'davenham-builder' ); ?></p>
+				<table class="form-table" role="presentation">
+					<tr><th scope="row"><label><?php esc_html_e( 'Newsletter title', 'davenham-builder' ); ?></label></th><td><input type="text" class="large-text" name="davenham_builder_site_settings[newsletter_title]" value="<?php echo esc_attr( $settings['newsletter_title'] ); ?>" /></td></tr>
+					<tr><th scope="row"><label><?php esc_html_e( 'Newsletter text', 'davenham-builder' ); ?></label></th><td><textarea class="large-text" rows="3" name="davenham_builder_site_settings[newsletter_text]"><?php echo esc_textarea( $settings['newsletter_text'] ); ?></textarea></td></tr>
+					<tr><th scope="row"><label><?php esc_html_e( 'Embed / shortcode', 'davenham-builder' ); ?></label></th><td><textarea class="large-text code" rows="5" name="davenham_builder_site_settings[newsletter_embed]"><?php echo esc_textarea( $settings['newsletter_embed'] ); ?></textarea><p class="description"><?php esc_html_e( 'Paste a Mailchimp / ConvertKit / etc. embed code, or a WordPress shortcode. Leave blank to use the fallback CTA below.', 'davenham-builder' ); ?></p></td></tr>
+					<tr><th scope="row"><label><?php esc_html_e( 'Fallback CTA', 'davenham-builder' ); ?></label></th><td><input type="text" class="regular-text" name="davenham_builder_site_settings[newsletter_button_text]" placeholder="<?php esc_attr_e( 'Button label', 'davenham-builder' ); ?>" value="<?php echo esc_attr( $settings['newsletter_button_text'] ); ?>" /> <input type="url" class="regular-text" name="davenham_builder_site_settings[newsletter_button_url]" placeholder="https://…" value="<?php echo esc_attr( $settings['newsletter_button_url'] ); ?>" /></td></tr>
+				</table>
+			</section>
+
+			<?php submit_button( __( 'Save Site Settings', 'davenham-builder' ) ); ?>
 		</form>
 	</div>
 	<?php

@@ -1079,3 +1079,70 @@
   font-weight: 600;
   color: #008A1C;
 }
+
+/* ── Site Settings page (admin) ─────────────────────────── */
+.db-settings-wrap {
+  max-width: 980px;
+}
+
+.db-settings-lede {
+  margin: 8px 0 24px;
+  font-size: 15px;
+  color: #404040;
+  max-width: 70ch;
+  line-height: 1.6;
+}
+
+.db-settings-card {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 20px 24px 8px;
+  margin: 0 0 20px;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
+}
+
+.db-settings-card h2 {
+  margin: 0 0 4px;
+  padding: 0;
+  font-size: 17px;
+  font-weight: 700;
+  color: #590FA9;
+  border-bottom: 0;
+}
+
+.db-settings-card__desc {
+  margin: 0 0 12px;
+  font-size: 13px;
+  color: #6E6E6E;
+  max-width: 70ch;
+  line-height: 1.5;
+}
+
+.db-settings-card .form-table {
+  margin-top: 0;
+}
+
+.db-settings-card .form-table th {
+  padding-left: 0;
+  font-weight: 700;
+  color: #333333;
+}
+
+.db-settings-card .form-table td .description {
+  font-size: 12px;
+  color: #6E6E6E;
+  margin-top: 6px;
+  font-style: normal;
+}
+
+.db-settings-card .form-table td input[type="text"]:focus,
+.db-settings-card .form-table td input[type="url"]:focus,
+.db-settings-card .form-table td input[type="email"]:focus,
+.db-settings-card .form-table td input[type="number"]:focus,
+.db-settings-card .form-table td textarea:focus,
+.db-settings-card .form-table td select:focus {
+  border-color: #590FA9;
+  box-shadow: 0 0 0 3px rgba(89, 15, 169, 0.15);
+  outline: none;
+}
