@@ -600,27 +600,61 @@ Text Domain: the-scouts-skills-for-life
   max-width: 100%;
 }
 
-.scouts-woocommerce--category ul.products {
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 20px;
+/* Hide WooCommerce's default archive h1 + description on category pages
+   — our branded .shop_cat_hero already shows them with proper styling. */
+.scouts-woocommerce--category .woocommerce-products-header,
+.scouts-woocommerce--category .woocommerce-products-header__title,
+.scouts-woocommerce--category .term-description,
+.scouts-woocommerce--category .page-description {
+  display: none !important;
+}
+
+/* Product grid: 4-col, override production.css's 100px row-gap */
+.scouts-woocommerce--category ul.products,
+.scouts-woocommerce ul.products {
+  display: grid !important;
+  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  gap: 24px !important;
+  grid-row-gap: 24px !important;
+  column-gap: 24px !important;
+  row-gap: 24px !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  list-style: none;
+  width: 100%;
+  clear: both;
 }
 
 @media (max-width: 1100px) {
-  .scouts-woocommerce--category ul.products {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+  .scouts-woocommerce--category ul.products,
+  .scouts-woocommerce ul.products {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
   }
 }
 
 @media (max-width: 800px) {
-  .scouts-woocommerce--category ul.products {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+  .scouts-woocommerce--category ul.products,
+  .scouts-woocommerce ul.products {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
   }
 }
 
 @media (max-width: 480px) {
-  .scouts-woocommerce--category ul.products {
-    grid-template-columns: 1fr;
+  .scouts-woocommerce--category ul.products,
+  .scouts-woocommerce ul.products {
+    grid-template-columns: 1fr !important;
   }
+}
+
+/* Ensure each product li is a normal block item inside the grid, not
+   floated/inline-block from production.css */
+.scouts-woocommerce ul.products li.product,
+.scouts-woocommerce--category ul.products li.product {
+  float: none !important;
+  width: auto !important;
+  margin: 0 !important;
+  display: flex;
+  flex-direction: column;
 }
 
 /* ── Category Hero (replaces generic "Shop" hero on /product-category/X/) */
@@ -727,15 +761,21 @@ Text Domain: the-scouts-skills-for-life
 }
 
 /* ── Sort/result-count toolbar on category pages ──────────── */
+/* WC outputs <p.woocommerce-result-count> + <form.woocommerce-ordering>
+   inline with the products. Default WC CSS floats the ordering form
+   right which collapses the product grid into the narrow column left
+   of it. Force them into a proper flex bar at the top, then clear the
+   float before the products grid renders. */
 .scouts-woocommerce--category .woocommerce-result-count,
 .scouts-woocommerce--category .woocommerce-ordering {
-  margin: 0;
   font-size: 13px;
   color: #6E6E6E;
+  margin: 0;
+  float: none !important;
 }
 
-.scouts-woocommerce--category .woocommerce-ordering {
-  float: right;
+.scouts-woocommerce--category .woocommerce-result-count {
+  align-self: center;
 }
 
 .scouts-woocommerce--category .woocommerce-ordering select {
@@ -747,6 +787,7 @@ Text Domain: the-scouts-skills-for-life
   font-weight: 600;
   color: #333333;
   cursor: pointer;
+  -webkit-appearance: menulist;
 }
 
 .scouts-woocommerce--category .woocommerce-ordering select:focus {
@@ -755,18 +796,49 @@ Text Domain: the-scouts-skills-for-life
   box-shadow: 0 0 0 3px rgba(89, 15, 169, 0.15);
 }
 
-.scouts-woocommerce--category .woocommerce-result-count + .woocommerce-ordering,
-.scouts-woocommerce--category .woocommerce-notices-wrapper + .woocommerce-result-count {
-  margin-top: 0;
+/* Layout the toolbar as a flex bar above the products grid */
+.scouts-woocommerce--category .scouts-woocommerce__main {
+  display: flex;
+  flex-direction: column;
 }
 
-/* Wrap result-count + ordering in a flex bar */
-.scouts-woocommerce--category .scouts-woocommerce__main::before {
-  content: '';
-  display: block;
-  margin-bottom: 24px;
-  border-bottom: 1px solid #F1F1F1;
+.scouts-woocommerce--category .woocommerce-notices-wrapper {
+  order: 0;
 }
+
+.scouts-woocommerce--category .woocommerce-result-count {
+  order: 1;
+}
+
+.scouts-woocommerce--category .woocommerce-ordering {
+  order: 2;
+  margin-left: auto;
+  margin-bottom: 16px;
+}
+
+.scouts-woocommerce--category ul.products {
+  order: 3;
+  clear: both;
+  width: 100%;
+}
+
+/* Toolbar bar — uses CSS Grid so result-count and ordering sit on one row */
+.scouts-woocommerce--category .scouts-woocommerce__main {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  grid-template-areas:
+    "notices  notices"
+    "results  ordering"
+    "products products";
+  column-gap: 16px;
+  row-gap: 8px;
+  align-items: center;
+}
+
+.scouts-woocommerce--category .woocommerce-notices-wrapper { grid-area: notices; }
+.scouts-woocommerce--category .woocommerce-result-count    { grid-area: results;  margin: 0; }
+.scouts-woocommerce--category .woocommerce-ordering        { grid-area: ordering; margin: 0; }
+.scouts-woocommerce--category ul.products                   { grid-area: products; margin-top: 24px; padding-top: 24px; border-top: 1px solid #F1F1F1; }
 
 /* ── Pagination ──────────────────────────────────────────── */
 .scouts-woocommerce .woocommerce-pagination {
