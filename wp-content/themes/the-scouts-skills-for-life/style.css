@@ -96,7 +96,8 @@ Text Domain: the-scouts-skills-for-life
   margin: 0 0 16px;
 }
 
-.hero.standard .inner h1.post__title {
+.hero.standard .inner h1.post__title,
+.hero.standard .inner h1.page__title {
   font-size: clamp(2rem, 4.5vw, 3rem);
   line-height: 1.1;
   font-weight: 900;
@@ -145,7 +146,7 @@ Text Domain: the-scouts-skills-for-life
 }
 
 .main_content.playground article img {
-  border-radius: 8px;
+  border-radius: 10px;
 }
 
 /* Footer 4-column layout — override production.css which sets
@@ -561,7 +562,7 @@ Text Domain: the-scouts-skills-for-life
 
 /* ── Age Groups Section ───────────────────────────────────── */
 .age_groups_section {
-  background: #f0f1f2;
+  background: #F1F1F1;
   padding: 64px 0;
 }
 
@@ -1142,9 +1143,9 @@ nav.pagination {
 .gallery-callout {
   margin-top: 36px;
   padding: 24px 28px;
-  background: #eef7fb;
+  background: #F1F1F1;
   border-left: 4px solid #088486;
-  border-radius: 8px;
+  border-radius: 10px;
 }
 
 .gallery-callout strong {
@@ -1334,7 +1335,7 @@ nav.pagination {
 }
 
 .site-promo-modal__content {
-  color: #475467;
+  color: #404040;
 }
 
 .site-promo-modal__close {
@@ -1342,14 +1343,24 @@ nav.pagination {
   top: 14px;
   right: 14px;
   border: 0;
-  background: #f3f4f6;
-  color: #111827;
+  background: #F1F1F1;
+  color: #333333;
   width: 34px;
   height: 34px;
-  border-radius: 999px;
+  border-radius: 50%;
   font-size: 22px;
   line-height: 1;
   cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.site-promo-modal__close:hover {
+  background: #CCCCCC;
+}
+
+.site-promo-modal__close:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(89, 15, 169, 0.25);
 }
 
 @media only screen and (max-width: 700px) {
@@ -1361,5 +1372,95 @@ nav.pagination {
   .site-promo-modal__dialog {
     margin-top: 6vh;
     padding: 22px;
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────
+   Universal mobile-first scaling — final pass
+   Section padding reduces, headings scale, hero compresses.
+   Follows design.md §5 (mobile uses 40–48px not 60–64px) and
+   §8 breakpoints (≤700 tablet, ≤480 mobile).
+   ───────────────────────────────────────────────────────────── */
+
+@media (max-width: 700px) {
+  /* Section padding compression (default desktop is 60-64px) */
+  .age_groups_section,
+  .welcome_section,
+  .news_section,
+  .news-archive-card__body {
+    padding-top: 44px;
+    padding-bottom: 44px;
+  }
+
+  .news-archive-card__body {
+    padding-left: 20px;
+    padding-right: 20px;
+  }
+
+  /* H2 / section headings shrink */
+  .age_groups_section__heading,
+  .news_section__header h3,
+  .news-archive__intro h1,
+  .news-archive__intro h2 {
+    font-size: 1.6rem;
+    margin-bottom: 24px;
+  }
+
+  /* Hero compresses */
+  .hero .box {
+    padding: 28px 22px;
+  }
+
+  /* News-single hero meta wraps tight */
+  .post__hero-meta {
+    font-size: 14px;
+    gap: 6px;
+  }
+
+  /* Sidebar stacks under main content */
+  .page_wrapper .sidebar {
+    margin-top: 32px;
+  }
+
+  /* Section eyebrow margin reduced */
+  .section-eyebrow {
+    margin-bottom: 10px;
+  }
+}
+
+@media (max-width: 480px) {
+  /* Tighter still on phones */
+  .age_groups_section,
+  .welcome_section,
+  .news_section {
+    padding-top: 32px;
+    padding-bottom: 32px;
+  }
+
+  .hero .box {
+    padding: 22px 18px;
+  }
+
+  /* Two-column buttons stack */
+  .hero .box .btn_row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .hero .box .btn_row .btn {
+    text-align: center;
+  }
+
+  /* News archive headings smaller */
+  .news-archive-card__body h2 {
+    font-size: 22px;
+  }
+
+  /* Tight pagination */
+  .news-archive__pagination .page-numbers,
+  .pagination .page-numbers {
+    min-width: 36px;
+    height: 36px;
+    padding: 0 10px;
   }
 }

@@ -43,7 +43,7 @@
     <?php endif; ?>
     <div class="wrapper alt">
         <div class="inner">
-            <h2><?php the_title(); ?></h2>
+            <h1 class="page__title"><?php the_title(); ?></h1>
             <?php if ( $hero_intro ) : ?>
                 <p><?php echo esc_html( $hero_intro ); ?></p>
             <?php endif; ?>
@@ -54,7 +54,6 @@
 <div class="container cf">
     <div class="wrapper cf page_wrapper">
         <div class="main_content playground cf" id="scroll-access">
-            <h1><?php the_title(); ?></h1>
             <article id="post-<?php the_ID(); ?>" <?php post_class(); ?>>
                 <?php echo $content_for_page; ?>
             </article>
