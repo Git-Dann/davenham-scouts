@@ -574,3 +574,110 @@ function db_render_shop_seed_page() {
 	</div>
 	<?php
 }
+
+/**
+ * Auto-seed sample products + policy pages on the first admin visit once
+ * WooCommerce is active. Runs at most once — sets a flag in wp_options
+ * to mark completion. The "Remove sample products" action also clears
+ * the flag so a re-seed is possible.
+ *
+ * Triggers when:
+ *   - Current user can manage_woocommerce (or manage_options)
+ *   - WooCommerce is active
+ *   - The flag db_shop_autoseeded is not set
+ *   - No published products currently exist (safety: never wipes an
+ *     editor's hand-curated catalogue)
+ */
+function db_shop_seed_maybe_autorun() {
+	if ( wp_doing_ajax() || wp_doing_cron() ) {
+		return;
+	}
+	if ( ! is_admin() ) {
+		return;
+	}
+	if ( ! current_user_can( 'manage_woocommerce' ) && ! current_user_can( 'manage_options' ) ) {
+		return;
+	}
+	if ( ! db_shop_seed_woocommerce_active() ) {
+		return;
+	}
+	if ( '1' === get_option( 'db_shop_autoseeded', '' ) ) {
+		return;
+	}
+
+	// Safety: only auto-seed when there are no products at all.
+	$existing = new WP_Query( array(
+		'post_type'      => 'product',
+		'post_status'    => 'any',
+		'posts_per_page' => 1,
+		'fields'         => 'ids',
+		'no_found_rows'  => true,
+	) );
+	$has_products = ! empty( $existing->posts );
+	wp_reset_postdata();
+
+	if ( $has_products ) {
+		// There are products already — don't auto-seed. Just mark done so
+		// we don't keep checking on every admin page load.
+		update_option( 'db_shop_autoseeded', '1', false );
+		return;
+	}
+
+	// Run the seeders
+	$products_result = db_shop_seed_run();
+	$pages_result    = db_shop_pages_seed();
+
+	update_option( 'db_shop_autoseeded', '1', false );
+	update_option( 'db_shop_autoseeded_at', current_time( 'mysql' ), false );
+
+	// Stash a one-shot admin notice
+	set_transient( 'db_shop_autoseed_notice', array(
+		'products' => (int) ( $products_result['created'] ?? 0 ),
+		'pages'    => (int) ( $pages_result['created']    ?? 0 ),
+	), HOUR_IN_SECONDS );
+}
+add_action( 'admin_init', 'db_shop_seed_maybe_autorun', 99 );
+
+/**
+ * Show the one-shot admin notice when the auto-seed has just run.
+ */
+function db_shop_seed_autoseed_notice() {
+	$notice = get_transient( 'db_shop_autoseed_notice' );
+	if ( ! $notice ) {
+		return;
+	}
+	delete_transient( 'db_shop_autoseed_notice' );
+	?>
+	<div class="notice notice-success is-dismissible">
+		<p>
+			<strong>Davenham shop set up automatically.</strong>
+			Seeded <?php echo (int) $notice['products']; ?> sample product(s) and <?php echo (int) $notice['pages']; ?> policy page(s).
+			Manage them under
+			<a href="<?php echo esc_url( admin_url( 'edit.php?post_type=product' ) ); ?>">Products</a>
+			or the
+			<a href="<?php echo esc_url( admin_url( 'admin.php?page=davenham-builder-shop-seed' ) ); ?>">Sample Shop Products</a>
+			screen.
+		</p>
+	</div>
+	<?php
+}
+add_action( 'admin_notices', 'db_shop_seed_autoseed_notice' );
+
+/**
+ * Wipe the autoseed flag when admin chooses to remove the seeded items.
+ * This lets them re-run from the admin screen if they change their mind.
+ */
+function db_shop_seed_clear_autoseed_flag_on_remove() {
+	if ( 'POST' !== $_SERVER['REQUEST_METHOD'] ) {
+		return;
+	}
+	if ( ! isset( $_POST['db_action'] ) || ! check_admin_referer( 'db_shop_seed_action', '_wpnonce' ) ) {
+		return;
+	}
+	$action = sanitize_text_field( wp_unslash( $_POST['db_action'] ) );
+	if ( 'remove' === $action || 'remove_pages' === $action ) {
+		delete_option( 'db_shop_autoseeded' );
+		delete_option( 'db_shop_autoseeded_at' );
+	}
+}
+add_action( 'admin_init', 'db_shop_seed_clear_autoseed_flag_on_remove', 5 );
