@@ -79,16 +79,24 @@ Text Domain: the-scouts-skills-for-life
   border-radius: 8px;
 }
 
+/* Footer 4-column layout — override production.css which sets
+   .footer .top .col { width: calc(25% - 18px) } and .footer .col { width: 23.5%; float: left }.
+   We use higher specificity + !important to win cleanly. */
 .footer .top .wrapper.footer-grid {
-  display: grid;
-  grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1.2fr);
+  display: grid !important;
+  grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1.2fr);
   gap: 36px;
   align-items: start;
 }
 
-.footer .footer-brand {
-  width: auto;
+.footer .top .wrapper.footer-grid > .footer-brand,
+.footer .top .wrapper.footer-grid > .col {
+  width: auto !important;
+  max-width: none !important;
+  float: none !important;
+  margin: 0 !important;
   min-width: 0;
+  box-sizing: border-box;
 }
 
 .footer .footer-brand .footer-logo-wrap {
@@ -127,18 +135,18 @@ Text Domain: the-scouts-skills-for-life
   background: rgba(255, 255, 255, 0.12);
 }
 
-.footer .col {
-  width: auto;
-  margin: 0;
-}
-
 .footer .footer-social {
   margin-top: 18px;
 }
 
 @media only screen and (max-width: 960px) {
   .footer .top .wrapper.footer-grid {
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr 1fr !important;
+  }
+  .footer .top .wrapper.footer-grid > .footer-brand,
+  .footer .top .wrapper.footer-grid > .col {
+    width: auto !important;
+    margin: 0 !important;
   }
 }
 
@@ -158,8 +166,13 @@ Text Domain: the-scouts-skills-for-life
   }
 
   .footer .top .wrapper.footer-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: 1fr !important;
     gap: 28px;
+  }
+  .footer .top .wrapper.footer-grid > .footer-brand,
+  .footer .top .wrapper.footer-grid > .col {
+    width: auto !important;
+    margin: 0 !important;
   }
 }
 
