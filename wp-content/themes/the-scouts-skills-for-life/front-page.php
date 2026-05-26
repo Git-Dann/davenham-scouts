@@ -67,33 +67,28 @@ if ( $notice_text ) : ?>
     </section>
     <?php endif; ?>
 
-    <section class="age_section">
-        <div class="wrapper cf">
-            <div class="title_bar">
-                <h3>Aged 6 to 25?</h3>
-            </div>
-            <div class="age_blocks cf">
-                <div class="age_blocks six">
-                    <?php
-                    $sections = [
-                        [ 'age-icon-1.svg', 'Squirrels Logo', 'squirrels', '4-6 years' ],
-                        [ 'age-icon-2.svg', 'Beavers Logo',   'beavers',   '6-8 years' ],
-                        [ 'age-icon-3.svg', 'Cubs Logo',      'cubs',      '8-10½ years' ],
-                        [ 'age-icon-4.svg', 'Scouts Logo',    'scouts',    '10½-14 years' ],
-                        [ 'age-icon-5.svg', 'Explorers Logo', 'explorers', '14-18 years' ],
-                        [ 'age-icon-6.svg', 'Network Logo',   'network',   '18-25 years' ],
-                    ];
-                    foreach ( $sections as $i => $s ) : $n = $i + 1; ?>
-                    <div class="block block-<?php echo $n; ?>">
-                        <div class="head <?php echo esc_attr( $s[2] ); ?>">
-                            <div class="inner">
-                                <img src="<?php echo esc_url( get_template_directory_uri() . '/includes/svg/' . $s[0] ); ?>" alt="<?php echo esc_attr( $s[1] ); ?>" />
-                                <span><?php echo esc_html( $s[3] ); ?></span>
-                            </div>
-                        </div>
-                    </div>
-                    <?php endforeach; ?>
-                </div>
+    <section class="age_groups_section">
+        <div class="wrapper">
+            <h2 class="age_groups_section__heading">Explore our age groups</h2>
+            <div class="age_groups_grid">
+                <?php
+                $age_groups = array(
+                    array( 'logo-squirrels.svg', 'Squirrels',  '4–6 years',     get_page_by_path( 'squirrels' ) ),
+                    array( 'logo-beavers.svg',   'Beavers',    '6–8 years',     get_page_by_path( 'beavers' ) ),
+                    array( 'logo-cubs.svg',       'Cubs',       '8–10½ years',   get_page_by_path( 'cubs' ) ),
+                    array( 'logo-scouts.svg',     'Scouts',     '10½–14 years',  get_page_by_path( 'scouts' ) ),
+                    array( 'logo-explorers.svg',  'Explorers',  '14–18 years',   get_page_by_path( 'explorers' ) ),
+                    array( 'logo-network.svg',    'Network',    '18–25 years',   get_page_by_path( 'network' ) ),
+                );
+                $img_dir = get_template_directory_uri() . '/images/';
+                foreach ( $age_groups as $group ) :
+                    $url = $group[3] ? get_permalink( $group[3] ) : false;
+                ?>
+                <<?php echo $url ? 'a href="' . esc_url( $url ) . '"' : 'div'; ?> class="age_group_card">
+                    <img src="<?php echo esc_url( $img_dir . $group[0] ); ?>" alt="<?php echo esc_attr( $group[1] ); ?>" />
+                    <span class="age_group_card__range"><?php echo esc_html( $group[2] ); ?></span>
+                </<?php echo $url ? 'a' : 'div'; ?>>
+                <?php endforeach; ?>
             </div>
         </div>
     </section>
