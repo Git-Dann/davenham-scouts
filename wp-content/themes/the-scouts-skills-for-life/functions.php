@@ -609,13 +609,112 @@ function scouts_create_submission( string $form_type, array $fields ): int {
     ] );
 }
 
-function scouts_send_submission_email( string $subject, string $body ): void {
-    $to = get_option( 'admin_email' );
-    if ( ! $to ) {
+/**
+ * Send a form submission notification.
+ *
+ * Issues that caused this to silently fail on Krystal shared hosting:
+ *   1. Recipient was hard-coded to admin_email; the user needs a different
+ *      monitored inbox (now configurable via Site Settings).
+ *   2. No From: header — wp_mail defaults to wordpress@<host>, which many
+ *      shared-hosting MTAs reject (no matching SPF record). We now set
+ *      From to a no-reply at the site domain so SPF passes.
+ *   3. No Reply-To — replies went into the void. Now points at the
+ *      visitor's own email.
+ *   4. No failure handling — silent failures were impossible to diagnose.
+ *      We now log to scouts_form_email_failures option for an admin notice.
+ *
+ * @param string                       $subject     Email subject.
+ * @param string                       $body        Plain-text body.
+ * @param array<string,string|null>    $reply_to    Optional [name, email] for Reply-To.
+ */
+function scouts_send_submission_email( string $subject, string $body, array $reply_to = array() ): void {
+    // Resolve recipient — prefer the configured notifications inbox, fall
+    // back to admin_email so installs without configured settings still work.
+    $to = '';
+    if ( function_exists( 'db_get_site_settings' ) ) {
+        $settings = db_get_site_settings();
+        if ( ! empty( $settings['form_notifications_email'] ) ) {
+            $to = $settings['form_notifications_email'];
+        }
+    }
+    if ( '' === $to ) {
+        $to = (string) get_option( 'admin_email', '' );
+    }
+    if ( '' === $to || ! is_email( $to ) ) {
         return;
     }
 
-    wp_mail( $to, $subject, $body );
+    $site_host = wp_parse_url( home_url( '/' ), PHP_URL_HOST ) ?: 'davenhamscouts.org.uk';
+    $from_name = wp_specialchars_decode( (string) get_bloginfo( 'name' ), ENT_QUOTES ) ?: '1st Davenham Scouts';
+    $from_addr = 'no-reply@' . preg_replace( '/^www\./', '', $site_host );
+
+    $headers = array(
+        sprintf( 'From: %s <%s>', $from_name, $from_addr ),
+    );
+
+    if ( ! empty( $reply_to['email'] ) && is_email( $reply_to['email'] ) ) {
+        $reply_name = ! empty( $reply_to['name'] ) ? $reply_to['name'] : '';
+        $headers[] = $reply_name
+            ? sprintf( 'Reply-To: %s <%s>', $reply_name, $reply_to['email'] )
+            : sprintf( 'Reply-To: %s', $reply_to['email'] );
+    }
+
+    $ok = wp_mail( $to, $subject, $body, $headers );
+
+    if ( ! $ok ) {
+        $log = get_option( 'scouts_form_email_failures', array() );
+        if ( ! is_array( $log ) ) { $log = array(); }
+        array_unshift( $log, array(
+            'when'    => current_time( 'mysql' ),
+            'to'      => $to,
+            'subject' => $subject,
+        ) );
+        // Keep only the last 20 failures.
+        $log = array_slice( $log, 0, 20 );
+        update_option( 'scouts_form_email_failures', $log, false );
+    }
+}
+
+/**
+ * Capture wp_mail PHPMailer errors into a transient so we can show them
+ * on the admin Site Settings screen when there's an SMTP-level issue
+ * (host blocking, bad headers, etc.).
+ */
+add_action( 'wp_mail_failed', 'scouts_capture_wp_mail_failure' );
+function scouts_capture_wp_mail_failure( $error ) {
+    if ( $error instanceof WP_Error ) {
+        set_transient(
+            'scouts_form_email_last_error',
+            $error->get_error_message(),
+            DAY_IN_SECONDS
+        );
+    }
+}
+
+/**
+ * Admin notice on the site settings page when there's a recent wp_mail
+ * failure (so the admin knows to investigate rather than wondering why
+ * no emails are arriving).
+ */
+add_action( 'admin_notices', 'scouts_render_form_email_failure_notice' );
+function scouts_render_form_email_failure_notice() {
+    if ( ! current_user_can( 'manage_options' ) ) {
+        return;
+    }
+    $screen = function_exists( 'get_current_screen' ) ? get_current_screen() : null;
+    if ( ! $screen || false === strpos( (string) $screen->id, 'davenham-builder' ) ) {
+        return;
+    }
+    $last_error = get_transient( 'scouts_form_email_last_error' );
+    if ( ! $last_error ) {
+        return;
+    }
+    ?>
+    <div class="notice notice-error">
+        <p><strong>Form notifications are failing.</strong> The last wp_mail error was: <code><?php echo esc_html( (string) $last_error ); ?></code></p>
+        <p>Check your hosting provider's email policy — many shared hosts (including Krystal) reject mail from PHP unless From matches the site domain. The fix is usually to use an SMTP plugin (WP Mail SMTP) with your Google Workspace / Gmail account.</p>
+    </div>
+    <?php
 }
 
 function scouts_handle_contact_submission(): void {
@@ -656,7 +755,8 @@ function scouts_handle_contact_submission(): void {
     scouts_create_submission( 'contact', $submission_fields );
     scouts_send_submission_email(
         'New contact enquiry from Davenham Scouts website',
-        "Name: {$full_name}\nEmail: {$values['email']}\nPhone: {$values['phone']}\n\nMessage:\n{$values['message']}\n"
+        "Name: {$full_name}\nEmail: {$values['email']}\nPhone: {$values['phone']}\n\nMessage:\n{$values['message']}\n",
+        array( 'name' => $full_name, 'email' => $values['email'] )
     );
 
     scouts_redirect_with_flash( 'contact', [ 'values' => [] ], 'success' );
@@ -719,9 +819,13 @@ function scouts_handle_join_submission(): void {
     ];
 
     scouts_create_submission( 'join', $submission_fields );
+    $contact_name = $values['join_type'] === 'Adult Volunteer'
+        ? ( $values['adult_name'] ?: $values['parent_carer_name'] )
+        : ( $values['parent_carer_name'] ?: $values['adult_name'] );
     scouts_send_submission_email(
         'New join enquiry from Davenham Scouts website',
-        "Join type: {$values['join_type']}\nYoung person: {$values['young_person_name']}\nAdult: {$values['adult_name']}\nParent/Carer: {$values['parent_carer_name']}\nDate of birth: {$values['date_of_birth']}\nEmail: {$values['email']}\nPhone: {$values['phone']}\nPostcode: {$values['postcode']}\nPreferred section: {$values['preferred_section']}\nVolunteer interests: " . implode( ', ', $values['volunteer_interest'] ) . "\n\nMessage:\n{$values['message']}\n"
+        "Join type: {$values['join_type']}\nYoung person: {$values['young_person_name']}\nAdult: {$values['adult_name']}\nParent/Carer: {$values['parent_carer_name']}\nDate of birth: {$values['date_of_birth']}\nEmail: {$values['email']}\nPhone: {$values['phone']}\nPostcode: {$values['postcode']}\nPreferred section: {$values['preferred_section']}\nVolunteer interests: " . implode( ', ', $values['volunteer_interest'] ) . "\n\nMessage:\n{$values['message']}\n",
+        array( 'name' => $contact_name, 'email' => $values['email'] )
     );
 
     scouts_redirect_with_flash( 'join', [ 'values' => [] ], 'success' );

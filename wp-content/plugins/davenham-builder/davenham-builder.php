@@ -164,6 +164,7 @@ function db_site_settings_defaults() {
 		'footer_social_facebook'   => 'https://www.facebook.com/DavenhamScouts/',
 		'footer_social_x'          => 'https://twitter.com/1stDavenham',
 		'charity_number'           => '1029781',
+		'form_notifications_email' => '1stdavenhamscouts@gmail.com',
 		'cookie_enabled'           => '1',
 		'cookie_text'              => 'We use cookies to keep the website working well and to understand what content is most useful.',
 		'cookie_accept_label'      => 'Accept',
@@ -206,6 +207,10 @@ function db_sanitize_site_settings( $input ) {
 	$clean['footer_social_facebook']    = esc_url_raw( $input['footer_social_facebook'] ?? $current['footer_social_facebook'] );
 	$clean['footer_social_x']           = esc_url_raw( $input['footer_social_x'] ?? $current['footer_social_x'] );
 	$clean['charity_number']            = sanitize_text_field( $input['charity_number'] ?? $current['charity_number'] );
+	$clean['form_notifications_email']  = sanitize_email( $input['form_notifications_email'] ?? $current['form_notifications_email'] );
+	if ( ! is_email( $clean['form_notifications_email'] ) ) {
+		$clean['form_notifications_email'] = $current['form_notifications_email'];
+	}
 	$clean['cookie_enabled']            = ! empty( $input['cookie_enabled'] ) ? '1' : '0';
 	$clean['cookie_text']               = sanitize_textarea_field( $input['cookie_text'] ?? $current['cookie_text'] );
 	$clean['cookie_accept_label']       = sanitize_text_field( $input['cookie_accept_label'] ?? $current['cookie_accept_label'] );
@@ -307,6 +312,20 @@ function db_render_site_settings_page() {
 					<tr><th scope="row"><label><?php esc_html_e( 'Facebook', 'davenham-builder' ); ?></label></th><td><input type="url" class="regular-text" name="davenham_builder_site_settings[footer_social_facebook]" placeholder="https://www.facebook.com/…" value="<?php echo esc_attr( $settings['footer_social_facebook'] ); ?>" /></td></tr>
 					<tr><th scope="row"><label><?php esc_html_e( 'X / Twitter', 'davenham-builder' ); ?></label></th><td><input type="url" class="regular-text" name="davenham_builder_site_settings[footer_social_x]" placeholder="https://twitter.com/…" value="<?php echo esc_attr( $settings['footer_social_x'] ); ?>" /></td></tr>
 					<tr><th scope="row"><label><?php esc_html_e( 'Charity number', 'davenham-builder' ); ?></label></th><td><input type="text" class="regular-text" name="davenham_builder_site_settings[charity_number]" value="<?php echo esc_attr( $settings['charity_number'] ); ?>" /><p class="description"><?php esc_html_e( 'Registered charity number — appears next to copyright in the footer.', 'davenham-builder' ); ?></p></td></tr>
+				</table>
+			</section>
+
+			<section class="db-settings-card">
+				<h2><?php esc_html_e( 'Form notifications', 'davenham-builder' ); ?></h2>
+				<p class="db-settings-card__desc"><?php esc_html_e( 'Where Contact and Join form submissions are emailed to. Use a real, monitored inbox.', 'davenham-builder' ); ?></p>
+				<table class="form-table" role="presentation">
+					<tr>
+						<th scope="row"><label for="db_form_notifications_email"><?php esc_html_e( 'Notifications email', 'davenham-builder' ); ?></label></th>
+						<td>
+							<input type="email" class="regular-text" id="db_form_notifications_email" name="davenham_builder_site_settings[form_notifications_email]" value="<?php echo esc_attr( $settings['form_notifications_email'] ); ?>" placeholder="hello@example.org" />
+							<p class="description"><?php esc_html_e( 'Where Contact and Join form submissions are emailed. Make sure this inbox is checked regularly.', 'davenham-builder' ); ?></p>
+						</td>
+					</tr>
 				</table>
 			</section>
 
