@@ -909,18 +909,24 @@ body.davenham-admin-shell #wpfooter {
   gap: 10px;
   align-items: center;
   min-height: 46px;
-  padding: 6px;
+  padding: 10px 12px;
+  /* Solid purple block so a light/white-on-transparent logo reads
+     clearly without needing a white tile (which previously hid white
+     parts of the logo). */
+  background: #590FA9;
+  border-radius: 0;
+  margin: 0 -6px;
 }
 
 .das-app-brand img,
 .das-app-brand > .dashicons {
   width: 36px;
   height: 36px;
-  border-radius: 8px;
-  background: #fff;
-  color: #003982;
+  border-radius: 0;
+  background: transparent;
+  color: #fff;
   object-fit: contain;
-  padding: 5px;
+  padding: 0;
 }
 
 .das-app-brand strong {
@@ -1737,8 +1743,11 @@ body.das-app-nav-collapsed .das-app-nav-chevron {
   }
 
   html.das-app-shell-active body.davenham-admin-shell .das-app-brand {
-    padding: 18px 18px 8px;
+    padding: 18px 18px;
     color: #fff;
+    background: #590FA9;
+    margin: 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.18);
   }
 
   html.das-app-shell-active body.davenham-admin-shell .das-app-brand strong {
@@ -1747,9 +1756,13 @@ body.das-app-nav-collapsed .das-app-nav-chevron {
   }
 
   html.das-app-shell-active body.davenham-admin-shell .das-app-brand img {
-    max-width: 36px;
+    max-width: 44px;
+    max-height: 44px;
     height: auto;
-    filter: brightness(0) invert(1);
+    filter: none;
+    background: transparent;
+    border-radius: 0;
+    padding: 0;
   }
 
   html.das-app-shell-active body.davenham-admin-shell .das-app-divider {
@@ -1894,19 +1907,18 @@ body.das-app-nav-collapsed .das-app-nav-chevron {
   display: none !important;
 }
 
-/* Sidebar drawer was missing the brand logo because the IMG
-   was being inverted to white-on-white when the source PNG had
-   white content. Reset the filter and let the source PNG/SVG
-   render in its own colours; brand bg is already gradient so
-   most logos will read fine. */
+/* Brand block uses a solid purple panel so a light/white logo
+   reads clearly without needing a white tile (which previously
+   hid white parts of the logo). Logo renders directly on the
+   purple — no filter, no padding, no tile. */
 @media (max-width: 782px) {
   html.das-app-shell-active body.davenham-admin-shell .das-app-brand img {
     filter: none;
     max-width: 44px;
     max-height: 44px;
-    background: #fff;
-    border-radius: 8px;
-    padding: 4px;
+    background: transparent;
+    border-radius: 0;
+    padding: 0;
   }
 
   /* Larger brand block at the top of the drawer */
