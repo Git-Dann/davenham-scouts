@@ -850,6 +850,26 @@ body.davenham-admin-shell #wpcontent {
   padding: calc(var(--das-topbar-height) + 20px) 24px 40px !important;
 }
 
+/* WC-Admin's React layout uses its own sticky elements at top:0 that
+   collide with our fixed topbar. Push them down by the topbar height
+   so the page chrome (Overview / Activity tabs etc.) stays visible. */
+body.davenham-admin-shell .woocommerce-layout__header,
+body.davenham-admin-shell .woocommerce-layout__activity-panel-wrapper {
+  top: var(--das-topbar-height) !important;
+}
+
+/* Same for the older WP admin sticky bits (e.g. notices, screen
+   meta) that some plugins still emit. */
+body.davenham-admin-shell #screen-meta-links,
+body.davenham-admin-shell #screen-meta {
+  margin-top: 0;
+}
+
+/* Catch-all scroll-padding so anchor jumps land below the topbar */
+body.davenham-admin-shell {
+  scroll-padding-top: calc(var(--das-topbar-height) + 12px);
+}
+
 body.davenham-admin-shell #wpbody-content {
   padding-bottom: 24px;
 }
@@ -1053,7 +1073,7 @@ body.das-app-nav-collapsed .das-admin-groups-panel {
   gap: 14px;
   padding: 0 24px;
   border-bottom: 1px solid #CCCCCC;
-  background: rgba(255, 255, 255, 0.94);
+  background: rgba(255, 255, 255, 0.96);
   backdrop-filter: blur(14px);
   transition: left 180ms ease;
 }
@@ -2000,11 +2020,13 @@ html.das-app-shell-active body.davenham-admin-shell .das-app-brand img {
   line-height: 1;
   width: 16px;
   height: 16px;
-  transition: transform 0.18s ease;
+}
+
+.das-app-nav-chevron-btn[aria-expanded="true"] {
+  background: rgba(255, 180, 229, 0.18);
 }
 
 .das-app-nav-chevron-btn[aria-expanded="true"] .dashicons {
-  transform: rotate(90deg);
   color: #FFB4E5;
 }
 
