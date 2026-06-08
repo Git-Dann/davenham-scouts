@@ -3,14 +3,14 @@
  * Plugin Name: Davenham Admin Suite
  * Plugin URI:  https://davenhamscouts.org.uk
  * Description: White-label admin customisation, menu cleanup, and editorial polish for Davenham Scouts.
- * Version:     1.1.2
+ * Version:     1.4.4
  * Author:      Davenham Scout Group
  * Text Domain: davenham-admin-suite
  */
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'DAS_VERSION', '1.1.2' );
+define( 'DAS_VERSION', '1.4.4' );
 define( 'DAS_FILE', __FILE__ );
 define( 'DAS_DIR', plugin_dir_path( __FILE__ ) );
 define( 'DAS_URL', plugin_dir_url( __FILE__ ) );
@@ -19,6 +19,9 @@ final class Davenham_Admin_Suite {
 	const OPTION_NAME = 'davenham_admin_suite_settings';
 
 	private static $fallback_menu_links = [
+		'index.php'              => 'Dashboard',
+		'edit.php?post_type=page' => 'Pages',
+		'edit.php?post_type=event' => 'Events',
 		'plugins.php'            => 'Plugins',
 		'tools.php'              => 'Tools',
 		'update-core.php'        => 'Updates',
@@ -30,6 +33,9 @@ final class Davenham_Admin_Suite {
 		'kadence-blocks'         => 'Kadence',
 		'speedycache'            => 'SpeedyCache',
 		'woocommerce'            => 'WooCommerce',
+		'davenham-events-funds'  => 'Events & Funds',
+		'davenham-admin-suite'   => 'Admin',
+		'upload.php'             => 'Media',
 		'options-general.php'    => 'Settings',
 		'users.php'              => 'Users',
 	];
@@ -50,6 +56,9 @@ final class Davenham_Admin_Suite {
 		add_action( 'login_enqueue_scripts', [ __CLASS__, 'enqueue_assets' ] );
 		add_action( 'wp_dashboard_setup', [ __CLASS__, 'cleanup_dashboard' ], 25 );
 		add_action( 'admin_head', [ __CLASS__, 'suppress_update_ui' ] );
+		add_action( 'admin_head', [ __CLASS__, 'admin_shell_head' ] );
+		add_action( 'in_admin_header', [ __CLASS__, 'render_admin_shell' ], 1 );
+		add_filter( 'admin_body_class', [ __CLASS__, 'admin_body_class' ] );
 		add_filter( 'admin_footer_text', [ __CLASS__, 'admin_footer_text' ] );
 		add_filter( 'update_footer', [ __CLASS__, 'admin_version_text' ], 11 );
 		add_filter( 'gettext', [ __CLASS__, 'replace_thank_you_text' ], 20, 3 );
@@ -63,10 +72,13 @@ final class Davenham_Admin_Suite {
 			'footer_text'          => 'Managed by Davenham Scouts.',
 			'version_text'         => 'Davenham admin',
 			'primary_color'        => '#003982',
-			'accent_color'         => '#f36d00',
-			'menu_bg_color'        => '#1c2f45',
-			'menu_text_color'      => '#eef3f8',
+			'accent_color'         => '#FF912A',
+			'menu_bg_color'        => '#003982',
+			'menu_text_color'      => '#F1F1F1',
 			'dashboard_welcome'    => 'Welcome to the Davenham Scouts admin area.',
+			'admin_shell_enabled'  => '1',
+			'admin_density'        => 'comfortable',
+			'hide_help_tabs'       => '1',
 			'hide_wp_updates'      => '1',
 			'menu_groups'          => self::default_groups(),
 			'menu_items'           => self::default_menu_items(),
@@ -85,60 +97,125 @@ final class Davenham_Admin_Suite {
 
 	private static function default_menu_items() {
 		return [
+			'index.php' => [
+				'label'     => 'Dashboard',
+				'group'     => 'communications',
+				'placement' => 'keep',
+				'icon'      => 'dashboard',
+				'order'     => 10,
+			],
+			'edit.php?post_type=page' => [
+				'label'     => 'Pages',
+				'group'     => 'communications',
+				'placement' => 'keep',
+				'icon'      => 'pages',
+				'order'     => 40,
+			],
+			'edit.php?post_type=event' => [
+				'label'     => 'Events',
+				'group'     => 'store',
+				'placement' => 'admin',
+				'icon'      => 'calendar',
+				'order'     => 35,
+			],
 			'plugins.php' => [
 				'label'     => 'Plugins',
 				'group'     => 'technical',
 				'placement' => 'admin',
+				'icon'      => 'plugins',
+				'order'     => 300,
 			],
 			'tools.php' => [
 				'label'     => 'Tools',
 				'group'     => 'technical',
 				'placement' => 'admin',
+				'icon'      => 'tools',
+				'order'     => 310,
 			],
 			'update-core.php' => [
 				'label'     => 'Updates',
 				'group'     => 'maintenance',
 				'placement' => 'admin',
+				'icon'      => 'updates',
+				'order'     => 290,
 			],
 			'site-health.php' => [
 				'label'     => 'Site Health',
 				'group'     => 'maintenance',
 				'placement' => 'admin',
+				'icon'      => 'health',
+				'order'     => 320,
 			],
 			'backuply' => [
 				'label'     => 'Backuply',
 				'group'     => 'maintenance',
 				'placement' => 'admin',
+				'icon'      => 'backup',
+				'order'     => 330,
 			],
 			'loginizer' => [
 				'label'     => 'Loginizer',
 				'group'     => 'technical',
 				'placement' => 'admin',
+				'icon'      => 'security',
+				'order'     => 340,
 			],
 			'fileorganizer' => [
 				'label'     => 'File Organizer',
 				'group'     => 'technical',
 				'placement' => 'admin',
+				'icon'      => 'folder',
+				'order'     => 350,
 			],
 			'siteseo' => [
 				'label'     => 'SiteSEO',
 				'group'     => 'communications',
 				'placement' => 'admin',
+				'icon'      => 'marketing',
+				'order'     => 360,
 			],
 			'kadence-blocks' => [
 				'label'     => 'Kadence',
 				'group'     => 'technical',
 				'placement' => 'keep',
+				'icon'      => 'builder',
+				'order'     => 220,
 			],
 			'speedycache' => [
 				'label'     => 'SpeedyCache',
 				'group'     => 'technical',
 				'placement' => 'admin',
+				'icon'      => 'speed',
+				'order'     => 370,
 			],
 			'woocommerce' => [
 				'label'     => 'WooCommerce',
 				'group'     => 'store',
 				'placement' => 'keep',
+				'icon'      => 'cart',
+				'order'     => 90,
+			],
+			'davenham-events-funds' => [
+				'label'     => 'Events & Funds',
+				'group'     => 'store',
+				'placement' => 'keep',
+				'icon'      => 'tickets',
+				'order'     => 30,
+			],
+			'davenham-admin-suite' => [
+				'label'     => 'Admin',
+				'group'     => 'technical',
+				'placement' => 'bottom',
+				'icon'      => 'admin',
+				'order'     => 900,
+				'divider_before' => '1',
+			],
+			'upload.php' => [
+				'label'     => 'Media',
+				'group'     => 'communications',
+				'placement' => 'keep',
+				'icon'      => 'media',
+				'order'     => 50,
 			],
 		];
 	}
@@ -211,7 +288,10 @@ final class Davenham_Admin_Suite {
 		$clean['menu_bg_color']     = sanitize_hex_color( $input['menu_bg_color'] ?? $current['menu_bg_color'] ) ?: $current['menu_bg_color'];
 		$clean['menu_text_color']   = sanitize_hex_color( $input['menu_text_color'] ?? $current['menu_text_color'] ) ?: $current['menu_text_color'];
 		$clean['dashboard_welcome'] = sanitize_text_field( $input['dashboard_welcome'] ?? $current['dashboard_welcome'] );
-		$clean['hide_wp_updates']   = ! empty( $input['hide_wp_updates'] ) ? '1' : '0';
+		$clean['admin_shell_enabled'] = array_key_exists( 'admin_shell_enabled', $input ) ? ( ! empty( $input['admin_shell_enabled'] ) ? '1' : '0' ) : $current['admin_shell_enabled'];
+		$clean['admin_density'] = in_array( ( $input['admin_density'] ?? $current['admin_density'] ), [ 'comfortable', 'compact' ], true ) ? sanitize_key( $input['admin_density'] ?? $current['admin_density'] ) : 'comfortable';
+		$clean['hide_help_tabs'] = array_key_exists( 'hide_help_tabs', $input ) ? ( ! empty( $input['hide_help_tabs'] ) ? '1' : '0' ) : $current['hide_help_tabs'];
+		$clean['hide_wp_updates']   = array_key_exists( 'hide_wp_updates', $input ) ? ( ! empty( $input['hide_wp_updates'] ) ? '1' : '0' ) : $current['hide_wp_updates'];
 		$clean['menu_groups']       = self::sanitize_group_textarea( $input['menu_groups_text'] ?? '', $current['menu_groups'] );
 		$clean['menu_items']        = self::sanitize_menu_items(
 			$input['menu_items'] ?? [],
@@ -296,7 +376,7 @@ final class Davenham_Admin_Suite {
 			return;
 		}
 
-		global $menu;
+		global $menu, $submenu;
 
 		$captured = [];
 		if ( is_array( $menu ) ) {
@@ -306,13 +386,14 @@ final class Davenham_Admin_Suite {
 				}
 
 				$slug = (string) $item[2];
-				if ( 0 === strpos( $slug, 'separator' ) || 'davenham-admin-suite' === $slug ) {
+				if ( 0 === strpos( $slug, 'separator' ) ) {
 					continue;
 				}
 
 				$captured[ $slug ] = [
 					'label' => self::clean_menu_label( $item[0] ?? $slug ),
 					'slug'  => $slug,
+					'children' => self::captured_submenu_items( $slug, $submenu ),
 				];
 			}
 		}
@@ -322,6 +403,7 @@ final class Davenham_Admin_Suite {
 				$captured[ $slug ] = [
 					'label' => $label,
 					'slug'  => $slug,
+					'children' => [],
 				];
 			}
 		}
@@ -353,7 +435,7 @@ final class Davenham_Admin_Suite {
 		}
 
 		foreach ( $menu_items as $slug => $item ) {
-			if ( 'keep' === $item['placement'] ) {
+			if ( in_array( $item['placement'], [ 'keep', 'bottom' ], true ) ) {
 				continue;
 			}
 
@@ -379,6 +461,8 @@ final class Davenham_Admin_Suite {
 				'<span class="das-admin-logo" style="display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;min-width:20px;max-width:20px;overflow:hidden;margin-right:8px;line-height:0;vertical-align:middle;"><img class="das-admin-logo-image" src="%1$s" alt="" width="20" height="20" style="display:block;width:20px;height:20px;min-width:20px;max-width:20px;max-height:20px;object-fit:contain;" /></span>',
 				esc_url( $logo_url )
 			);
+		} else {
+			$logo = '<span class="das-admin-logo das-admin-logo-fallback" aria-hidden="true" style="display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;min-width:20px;max-width:20px;margin-right:8px;line-height:1;font-size:16px;color:#590FA9;">&#9884;</span>';
 		}
 
 		$wp_admin_bar->remove_node( 'wp-logo' );
@@ -390,13 +474,14 @@ final class Davenham_Admin_Suite {
 					$logo,
 					esc_html( $settings['admin_bar_label'] )
 				),
-				'href'  => admin_url(),
 				'meta'  => [ 'class' => 'davenham-admin-logo-node' ],
 			]
 		);
 	}
 
 	public static function cleanup_admin_bar( WP_Admin_Bar $wp_admin_bar ) {
+		$wp_admin_bar->remove_node( 'site-name' );
+
 		if ( self::settings()['hide_wp_updates'] === '1' ) {
 			$wp_admin_bar->remove_node( 'updates' );
 		}
@@ -407,10 +492,27 @@ final class Davenham_Admin_Suite {
 		wp_enqueue_style( 'davenham-admin-suite', DAS_URL . 'assets/admin-suite.css', [], DAS_VERSION );
 		wp_add_inline_style( 'davenham-admin-suite', self::inline_css( $settings ) );
 
-		$screen = function_exists( 'get_current_screen' ) ? get_current_screen() : null;
-		if ( $screen && false !== strpos( $screen->id, 'davenham-admin-suite' ) ) {
+		$screen  = function_exists( 'get_current_screen' ) ? get_current_screen() : null;
+		$is_hub  = $screen && false !== strpos( $screen->id, 'davenham-admin-suite' );
+		$is_shell = isset( $settings['admin_shell_enabled'] ) && '1' === $settings['admin_shell_enabled'];
+
+		if ( $is_hub ) {
 			wp_enqueue_media();
+		}
+
+		if ( $is_hub || $is_shell ) {
 			wp_enqueue_script( 'davenham-admin-suite', DAS_URL . 'assets/admin-suite.js', [ 'jquery' ], DAS_VERSION, true );
+			wp_localize_script(
+				'davenham-admin-suite',
+				'davenhamAdminSuite',
+				[
+					'brand'       => $settings['admin_bar_label'],
+					'logoUrl'     => self::logo_url(),
+					'currentUser' => wp_get_current_user()->display_name,
+					'nav'         => self::app_nav_items( $settings ),
+					'adminGroups' => self::app_admin_groups( $settings ),
+				]
+			);
 		}
 	}
 
@@ -459,17 +561,86 @@ final class Davenham_Admin_Suite {
 		</style>';
 	}
 
+	public static function admin_shell_head() {
+		$settings = self::settings();
+		if ( $settings['hide_help_tabs'] !== '1' ) {
+			return;
+		}
+
+		echo '<style>#contextual-help-link-wrap,#screen-options-link-wrap{display:none!important;}</style>';
+	}
+
+	public static function admin_body_class( $classes ) {
+		$settings = self::settings();
+		if ( $settings['admin_shell_enabled'] !== '1' ) {
+			return $classes;
+		}
+
+		$classes .= ' davenham-admin-shell';
+		$classes .= ' das-density-' . sanitize_html_class( $settings['admin_density'] );
+
+		return $classes;
+	}
+
+	/**
+	 * Output the admin shell HTML server-side on every admin page.
+	 *
+	 * Previously the shell was built entirely by JS in initAdminShell(),
+	 * which meant it failed to appear on pages that:
+	 *   - don't call body_class() (so the davenham-admin-shell class is missing)
+	 *   - take over the body via Backbone (Media Library grid mode, Customizer)
+	 *   - run their own JS that bails before our DOMContentLoaded handler fires
+	 *
+	 * Server-side rendering guarantees the shell exists on every wp-admin page
+	 * before any client code runs. The JS now just wires up behaviour
+	 * (mobile-menu toggle, collapse, flyout open/close).
+	 */
+	public static function render_admin_shell() {
+		$settings = self::settings();
+		if ( $settings['admin_shell_enabled'] !== '1' ) {
+			return;
+		}
+
+		// Variables exposed to templates/admin-shell.php
+		$nav          = self::app_nav_items( $settings );
+		$admin_groups = self::app_admin_groups( $settings );
+		$brand        = $settings['admin_bar_label'];
+		$logo_url     = self::logo_url();
+		$user         = wp_get_current_user();
+		$current_user = $user ? $user->display_name : '';
+
+		$template = DAS_DIR . 'templates/admin-shell.php';
+		if ( file_exists( $template ) ) {
+			include $template;
+		}
+	}
+
 	public static function render_dashboard_welcome() {
 		$settings = self::settings();
 		$summary  = self::update_summary();
 
+		$quick_links = [
+			[ 'label' => 'Pages', 'url' => admin_url( 'edit.php?post_type=page' ) ],
+			[ 'label' => 'Media Library', 'url' => admin_url( 'upload.php' ) ],
+			[ 'label' => 'Events & Funds', 'url' => admin_url( 'admin.php?page=davenham-events-funds' ) ],
+			[ 'label' => 'Orders', 'url' => admin_url( 'edit.php?post_type=shop_order' ) ],
+			[ 'label' => 'Admin Settings', 'url' => admin_url( 'admin.php?page=davenham-admin-suite' ) ],
+		];
+
+		echo '<div class="das-dashboard-widget">';
 		echo '<p><strong>' . esc_html( $settings['dashboard_welcome'] ) . '</strong></p>';
-		echo '<p>Everyday work stays in Pages, Media, OSM Manager, Posts, and WooCommerce. Technical tools and update controls are grouped under <strong>Admin</strong>.</p>';
-		echo '<ul class="das-summary-list">';
-		echo '<li><strong>Core updates:</strong> ' . esc_html( (string) $summary['core'] ) . '</li>';
-		echo '<li><strong>Plugin updates:</strong> ' . esc_html( (string) $summary['plugins'] ) . '</li>';
-		echo '<li><strong>Theme updates:</strong> ' . esc_html( (string) $summary['themes'] ) . '</li>';
-		echo '</ul>';
+		echo '<p>Use the shortcuts below for the everyday jobs. Technical tools and updates stay tucked inside <strong>Admin</strong>.</p>';
+		echo '<div class="das-dashboard-actions">';
+		foreach ( $quick_links as $link ) {
+			echo '<a class="button button-secondary" href="' . esc_url( $link['url'] ) . '">' . esc_html( $link['label'] ) . '</a>';
+		}
+		echo '</div>';
+		echo '<div class="das-dashboard-status">';
+		echo '<span><strong>' . esc_html( (string) $summary['core'] ) . '</strong> core</span>';
+		echo '<span><strong>' . esc_html( (string) $summary['plugins'] ) . '</strong> plugins</span>';
+		echo '<span><strong>' . esc_html( (string) $summary['themes'] ) . '</strong> themes</span>';
+		echo '</div>';
+		echo '</div>';
 	}
 
 	public static function admin_footer_text() {
@@ -536,16 +707,18 @@ final class Davenham_Admin_Suite {
 				</div>
 			</div>
 
-			<div class="das-group-grid">
+			<div class="das-folder-grid">
 				<?php foreach ( $groups as $group_slug => $group ) : ?>
-					<div class="das-card">
+					<div class="das-folder-card">
+						<div class="das-folder-card__icon"><span class="dashicons dashicons-portfolio" aria-hidden="true"></span></div>
 						<h2><?php echo esc_html( $group['label'] ); ?></h2>
+						<p><?php echo esc_html( sprintf( _n( '%d admin item', '%d admin items', count( $group['links'] ), 'davenham-admin-suite' ), count( $group['links'] ) ) ); ?></p>
 						<?php if ( empty( $group['links'] ) ) : ?>
-							<p>No links are currently assigned to this group.</p>
+							<span class="das-folder-empty">No links assigned</span>
 						<?php else : ?>
 							<ul class="das-admin-links">
 								<?php foreach ( $group['links'] as $link ) : ?>
-									<li><a class="button button-secondary" href="<?php echo esc_url( $link['url'] ); ?>"><?php echo esc_html( $link['label'] ); ?></a></li>
+									<li><a href="<?php echo esc_url( $link['url'] ); ?>"><?php echo esc_html( $link['label'] ); ?></a></li>
 								<?php endforeach; ?>
 							</ul>
 						<?php endif; ?>
@@ -604,6 +777,19 @@ final class Davenham_Admin_Suite {
 							<td><input type="text" class="large-text" id="das_dashboard_welcome" name="<?php echo esc_attr( self::OPTION_NAME ); ?>[dashboard_welcome]" value="<?php echo esc_attr( $settings['dashboard_welcome'] ); ?>"></td>
 						</tr>
 						<tr>
+							<th scope="row">Admin Experience</th>
+							<td>
+								<p><label><input type="checkbox" name="<?php echo esc_attr( self::OPTION_NAME ); ?>[admin_shell_enabled]" value="1" <?php checked( $settings['admin_shell_enabled'], '1' ); ?>> Use the Davenham custom admin shell.</label></p>
+								<p><label><input type="checkbox" name="<?php echo esc_attr( self::OPTION_NAME ); ?>[hide_help_tabs]" value="1" <?php checked( $settings['hide_help_tabs'], '1' ); ?>> Hide WordPress Help and Screen Options tabs for a cleaner workspace.</label></p>
+								<label for="das_admin_density">Admin density</label>
+								<select id="das_admin_density" name="<?php echo esc_attr( self::OPTION_NAME ); ?>[admin_density]">
+									<option value="comfortable" <?php selected( $settings['admin_density'], 'comfortable' ); ?>>Comfortable</option>
+									<option value="compact" <?php selected( $settings['admin_density'], 'compact' ); ?>>Compact</option>
+								</select>
+								<p class="description">Comfortable is easier for occasional editors and touch devices. Compact gives technical users more on-screen rows.</p>
+							</td>
+						</tr>
+						<tr>
 							<th scope="row">Admin Colours</th>
 							<td class="das-color-grid">
 								<label>Primary <input type="color" name="<?php echo esc_attr( self::OPTION_NAME ); ?>[primary_color]" value="<?php echo esc_attr( $settings['primary_color'] ); ?>"></label>
@@ -627,52 +813,90 @@ final class Davenham_Admin_Suite {
 
 		$settings = self::settings();
 		$catalog  = self::available_menu_catalog();
+		uksort(
+			$catalog,
+			function ( $left, $right ) use ( $settings, $catalog ) {
+				$left_order  = isset( $settings['menu_items'][ $left ]['order'] ) ? (int) $settings['menu_items'][ $left ]['order'] : 500;
+				$right_order = isset( $settings['menu_items'][ $right ]['order'] ) ? (int) $settings['menu_items'][ $right ]['order'] : 500;
+				if ( $left_order === $right_order ) {
+					return strcasecmp( $catalog[ $left ]['label'], $catalog[ $right ]['label'] );
+				}
+
+				return $left_order <=> $right_order;
+			}
+		);
 		?>
 		<div class="wrap davenham-admin-suite">
 			<h1>Menu Builder</h1>
-			<p>Rename menu items, move them into Admin groups, hide them, or add your own links.</p>
+			<p>Drag to reorder the sidebar, choose icons, add dividers, move technical items into Admin, or hide items completely.</p>
 			<?php self::render_updated_notice(); ?>
 			<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
 				<?php wp_nonce_field( 'davenham_admin_suite_save' ); ?>
 				<input type="hidden" name="action" value="davenham_admin_suite_save">
 
-				<h2>Groups</h2>
-				<p class="description">One group per line. These become the group pages under Admin.</p>
-				<textarea class="large-text code" rows="6" name="<?php echo esc_attr( self::OPTION_NAME ); ?>[menu_groups_text]"><?php echo esc_textarea( self::groups_textarea_value( $settings['menu_groups'] ) ); ?></textarea>
+				<section class="das-builder-section">
+					<div>
+						<h2>Admin folders</h2>
+						<p class="description">One folder per line. Items set to Admin are shown inside these folders in the Admin flyout.</p>
+					</div>
+					<textarea class="large-text code" rows="4" name="<?php echo esc_attr( self::OPTION_NAME ); ?>[menu_groups_text]"><?php echo esc_textarea( self::groups_textarea_value( $settings['menu_groups'] ) ); ?></textarea>
+				</section>
 
 				<h2>Existing Menu Items</h2>
 				<table class="widefat striped das-menu-table">
 					<thead>
 						<tr>
-							<th>Current Menu</th>
+							<th class="das-menu-table__handle">Move</th>
+							<th>Icon</th>
 							<th>Custom Label</th>
 							<th>Group</th>
 							<th>Placement</th>
+							<th>Divider</th>
+							<th>Source</th>
 						</tr>
 					</thead>
-					<tbody>
+					<tbody class="das-menu-builder-rows">
 						<?php foreach ( $catalog as $slug => $item ) : ?>
 							<?php
 							$config = $settings['menu_items'][ $slug ] ?? [
 								'label'     => $item['label'],
 								'group'     => self::default_group_slug( $settings['menu_groups'] ),
 								'placement' => 'keep',
+								'icon'      => self::menu_icon_key( $slug, $item['label'] ),
+								'order'     => 500,
+								'divider_before' => '0',
 							];
 							?>
-							<tr>
-								<td>
-									<strong><?php echo esc_html( $item['label'] ); ?></strong>
-									<div class="description"><code><?php echo esc_html( $slug ); ?></code></div>
+							<tr class="das-menu-builder-row" draggable="true" data-das-menu-row>
+								<td class="das-menu-table__handle">
+									<div class="das-row-move-controls">
+										<button type="button" class="button-link das-drag-handle" aria-label="Drag <?php echo esc_attr( $config['label'] ); ?>"><span class="dashicons dashicons-menu" aria-hidden="true"></span></button>
+										<button type="button" class="button-link das-row-move" data-das-row-move="up" aria-label="Move <?php echo esc_attr( $config['label'] ); ?> up"><span class="dashicons dashicons-arrow-up-alt2" aria-hidden="true"></span></button>
+										<button type="button" class="button-link das-row-move" data-das-row-move="down" aria-label="Move <?php echo esc_attr( $config['label'] ); ?> down"><span class="dashicons dashicons-arrow-down-alt2" aria-hidden="true"></span></button>
+									</div>
+									<input type="hidden" class="das-menu-order" name="<?php echo esc_attr( self::OPTION_NAME ); ?>[menu_items][<?php echo esc_attr( $slug ); ?>][order]" value="<?php echo esc_attr( (string) (int) ( $config['order'] ?? 500 ) ); ?>">
 								</td>
+								<td><?php self::render_icon_select( self::OPTION_NAME . '[menu_items][' . $slug . '][icon]', $config['icon'] ?? self::menu_icon_key( $slug, $config['label'] ) ); ?></td>
 								<td><input type="text" class="regular-text" name="<?php echo esc_attr( self::OPTION_NAME ); ?>[menu_items][<?php echo esc_attr( $slug ); ?>][label]" value="<?php echo esc_attr( $config['label'] ); ?>"></td>
 								<td><?php self::render_group_select( self::OPTION_NAME . '[menu_items][' . $slug . '][group]', $config['group'], $settings['menu_groups'] ); ?></td>
 								<td>
-										<select name="<?php echo esc_attr( self::OPTION_NAME ); ?>[menu_items][<?php echo esc_attr( $slug ); ?>][placement]">
-											<option value="keep" <?php selected( $config['placement'], 'keep' ); ?>>Main Menu</option>
-											<option value="admin" <?php selected( $config['placement'], 'admin' ); ?>>Admin</option>
-											<option value="hide" <?php selected( $config['placement'], 'hide' ); ?>>Hide completely</option>
-										</select>
-									</td>
+									<select name="<?php echo esc_attr( self::OPTION_NAME ); ?>[menu_items][<?php echo esc_attr( $slug ); ?>][placement]">
+										<option value="keep" <?php selected( $config['placement'], 'keep' ); ?>>Main sidebar</option>
+										<option value="bottom" <?php selected( $config['placement'], 'bottom' ); ?>>Bottom sidebar</option>
+										<option value="admin" <?php selected( $config['placement'], 'admin' ); ?>>Admin flyout</option>
+										<option value="hide" <?php selected( $config['placement'], 'hide' ); ?>>Hide completely</option>
+									</select>
+								</td>
+								<td>
+									<label class="das-compact-check"><input type="checkbox" name="<?php echo esc_attr( self::OPTION_NAME ); ?>[menu_items][<?php echo esc_attr( $slug ); ?>][divider_before]" value="1" <?php checked( ! empty( $config['divider_before'] ) && '1' === (string) $config['divider_before'] ); ?>> Before</label>
+								</td>
+								<td>
+									<strong><?php echo esc_html( $item['label'] ); ?></strong>
+									<div class="description"><code><?php echo esc_html( $slug ); ?></code></div>
+									<?php if ( ! empty( $item['children'] ) ) : ?>
+										<div class="description"><?php echo esc_html( sprintf( '%d flyout item(s)', count( $item['children'] ) ) ); ?></div>
+									<?php endif; ?>
+								</td>
 							</tr>
 						<?php endforeach; ?>
 					</tbody>
@@ -780,11 +1004,11 @@ final class Davenham_Admin_Suite {
 		<div class="wrap davenham-admin-suite">
 			<h1><?php echo esc_html( $group['label'] ); ?></h1>
 			<?php if ( empty( $group['links'] ) ) : ?>
-				<p>No links are currently assigned to this group.</p>
+				<div class="das-card"><p>No links are currently assigned to this folder.</p></div>
 			<?php else : ?>
-				<ul class="das-admin-links">
+				<ul class="das-admin-links das-admin-links--folders">
 					<?php foreach ( $group['links'] as $link ) : ?>
-						<li><a class="button button-secondary" href="<?php echo esc_url( $link['url'] ); ?>"><?php echo esc_html( $link['label'] ); ?></a></li>
+						<li><a href="<?php echo esc_url( $link['url'] ); ?>"><span class="dashicons dashicons-admin-generic" aria-hidden="true"></span><?php echo esc_html( $link['label'] ); ?></a></li>
 					<?php endforeach; ?>
 				</ul>
 			<?php endif; ?>
@@ -821,7 +1045,7 @@ final class Davenham_Admin_Suite {
 
 			$groups[ $item['group'] ]['links'][] = [
 				'label' => $item['label'],
-				'url'   => admin_url( $slug ),
+				'url'   => self::menu_slug_url( $slug ),
 			];
 		}
 
@@ -844,6 +1068,207 @@ final class Davenham_Admin_Suite {
 		}
 
 		return $groups;
+	}
+
+	private static function captured_submenu_items( $parent_slug, $submenu ) {
+		$children = [];
+		if ( ! is_array( $submenu ) || empty( $submenu[ $parent_slug ] ) || ! is_array( $submenu[ $parent_slug ] ) ) {
+			return $children;
+		}
+
+		foreach ( $submenu[ $parent_slug ] as $child ) {
+			if ( empty( $child[2] ) ) {
+				continue;
+			}
+
+			$child_slug = (string) $child[2];
+			$label      = self::clean_menu_label( $child[0] ?? $child_slug );
+			if ( '' === $label ) {
+				continue;
+			}
+
+			$children[] = [
+				'label' => $label,
+				'url'   => self::menu_slug_url( $child_slug ),
+			];
+		}
+
+		return $children;
+	}
+
+	private static function app_nav_items( $settings ) {
+		$items        = [];
+		$catalog      = self::available_menu_catalog();
+		$visible_keys = [];
+
+		foreach ( $settings['menu_items'] as $slug => $item ) {
+			$placement = $item['placement'] ?? 'keep';
+			if ( ! in_array( $placement, [ 'keep', 'bottom' ], true ) ) {
+				continue;
+			}
+
+			if ( 'edit.php?post_type=event' === $slug && isset( $settings['menu_items']['davenham-events-funds'] ) && in_array( $settings['menu_items']['davenham-events-funds']['placement'] ?? '', [ 'keep', 'bottom' ], true ) ) {
+				continue;
+			}
+
+			$visible_keys[] = $slug;
+			$children       = isset( $catalog[ $slug ]['children'] ) && is_array( $catalog[ $slug ]['children'] ) ? $catalog[ $slug ]['children'] : [];
+			$kind           = 'davenham-admin-suite' === $slug ? 'admin-tools' : 'link';
+
+			$items[] = [
+				'slug'          => $slug,
+				'label'         => $item['label'],
+				'url'           => self::menu_slug_url( $slug ),
+				'icon'          => self::valid_icon_key( $item['icon'] ?? self::menu_icon_key( $slug, $item['label'] ) ),
+				'placement'     => $placement,
+				'order'         => (int) ( $item['order'] ?? 500 ),
+				'dividerBefore' => ! empty( $item['divider_before'] ),
+				'kind'          => $kind,
+				'children'      => $children,
+			];
+		}
+
+		if ( ! in_array( 'davenham-admin-suite', $visible_keys, true ) ) {
+			$admin_item = $settings['menu_items']['davenham-admin-suite'] ?? [
+				'label'     => 'Admin',
+				'placement' => 'bottom',
+				'icon'      => 'admin',
+				'order'     => 900,
+			];
+
+			$items[] = [
+				'slug'          => 'davenham-admin-suite',
+				'label'         => $admin_item['label'] ?? 'Admin',
+				'url'           => admin_url( 'admin.php?page=davenham-admin-suite' ),
+				'icon'          => self::valid_icon_key( $admin_item['icon'] ?? 'admin' ),
+				'placement'     => 'bottom',
+				'order'         => (int) ( $admin_item['order'] ?? 900 ),
+				'dividerBefore' => true,
+				'kind'          => 'admin-tools',
+				'children'      => [],
+			];
+		}
+
+		usort(
+			$items,
+			function ( $left, $right ) {
+				if ( (int) $left['order'] === (int) $right['order'] ) {
+					return strcasecmp( $left['label'], $right['label'] );
+				}
+
+				return (int) $left['order'] <=> (int) $right['order'];
+			}
+		);
+
+		return $items;
+	}
+
+	private static function app_admin_groups( $settings ) {
+		$groups = [];
+
+		foreach ( self::grouped_admin_links( $settings ) as $group ) {
+			$links = [];
+			foreach ( $group['links'] as $link ) {
+				$links[] = [
+					'label' => $link['label'],
+					'url'   => $link['url'],
+				];
+			}
+
+			$groups[] = [
+				'label' => $group['label'],
+				'links' => $links,
+			];
+		}
+
+		return $groups;
+	}
+
+	private static function menu_slug_url( $slug ) {
+		$slug = (string) $slug;
+
+		if ( '' === $slug ) {
+			return admin_url();
+		}
+
+		if ( preg_match( '#^https?://#i', $slug ) ) {
+			return $slug;
+		}
+
+		if ( false !== strpos( $slug, '.php' ) || false !== strpos( $slug, '?' ) || false !== strpos( $slug, '/' ) ) {
+			return admin_url( ltrim( $slug, '/' ) );
+		}
+
+		return admin_url( 'admin.php?page=' . rawurlencode( $slug ) );
+	}
+
+	private static function menu_icon_key( $slug, $label = '' ) {
+		$haystack = strtolower( $slug . ' ' . $label );
+
+		if ( false !== strpos( $haystack, 'event' ) || false !== strpos( $haystack, 'ticket' ) ) {
+			return 'tickets';
+		}
+
+		if ( false !== strpos( $haystack, 'upload' ) || false !== strpos( $haystack, 'media' ) || false !== strpos( $haystack, 'image' ) ) {
+			return 'media';
+		}
+
+		if ( false !== strpos( $haystack, 'page' ) ) {
+			return 'pages';
+		}
+
+		if ( false !== strpos( $haystack, 'woocommerce' ) || false !== strpos( $haystack, 'order' ) || false !== strpos( $haystack, 'shop' ) ) {
+			return 'orders';
+		}
+
+		if ( false !== strpos( $haystack, 'plugin' ) || false !== strpos( $haystack, 'tool' ) || false !== strpos( $haystack, 'setting' ) ) {
+			return 'admin';
+		}
+
+		if ( false !== strpos( $haystack, 'dashboard' ) || 'index.php' === $slug ) {
+			return 'dashboard';
+		}
+
+		return 'pin';
+	}
+
+	private static function icon_choices() {
+		return [
+			'dashboard' => 'Dashboard',
+			'tickets'   => 'Tickets',
+			'calendar'  => 'Calendar',
+			'pages'     => 'Pages',
+			'media'     => 'Media',
+			'cart'      => 'Cart',
+			'orders'    => 'Orders',
+			'products'  => 'Products',
+			'users'     => 'Users',
+			'posts'     => 'Posts',
+			'forms'     => 'Forms',
+			'links'     => 'Links',
+			'payments'  => 'Payments',
+			'marketing' => 'Marketing',
+			'builder'   => 'Builder',
+			'appearance'=> 'Appearance',
+			'analytics' => 'Analytics',
+			'folder'    => 'Folder',
+			'admin'     => 'Admin',
+			'plugins'   => 'Plugins',
+			'tools'     => 'Tools',
+			'updates'   => 'Updates',
+			'security'  => 'Security',
+			'backup'    => 'Backup',
+			'health'    => 'Health',
+			'speed'     => 'Speed',
+			'pin'       => 'Circle',
+		];
+	}
+
+	private static function valid_icon_key( $icon ) {
+		$icon = sanitize_key( (string) $icon );
+		$choices = self::icon_choices();
+
+		return isset( $choices[ $icon ] ) ? $icon : 'pin';
 	}
 
 	private static function update_summary() {
@@ -872,7 +1297,7 @@ final class Davenham_Admin_Suite {
 			return get_site_icon_url( 128 );
 		}
 
-		return trailingslashit( get_stylesheet_directory_uri() ) . 'screenshot.png';
+		return '';
 	}
 
 	private static function inline_css( $settings ) {
@@ -974,6 +1399,7 @@ final class Davenham_Admin_Suite {
 
 		$slugs = array_unique(
 			array_merge(
+				array_keys( (array) $items ),
 				array_keys( $catalog ),
 				array_keys( array_intersect_key( (array) $items, $utility ) )
 			)
@@ -989,6 +1415,9 @@ final class Davenham_Admin_Suite {
 				'label'     => $catalog_item['label'],
 				'group'     => self::default_group_slug( $groups ),
 				'placement' => 'keep',
+				'icon'      => self::menu_icon_key( $slug, $catalog_item['label'] ),
+				'order'     => 500,
+				'divider_before' => '0',
 			];
 
 			$saved = $items[ $slug ] ?? [];
@@ -999,7 +1428,7 @@ final class Davenham_Admin_Suite {
 			}
 
 			$placement = $saved['placement'] ?? $base['placement'];
-			if ( ! in_array( $placement, [ 'keep', 'admin', 'hide' ], true ) ) {
+			if ( ! in_array( $placement, [ 'keep', 'bottom', 'admin', 'hide' ], true ) ) {
 				$placement = $base['placement'];
 			}
 
@@ -1007,8 +1436,22 @@ final class Davenham_Admin_Suite {
 				'label'     => sanitize_text_field( $saved['label'] ?? $base['label'] ),
 				'group'     => $group,
 				'placement' => $placement,
+				'icon'      => self::valid_icon_key( $saved['icon'] ?? $base['icon'] ?? self::menu_icon_key( $slug, $catalog_item['label'] ) ),
+				'order'     => isset( $saved['order'] ) ? (int) $saved['order'] : (int) ( $base['order'] ?? 500 ),
+				'divider_before' => ! empty( $saved['divider_before'] ) || ! empty( $base['divider_before'] ) ? '1' : '0',
 			];
 		}
+
+		uasort(
+			$normal,
+			function ( $left, $right ) {
+				if ( (int) $left['order'] === (int) $right['order'] ) {
+					return strcasecmp( $left['label'], $right['label'] );
+				}
+
+				return (int) $left['order'] <=> (int) $right['order'];
+			}
+		);
 
 		return $normal;
 	}
@@ -1036,6 +1479,9 @@ final class Davenham_Admin_Suite {
 				'label'     => $catalog_item['label'] ?? $slug,
 				'group'     => self::default_group_slug( $groups ),
 				'placement' => 'keep',
+				'icon'      => self::menu_icon_key( $slug, $catalog_item['label'] ?? $slug ),
+				'order'     => 500,
+				'divider_before' => '0',
 			];
 
 			$item = isset( $items[ $slug ] ) && is_array( $items[ $slug ] ) ? $items[ $slug ] : [];
@@ -1046,7 +1492,7 @@ final class Davenham_Admin_Suite {
 			}
 
 			$placement = sanitize_text_field( $item['placement'] ?? $current['placement'] );
-			if ( ! in_array( $placement, [ 'keep', 'admin', 'hide' ], true ) ) {
+			if ( ! in_array( $placement, [ 'keep', 'bottom', 'admin', 'hide' ], true ) ) {
 				$placement = $current['placement'];
 			}
 
@@ -1059,8 +1505,22 @@ final class Davenham_Admin_Suite {
 				'label'     => $label,
 				'group'     => $group,
 				'placement' => $placement,
+				'icon'      => self::valid_icon_key( $item['icon'] ?? $current['icon'] ?? self::menu_icon_key( $slug, $label ) ),
+				'order'     => isset( $item['order'] ) ? (int) $item['order'] : (int) ( $current['order'] ?? 500 ),
+				'divider_before' => ! empty( $item['divider_before'] ) ? '1' : '0',
 			];
 		}
+
+		uasort(
+			$clean,
+			function ( $left, $right ) {
+				if ( (int) $left['order'] === (int) $right['order'] ) {
+					return strcasecmp( $left['label'], $right['label'] );
+				}
+
+				return (int) $left['order'] <=> (int) $right['order'];
+			}
+		);
 
 		return $clean;
 	}
@@ -1116,6 +1576,15 @@ final class Davenham_Admin_Suite {
 		echo '<select name="' . esc_attr( $name ) . '">';
 		foreach ( $groups as $group_slug => $group_label ) {
 			echo '<option value="' . esc_attr( $group_slug ) . '" ' . selected( $selected, $group_slug, false ) . '>' . esc_html( $group_label ) . '</option>';
+		}
+		echo '</select>';
+	}
+
+	private static function render_icon_select( $name, $selected ) {
+		$selected = self::valid_icon_key( $selected );
+		echo '<select class="das-icon-picker" name="' . esc_attr( $name ) . '">';
+		foreach ( self::icon_choices() as $icon_key => $label ) {
+			echo '<option value="' . esc_attr( $icon_key ) . '" ' . selected( $selected, $icon_key, false ) . '>' . esc_html( $label ) . '</option>';
 		}
 		echo '</select>';
 	}
