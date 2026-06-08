@@ -1200,8 +1200,34 @@ final class Davenham_Admin_Suite {
 			return $slug;
 		}
 
+		// Known-broken slugs from older plugin versions — map to the
+		// canonical modern URL. WooCommerce Marketing was previously
+		// registered as the page slug "woocommerce-marketing" but
+		// WC-Admin moved it under wc-admin's React router; the legacy
+		// slug now returns "Cannot load woocommerce-marketing".
+		$known_remaps = array(
+			'woocommerce-marketing' => 'admin.php?page=wc-admin&path=/marketing',
+			'wc-marketing'          => 'admin.php?page=wc-admin&path=/marketing',
+			'wc-analytics'          => 'admin.php?page=wc-admin&path=/analytics/overview',
+			'woocommerce-analytics' => 'admin.php?page=wc-admin&path=/analytics/overview',
+		);
+		if ( isset( $known_remaps[ $slug ] ) ) {
+			return admin_url( $known_remaps[ $slug ] );
+		}
+
 		if ( false !== strpos( $slug, '.php' ) || false !== strpos( $slug, '?' ) || false !== strpos( $slug, '/' ) ) {
 			return admin_url( ltrim( $slug, '/' ) );
+		}
+
+		// Prefer WP's own URL resolution — handles plugin-registered
+		// menu pages correctly, including ones that use non-standard
+		// patterns. Falls back to the manual admin.php?page=<slug>
+		// construction if WP can't resolve it.
+		if ( function_exists( 'menu_page_url' ) ) {
+			$resolved = menu_page_url( $slug, false );
+			if ( ! empty( $resolved ) ) {
+				return $resolved;
+			}
 		}
 
 		return admin_url( 'admin.php?page=' . rawurlencode( $slug ) );
