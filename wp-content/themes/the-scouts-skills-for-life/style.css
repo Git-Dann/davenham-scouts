@@ -3740,3 +3740,267 @@ nav.pagination {
     padding: 0 10px;
   }
 }
+
+/* ══════════════════════════════════════════════════════════
+   MOBILE PASS — system-wide cleanup for ≤700px
+   ══════════════════════════════════════════════════════════ */
+
+/* ── 1. Header (broken search bar fix + clean mobile chrome) ─ */
+/* The .search-form.mobile div in header.php has no JS toggle
+   wired up — it was leaving an unstyled, full-width search input
+   visible on mobile and overflowing the viewport. Hide it
+   defensively. */
+.new-header .block_icon.search-form.mobile {
+  display: none !important;
+}
+
+/* Mobile search trigger button — until the toggle JS is wired up,
+   make this a direct link to the search results page rather than
+   leaving a dead button. */
+.new-header .key_links .search.mobile {
+  cursor: pointer;
+}
+
+/* Defensive: ensure the desktop icon_wrap really is hidden on mobile
+   even if production.css load order changes. */
+@media (max-width: 1000px) {
+  .new-header .logo-cta-container .icon_wrap:not(.icon_wrap-small) {
+    display: none !important;
+  }
+}
+
+/* Tighter header on mobile — logo + text + actions need to fit */
+@media (max-width: 700px) {
+  .new-header .logo-cta-container {
+    align-items: center;
+    gap: 12px;
+  }
+
+  .new-header .logo img {
+    max-width: 64px;
+    height: auto;
+  }
+
+  .new-header .logo__text {
+    font-size: 14px;
+    line-height: 1.2;
+    max-width: 120px;
+  }
+
+  .new-header .key_links {
+    gap: 8px;
+  }
+
+  .new-header .key_links .block_icon {
+    width: 40px;
+    height: 40px;
+    flex-shrink: 0;
+  }
+
+  /* Secondary nav (Cookies / Join) gets very small on mobile —
+     hide it on tiny screens since the same links exist in the
+     mobile drawer. */
+  .new-header .secondary_navold {
+    display: none;
+  }
+}
+
+/* ── 2. Mobile-tighten section paddings (was 60-80px desktop) ─ */
+@media (max-width: 700px) {
+  .age_groups_section,
+  .news_section,
+  .welcome_section,
+  .scouts-woocommerce--landing > section,
+  .category_showcase,
+  .section_shop_grid,
+  .product_grid,
+  .featured_product,
+  .event_archive,
+  .event_layout,
+  .news_archive,
+  .page_content--article,
+  .post_article,
+  .post_related,
+  .event_related,
+  .shop_other_cats {
+    padding-top: 40px;
+    padding-bottom: 40px;
+  }
+
+  /* Hero variants — drop the big 64–80px hero padding */
+  .shop_hero .wrapper,
+  .post_hero .wrapper,
+  .event_hero .wrapper,
+  .page_hero .wrapper,
+  .news_archive_hero .wrapper,
+  .event_archive_hero .wrapper,
+  .shop_cat_hero {
+    padding-top: 48px !important;
+    padding-bottom: 40px !important;
+  }
+}
+
+/* ── 3. Mobile typography for hero headings ─────────────────── */
+@media (max-width: 500px) {
+  /* Reduce the lower bound of all the clamp() title scales so
+     small screens don't end up with massive overflowing H1s. */
+  .shop_hero__heading,
+  .post_hero__title,
+  .event_hero__title,
+  .page_hero__title,
+  .news_archive_hero__title,
+  .event_archive_hero__title,
+  .shop_cat_hero__title {
+    font-size: 32px !important;
+    line-height: 1.1;
+    letter-spacing: -0.01em;
+  }
+
+  .category_showcase__heading {
+    font-size: 24px !important;
+  }
+}
+
+/* ── 4. Forms (contact, join) — prevent overflow ───────────── */
+.scouts-form {
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden; /* Belt + braces against rogue inputs */
+}
+
+.scouts-form input,
+.scouts-form select,
+.scouts-form textarea {
+  max-width: 100%;
+  box-sizing: border-box;
+  font-size: 16px; /* prevent iOS zoom-on-focus */
+}
+
+@media (max-width: 700px) {
+  .scouts-form-grid--2 {
+    grid-template-columns: 1fr !important;
+    gap: 14px !important;
+  }
+}
+
+/* ── 5. Cart & checkout tables — already styled, but ensure
+   they don't overflow horizontally on tiny screens ────────── */
+@media (max-width: 700px) {
+  .scouts-woocommerce .woocommerce-cart-form,
+  .scouts-woocommerce .woocommerce-checkout {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .scouts-woocommerce table.shop_table {
+    font-size: 14px;
+  }
+
+  .scouts-woocommerce table.shop_table .product-thumbnail img {
+    max-width: 56px;
+  }
+}
+
+/* ── 6. Single product page on mobile ─────────────────────── */
+@media (max-width: 900px) {
+  .scouts-woocommerce--product .wrapper {
+    padding-top: 24px;
+  }
+
+  .scouts-woocommerce--product div.product div.summary .product_title {
+    font-size: 26px;
+  }
+
+  .scouts-woocommerce--product div.product form.cart {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .scouts-woocommerce--product div.product form.cart .single_add_to_cart_button {
+    width: 100%;
+  }
+}
+
+/* ── 7. Section nav (sub-pages) on mobile — horizontal scroll
+   rather than wrap into rows ─────────────────────────────── */
+@media (max-width: 700px) {
+  .section_nav__list {
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    scrollbar-width: thin;
+  }
+
+  .section_nav__item a {
+    padding: 14px 16px;
+    font-size: 13px;
+  }
+}
+
+/* ── 8. Footer was redesigned earlier; just ensure pickup CTA
+   buttons don't wrap awkwardly ────────────────────────────── */
+@media (max-width: 700px) {
+  .footer .footer-actions {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .footer .footer-actions a {
+    width: 100%;
+    text-align: center;
+  }
+}
+
+/* ── 9. Block buttons on mobile — make sure no CTA renders
+   smaller than the 44px touch-target standard ─────────────── */
+@media (max-width: 700px) {
+  .shop_hero__btn,
+  .event_sidebar__cta,
+  .news_section__btn,
+  .post_article__back,
+  .event_card__cta,
+  .news_card__cta,
+  .product_grid__btn,
+  .scouts-woocommerce ul.products li.product .button,
+  .scouts-woocommerce .single_add_to_cart_button,
+  .scouts-woocommerce .checkout-button,
+  .scouts-woocommerce .button.alt,
+  .featured_product__btn,
+  .event_ticket__cta {
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+}
+
+/* ── 10. News card lead on mobile collapses to single-column ─ */
+@media (max-width: 900px) {
+  .news_card--lead .news_card__body,
+  .event_card--lead .event_card__body {
+    padding: 24px 22px;
+  }
+
+  .news_card--lead .news_card__image,
+  .event_card--lead .event_card__image {
+    min-height: 220px;
+    height: auto;
+  }
+}
+
+/* ── 11. Fix horizontal overflow guard ─────────────────────── */
+html, body {
+  overflow-x: hidden;
+  max-width: 100%;
+}
+
+/* ── 12. Product card "Add to basket" button is anchored
+   inside an <a>, can render too narrow on mobile ─────────── */
+@media (max-width: 600px) {
+  .scouts-woocommerce ul.products li.product .button {
+    margin: 0 14px 18px;
+  }
+
+  .scouts-woocommerce ul.products li.product img {
+    height: 200px;
+  }
+}

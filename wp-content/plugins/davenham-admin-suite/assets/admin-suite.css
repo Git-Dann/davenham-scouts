@@ -1570,3 +1570,294 @@ body.das-app-nav-collapsed .das-app-nav-chevron {
     grid-template-columns: 1fr;
   }
 }
+
+/* ══════════════════════════════════════════════════════════
+   ADMIN SHELL — mobile UX pass
+   The default mobile experience had:
+     - Sidebar drawer that opens but doesn't fully cover content
+     - Flyout panels that pop up as small bottom sheets (66vh) which
+       look out of place over a dimmed content area
+     - Touch targets sometimes <44px
+   This block fixes all three.
+   ══════════════════════════════════════════════════════════ */
+
+@media (max-width: 782px) {
+  /* Full-bleed drawer with proper z-index so it's above EVERYTHING */
+  html.das-app-shell-active body.davenham-admin-shell .das-app-rail {
+    position: fixed !important;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: min(280px, 80vw) !important;
+    max-width: 80vw;
+    transform: translateX(-100%);
+    transition: transform 0.25s ease;
+    z-index: 999999;
+    background: linear-gradient(180deg, #003982 0%, #590FA9 100%);
+    box-shadow: 0 0 40px rgba(0, 0, 0, 0.3);
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  html.das-app-shell-active body.davenham-admin-shell.das-app-nav-open .das-app-rail {
+    transform: translateX(0);
+  }
+
+  /* Backdrop that covers the rest of the screen when drawer is open */
+  html.das-app-shell-active body.davenham-admin-shell .das-app-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.25s ease, visibility 0.25s ease;
+    z-index: 999998;
+    border: 0;
+    cursor: pointer;
+  }
+
+  html.das-app-shell-active body.davenham-admin-shell.das-app-nav-open .das-app-overlay {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  /* Top bar always visible on mobile — provides the hamburger trigger */
+  html.das-app-shell-active body.davenham-admin-shell .das-app-topbar {
+    display: flex !important;
+    position: sticky;
+    top: 0;
+    z-index: 9999;
+    background: #fff;
+    border-bottom: 1px solid #CCCCCC;
+    padding: 10px 16px;
+    min-height: 56px;
+    align-items: center;
+    gap: 12px;
+  }
+
+  html.das-app-shell-active body.davenham-admin-shell .das-app-topbar .das-app-mobile-menu {
+    width: 44px;
+    height: 44px;
+    border-radius: 8px;
+    background: #F1F1F1;
+    border: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    flex-shrink: 0;
+    color: #003982;
+  }
+
+  html.das-app-shell-active body.davenham-admin-shell .das-app-topbar .das-app-mobile-menu:hover,
+  html.das-app-shell-active body.davenham-admin-shell .das-app-topbar .das-app-mobile-menu:active {
+    background: #f3eaff;
+    color: #590FA9;
+  }
+
+  html.das-app-shell-active body.davenham-admin-shell .das-app-topbar > div {
+    flex: 1;
+    min-width: 0;
+  }
+
+  html.das-app-shell-active body.davenham-admin-shell .das-app-topbar > div strong {
+    display: block;
+    font-size: 15px;
+    font-weight: 800;
+    color: #333333;
+    line-height: 1.2;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  html.das-app-shell-active body.davenham-admin-shell .das-app-topbar > div span {
+    font-size: 12px;
+    color: #6E6E6E;
+    line-height: 1.2;
+  }
+
+  html.das-app-shell-active body.davenham-admin-shell .das-app-topbar .das-app-user {
+    font-size: 12px;
+    color: #6E6E6E;
+    flex-shrink: 0;
+    max-width: 100px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  /* Nav items inside the drawer — bigger touch targets */
+  html.das-app-shell-active body.davenham-admin-shell .das-app-nav-item {
+    min-height: 48px;
+    padding: 12px 18px;
+    font-size: 15px;
+    color: rgba(255, 255, 255, 0.92);
+    border-radius: 0;
+    width: 100%;
+    text-align: left;
+    justify-content: flex-start;
+    gap: 14px;
+  }
+
+  html.das-app-shell-active body.davenham-admin-shell .das-app-nav-item.is-active {
+    background: rgba(255, 255, 255, 0.14);
+    color: #fff;
+    box-shadow: inset 3px 0 0 #FFB4E5;
+  }
+
+  html.das-app-shell-active body.davenham-admin-shell .das-app-nav-item:hover {
+    background: rgba(255, 255, 255, 0.08);
+    color: #fff;
+  }
+
+  html.das-app-shell-active body.davenham-admin-shell .das-app-nav-item .dashicons {
+    color: #FFB4E5;
+    flex-shrink: 0;
+  }
+
+  html.das-app-shell-active body.davenham-admin-shell .das-app-brand {
+    padding: 18px 18px 8px;
+    color: #fff;
+  }
+
+  html.das-app-shell-active body.davenham-admin-shell .das-app-brand strong {
+    color: #fff;
+    font-weight: 800;
+  }
+
+  html.das-app-shell-active body.davenham-admin-shell .das-app-brand img {
+    max-width: 36px;
+    height: auto;
+    filter: brightness(0) invert(1);
+  }
+
+  html.das-app-shell-active body.davenham-admin-shell .das-app-divider {
+    background: rgba(255, 255, 255, 0.18);
+    height: 1px;
+    margin: 8px 0;
+  }
+
+  html.das-app-shell-active body.davenham-admin-shell .das-app-collapse {
+    display: none; /* No collapse on mobile — drawer is the only mode */
+  }
+
+  /* Flyout panels become FULL-SCREEN bottom sheets on mobile, not
+     half-height popups. Slides up from bottom over the drawer. */
+  html.das-app-shell-active body.davenham-admin-shell .das-app-flyout,
+  html.das-app-shell-active body.davenham-admin-shell.das-app-nav-collapsed .das-app-flyout {
+    position: fixed;
+    inset: auto 0 0 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    top: auto !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    max-height: 85vh;
+    border-radius: 14px 14px 0 0;
+    background: #fff;
+    box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.25);
+    transform: translateY(100%);
+    transition: transform 0.25s ease;
+    z-index: 1000000;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    visibility: hidden;
+    padding: 16px 18px 24px;
+  }
+
+  html.das-app-shell-active body.davenham-admin-shell .das-app-flyout.is-open {
+    transform: translateY(0);
+    visibility: visible;
+  }
+
+  /* "Pull tab" affordance at the top of the bottom sheet */
+  html.das-app-shell-active body.davenham-admin-shell .das-app-flyout::before {
+    content: '';
+    display: block;
+    width: 40px;
+    height: 4px;
+    background: #CCCCCC;
+    border-radius: 999px;
+    margin: 0 auto 16px;
+  }
+
+  html.das-app-shell-active body.davenham-admin-shell .das-app-flyout-heading {
+    margin-bottom: 16px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid #F1F1F1;
+  }
+
+  html.das-app-shell-active body.davenham-admin-shell .das-app-flyout-heading strong {
+    font-size: 17px;
+    color: #333333;
+  }
+
+  html.das-app-shell-active body.davenham-admin-shell .das-app-flyout-heading a {
+    color: #590FA9;
+    font-weight: 700;
+    font-size: 13px;
+  }
+
+  html.das-app-shell-active body.davenham-admin-shell .das-app-flyout-list a,
+  html.das-app-shell-active body.davenham-admin-shell .das-flyout-folder a {
+    display: block;
+    padding: 14px 12px;
+    border-radius: 8px;
+    color: #333333;
+    font-weight: 600;
+    font-size: 15px;
+    text-decoration: none;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+  }
+
+  html.das-app-shell-active body.davenham-admin-shell .das-app-flyout-list a:hover,
+  html.das-app-shell-active body.davenham-admin-shell .das-flyout-folder a:hover,
+  html.das-app-shell-active body.davenham-admin-shell .das-app-flyout-list a:active,
+  html.das-app-shell-active body.davenham-admin-shell .das-flyout-folder a:active {
+    background: #f3eaff;
+    color: #590FA9;
+  }
+
+  html.das-app-shell-active body.davenham-admin-shell .das-flyout-folder {
+    margin-top: 18px;
+    padding-top: 14px;
+    border-top: 1px solid #F1F1F1;
+  }
+
+  html.das-app-shell-active body.davenham-admin-shell .das-flyout-folder h3 {
+    font-size: 13px;
+    font-weight: 700;
+    color: #6E6E6E;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    margin: 0 0 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  /* When the bottom sheet is open, dim the rail behind it */
+  html.das-app-shell-active body.davenham-admin-shell:has(.das-app-flyout.is-open) .das-app-rail {
+    filter: brightness(0.4);
+  }
+
+  /* Reset content area margin — WP admin content sits below the topbar */
+  html.das-app-shell-active body.davenham-admin-shell #wpcontent {
+    margin-top: 0 !important;
+  }
+}
+
+/* ── Very small phones (≤400px) — tighten further ─────────── */
+@media (max-width: 400px) {
+  html.das-app-shell-active body.davenham-admin-shell .das-app-topbar > div span {
+    display: none; /* drop the subtitle */
+  }
+
+  html.das-app-shell-active body.davenham-admin-shell .das-app-rail {
+    width: 88vw !important;
+  }
+}
