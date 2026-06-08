@@ -60,28 +60,51 @@ if ( ! function_exists( 'das_shell_is_active' ) ) {
 			return false;
 		}
 		$current = isset( $_SERVER['REQUEST_URI'] ) ? (string) $_SERVER['REQUEST_URI'] : '';
-		// Reduce the candidate URL to a path-or-relative form for matching.
-		$parts  = wp_parse_url( $url );
-		$target = ( isset( $parts['path'] ) ? $parts['path'] : '' )
-			. ( isset( $parts['query'] ) ? '?' . $parts['query'] : '' );
-		if ( '' === $target ) {
+
+		// Parse both URLs into path + query so we can compare structurally.
+		$cur_parts = wp_parse_url( $current );
+		$tar_parts = wp_parse_url( $url );
+		$cur_path  = isset( $cur_parts['path'] ) ? rtrim( $cur_parts['path'], '/' ) : '';
+		$tar_path  = isset( $tar_parts['path'] ) ? rtrim( $tar_parts['path'], '/' ) : '';
+
+		if ( '' === $tar_path ) {
 			return false;
 		}
-		// Normalise both to drop trailing slashes and any anchor.
-		$norm = function ( $u ) {
-			$u = preg_replace( '/#.*$/', '', $u );
-			$u = preg_replace( '/\/+$/', '', $u );
-			return $u;
-		};
-		$cur = $norm( $current );
-		$tar = $norm( $target );
-		if ( $cur === $tar ) {
-			return true;
+
+		// Paths must match first.
+		if ( $cur_path !== $tar_path ) {
+			return false;
 		}
-		// Exact path match with different/no query string — still "in this section".
-		$cur_path = preg_replace( '/\?.*$/', '', $cur );
-		$tar_path = preg_replace( '/\?.*$/', '', $tar );
-		return $cur_path === $tar_path;
+
+		// Parse query strings into arrays for keyed comparison.
+		$cur_query = array();
+		$tar_query = array();
+		if ( isset( $cur_parts['query'] ) ) {
+			parse_str( $cur_parts['query'], $cur_query );
+		}
+		if ( isset( $tar_parts['query'] ) ) {
+			parse_str( $tar_parts['query'], $tar_query );
+		}
+
+		// admin.php is shared by dozens of plugin pages — the `page` query
+		// parameter is the actual distinguishing key. Same path but
+		// different `page` slug means a different screen.
+		if ( false !== strpos( $tar_path, '/admin.php' ) ) {
+			$cur_page = isset( $cur_query['page'] ) ? (string) $cur_query['page'] : '';
+			$tar_page = isset( $tar_query['page'] ) ? (string) $tar_query['page'] : '';
+			return $cur_page === $tar_page;
+		}
+
+		// edit.php?post_type=X — same logic applies (post_type is the key).
+		if ( false !== strpos( $tar_path, '/edit.php' ) || false !== strpos( $tar_path, '/post-new.php' ) ) {
+			$cur_pt = isset( $cur_query['post_type'] ) ? (string) $cur_query['post_type'] : '';
+			$tar_pt = isset( $tar_query['post_type'] ) ? (string) $tar_query['post_type'] : '';
+			return $cur_pt === $tar_pt;
+		}
+
+		// Default: paths match (and we don't care about other query params).
+		// e.g. /wp-admin/upload.php — Media for everyone.
+		return true;
 	}
 }
 
@@ -144,17 +167,28 @@ if ( '' === $page_title ) {
  */
 $render_item = function ( $item ) use ( $admin_groups ) {
 	$is_flyout = das_shell_has_flyout( $item );
-	$classes   = 'das-app-nav-item' . ( das_shell_item_active( $item, $admin_groups ) ? ' is-active' : '' ) . ( $is_flyout ? ' has-flyout' : '' );
+	$is_active = das_shell_item_active( $item, $admin_groups );
+	$classes   = 'das-app-nav-item' . ( $is_active ? ' is-active' : '' ) . ( $is_flyout ? ' has-flyout' : '' );
 	$icon      = '<span class="dashicons ' . esc_attr( das_shell_icon_class( $item['icon'] ?? '' ) ) . '" aria-hidden="true"></span>';
 	$label     = '<span class="das-app-nav-label">' . esc_html( $item['label'] ?? '' ) . '</span>';
 	$divider   = ! empty( $item['dividerBefore'] ) ? '<div class="das-app-divider" aria-hidden="true"></div>' : '';
+	$url       = ! empty( $item['url'] ) ? $item['url'] : '#';
 
+	// Items with a flyout get a split row — the label area is a plain
+	// link that navigates to the section's main URL, the chevron is a
+	// separate button that toggles the flyout. Means editors can jump
+	// straight to the section's overview without expanding the panel.
 	if ( $is_flyout ) {
-		$chevron = '<span class="dashicons dashicons-arrow-right-alt2 das-app-nav-chevron" aria-hidden="true"></span>';
-		return $divider . '<button type="button" class="' . esc_attr( $classes ) . '" data-das-flyout-target="das-flyout-' . (int) $item['shellIndex'] . '" aria-expanded="false">' . $icon . $label . $chevron . '</button>';
+		$chevron_label = sprintf( 'Open %s submenu', $item['label'] ?? 'menu' );
+		return $divider . '<div class="das-app-nav-row ' . ( $is_active ? 'is-active' : '' ) . '">' .
+			'<a href="' . esc_url( $url ) . '" class="' . esc_attr( $classes ) . ' is-split">' . $icon . $label . '</a>' .
+			'<button type="button" class="das-app-nav-chevron-btn" data-das-flyout-target="das-flyout-' . (int) $item['shellIndex'] . '" aria-expanded="false" aria-label="' . esc_attr( $chevron_label ) . '">' .
+				'<span class="dashicons dashicons-arrow-right-alt2" aria-hidden="true"></span>' .
+			'</button>' .
+		'</div>';
 	}
 
-	return $divider . '<a href="' . esc_url( $item['url'] ?? '#' ) . '" class="' . esc_attr( $classes ) . '">' . $icon . $label . '</a>';
+	return $divider . '<a href="' . esc_url( $url ) . '" class="' . esc_attr( $classes ) . '">' . $icon . $label . '</a>';
 };
 
 /**

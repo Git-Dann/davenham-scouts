@@ -1936,3 +1936,87 @@ body.das-app-nav-collapsed .das-app-nav-chevron {
 html.das-app-shell-active body.davenham-admin-shell .das-app-brand img {
   filter: none;
 }
+
+/* ══════════════════════════════════════════════════════════
+   Split-row nav items (flyout parent navigates, chevron toggles)
+   ══════════════════════════════════════════════════════════ */
+
+/* Desktop: split row = link label + chevron toggle side by side */
+.das-app-nav-row {
+  display: flex;
+  align-items: stretch;
+  gap: 0;
+  position: relative;
+}
+
+.das-app-nav-row.is-active {
+  /* Visual cue when the parent OR a child is the current page */
+}
+
+.das-app-nav-row > .das-app-nav-item.is-split {
+  flex: 1;
+  min-width: 0;
+  /* Drop the chevron-side padding so the chevron button can fill it */
+  padding-right: 4px;
+}
+
+.das-app-nav-chevron-btn {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  background: transparent;
+  border: 0;
+  color: inherit;
+  cursor: pointer;
+  border-radius: 0;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.das-app-nav-chevron-btn:hover,
+.das-app-nav-chevron-btn:focus-visible {
+  background: rgba(255, 255, 255, 0.10);
+  color: #fff;
+  outline: none;
+}
+
+.das-app-nav-chevron-btn .dashicons {
+  font-size: 18px;
+  line-height: 1;
+  transition: transform 0.18s ease;
+}
+
+.das-app-nav-chevron-btn[aria-expanded="true"] .dashicons {
+  transform: rotate(90deg);
+  color: #FFB4E5;
+}
+
+/* Mobile split-row tweaks — bigger touch targets, no shared bg conflicts */
+@media (max-width: 782px) {
+  html.das-app-shell-active body.davenham-admin-shell .das-app-nav-row {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  }
+
+  html.das-app-shell-active body.davenham-admin-shell .das-app-nav-row > .das-app-nav-item.is-split {
+    min-height: 48px;
+    border-bottom: 0;
+  }
+
+  html.das-app-shell-active body.davenham-admin-shell .das-app-nav-chevron-btn {
+    width: 48px;
+    color: rgba(255, 255, 255, 0.6);
+  }
+
+  html.das-app-shell-active body.davenham-admin-shell .das-app-nav-row.is-active > .das-app-nav-item.is-split {
+    box-shadow: inset 3px 0 0 #FFB4E5;
+    background: rgba(255, 255, 255, 0.14);
+    color: #fff;
+  }
+
+  /* Stop the old fly-out has-flyout button from rendering on mobile —
+     we want the new split-row layout exclusively */
+  html.das-app-shell-active body.davenham-admin-shell .das-app-nav-row + .das-app-nav-item.has-flyout {
+    display: none;
+  }
+}
