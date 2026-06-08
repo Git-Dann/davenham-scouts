@@ -1941,37 +1941,51 @@ html.das-app-shell-active body.davenham-admin-shell .das-app-brand img {
    Split-row nav items (flyout parent navigates, chevron toggles)
    ══════════════════════════════════════════════════════════ */
 
-/* Desktop: split row = link label + chevron toggle side by side */
 .das-app-nav-row {
-  display: flex;
+  display: flex !important;
   align-items: stretch;
   gap: 0;
   position: relative;
+  width: 100%;
+  border-radius: 8px;
+  overflow: hidden;
 }
 
-.das-app-nav-row.is-active {
-  /* Visual cue when the parent OR a child is the current page */
-}
-
+/* Override the base .das-app-nav-item width:100% so the chevron sits
+   alongside on the same row instead of wrapping below. */
 .das-app-nav-row > .das-app-nav-item.is-split {
-  flex: 1;
-  min-width: 0;
-  /* Drop the chevron-side padding so the chevron button can fill it */
+  width: auto !important;
+  flex: 1 1 auto !important;
+  min-width: 0 !important;
+  /* The base item already has its own internal chevron slot via
+     `grid-template-columns: 34px 1fr auto`. Tighten the right padding
+     so the external chevron button reads as a connected element. */
   padding-right: 4px;
+  border-radius: 0;
+  /* Hide the base item's built-in chevron column for split items — the
+     external button is the chevron now. */
+  grid-template-columns: 34px minmax(0, 1fr) !important;
+}
+
+/* Hide any leftover internal chevron span (from earlier renderers) */
+.das-app-nav-row > .das-app-nav-item.is-split > .das-app-nav-chevron {
+  display: none !important;
 }
 
 .das-app-nav-chevron-btn {
-  flex-shrink: 0;
+  flex: 0 0 36px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   width: 36px;
   background: transparent;
   border: 0;
-  color: inherit;
+  border-left: 1px solid rgba(255, 255, 255, 0.10);
+  color: rgba(255, 255, 255, 0.7);
   cursor: pointer;
   border-radius: 0;
   transition: background 0.15s ease, color 0.15s ease;
+  padding: 0;
 }
 
 .das-app-nav-chevron-btn:hover,
@@ -1982,8 +1996,10 @@ html.das-app-shell-active body.davenham-admin-shell .das-app-brand img {
 }
 
 .das-app-nav-chevron-btn .dashicons {
-  font-size: 18px;
+  font-size: 16px;
   line-height: 1;
+  width: 16px;
+  height: 16px;
   transition: transform 0.18s ease;
 }
 
@@ -1992,31 +2008,29 @@ html.das-app-shell-active body.davenham-admin-shell .das-app-brand img {
   color: #FFB4E5;
 }
 
-/* Mobile split-row tweaks — bigger touch targets, no shared bg conflicts */
+/* Hover + active states travel to the whole row */
+.das-app-nav-row:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.das-app-nav-row.is-active {
+  background: rgba(255, 255, 255, 0.10);
+  box-shadow: inset 3px 0 0 #FFB4E5;
+}
+
+/* Mobile split-row tweaks — bigger touch targets, full-width tap area */
 @media (max-width: 782px) {
   html.das-app-shell-active body.davenham-admin-shell .das-app-nav-row {
+    border-radius: 0;
     border-bottom: 1px solid rgba(255, 255, 255, 0.06);
   }
 
   html.das-app-shell-active body.davenham-admin-shell .das-app-nav-row > .das-app-nav-item.is-split {
     min-height: 48px;
-    border-bottom: 0;
   }
 
   html.das-app-shell-active body.davenham-admin-shell .das-app-nav-chevron-btn {
+    flex: 0 0 48px;
     width: 48px;
-    color: rgba(255, 255, 255, 0.6);
-  }
-
-  html.das-app-shell-active body.davenham-admin-shell .das-app-nav-row.is-active > .das-app-nav-item.is-split {
-    box-shadow: inset 3px 0 0 #FFB4E5;
-    background: rgba(255, 255, 255, 0.14);
-    color: #fff;
-  }
-
-  /* Stop the old fly-out has-flyout button from rendering on mobile —
-     we want the new split-row layout exclusively */
-  html.das-app-shell-active body.davenham-admin-shell .das-app-nav-row + .das-app-nav-item.has-flyout {
-    display: none;
   }
 }
