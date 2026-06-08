@@ -57,6 +57,10 @@ final class Davenham_Admin_Suite {
 		add_action( 'wp_dashboard_setup', [ __CLASS__, 'cleanup_dashboard' ], 25 );
 		add_action( 'admin_head', [ __CLASS__, 'suppress_update_ui' ] );
 		add_action( 'admin_head', [ __CLASS__, 'admin_shell_head' ] );
+		// Inline the critical shell CSS at priority 0 — runs BEFORE
+		// wp_print_styles so the layout is applied before first paint,
+		// stopping the flash of unstyled WP admin between navigations.
+		add_action( 'admin_head', [ __CLASS__, 'print_critical_shell_css' ], 0 );
 		add_action( 'in_admin_header', [ __CLASS__, 'render_admin_shell' ], 1 );
 		add_filter( 'admin_body_class', [ __CLASS__, 'admin_body_class' ] );
 		add_filter( 'admin_footer_text', [ __CLASS__, 'admin_footer_text' ] );
@@ -573,6 +577,122 @@ final class Davenham_Admin_Suite {
 		if ( $settings['admin_shell_enabled'] === '1' || $settings['hide_help_tabs'] === '1' ) {
 			echo '<style>#contextual-help-link-wrap,#screen-options-link-wrap{display:none!important;}</style>';
 		}
+	}
+
+	/**
+	 * Print critical shell CSS in <head> BEFORE any other stylesheet
+	 * loads. Prevents the flash of native-WP-admin chrome that the
+	 * user reported when navigating between menu items.
+	 *
+	 * The browser paints HTML the moment it has enough to render — if
+	 * the main stylesheet is still loading at that point, it renders
+	 * the default WP admin look (black sidebar, no topbar) and then
+	 * re-paints with our shell once the CSS arrives. By inlining the
+	 * minimum set of layout rules here, the shell is correct from the
+	 * first paint.
+	 */
+	public static function print_critical_shell_css() {
+		$settings = self::settings();
+		if ( $settings['admin_shell_enabled'] !== '1' ) {
+			return;
+		}
+		// Synchronous inline script — sets the html shell-active class
+		// BEFORE the browser begins parsing the body. Critical CSS
+		// rules can now match from the first paint, avoiding the
+		// flash of native WP admin chrome.
+		?>
+<script>document.documentElement.classList.add('das-app-shell-active');</script>
+<style id="das-shell-critical">
+/* Hide WP's native admin chrome immediately — no flash of it
+   appearing then disappearing on page transitions. */
+html.das-app-shell-active body.davenham-admin-shell #adminmenuback,
+html.das-app-shell-active body.davenham-admin-shell #adminmenuwrap,
+html.das-app-shell-active body.davenham-admin-shell #adminmenu,
+html.das-app-shell-active body.davenham-admin-shell #wpadminbar {
+  display: none !important;
+}
+/* Initial body class always treated as shell on — even before our
+   admin_body_class filter has been applied to the rendered HTML
+   string (defensive against very early paint). */
+body.davenham-admin-shell {
+  background: #F1F1F1;
+}
+/* CSS variables used by the rail + topbar — duplicated here so they
+   exist before admin-suite.css loads. */
+html.das-app-shell-active body.davenham-admin-shell {
+  --das-rail-width: 236px;
+  --das-rail-collapsed-width: 72px;
+  --das-topbar-height: 64px;
+}
+/* Sidebar layout — fixed position, gradient, full-height */
+html.das-app-shell-active body.davenham-admin-shell .das-app-shell {
+  position: relative;
+  z-index: 99998;
+}
+html.das-app-shell-active body.davenham-admin-shell .das-app-rail {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: var(--das-rail-width);
+  background: linear-gradient(180deg, #003982 0%, #590FA9 100%);
+  color: #F1F1F1;
+  z-index: 99999;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+}
+/* Topbar — fixed at top, right of rail, full width */
+html.das-app-shell-active body.davenham-admin-shell .das-app-topbar {
+  position: fixed;
+  top: 0;
+  right: 0;
+  left: var(--das-rail-width);
+  height: var(--das-topbar-height);
+  background: rgba(255, 255, 255, 0.96);
+  border-bottom: 1px solid #CCCCCC;
+  z-index: 99999;
+  display: flex;
+  align-items: center;
+}
+/* Content area — clear sidebar (left margin) + topbar (top padding) */
+html.das-app-shell-active body.davenham-admin-shell #wpcontent,
+html.das-app-shell-active body.davenham-admin-shell #wpfooter {
+  margin-left: var(--das-rail-width) !important;
+}
+html.das-app-shell-active body.davenham-admin-shell #wpcontent {
+  padding-top: calc(var(--das-topbar-height) + 20px) !important;
+}
+/* Hide flyouts initially — they only show when JS toggles is-open */
+html.das-app-shell-active body.davenham-admin-shell .das-app-flyout {
+  display: none;
+}
+html.das-app-shell-active body.davenham-admin-shell .das-app-flyout.is-open {
+  display: block;
+}
+/* Mobile: stash the rail off-canvas + show topbar with hamburger */
+@media (max-width: 782px) {
+  html.das-app-shell-active body.davenham-admin-shell {
+    --das-rail-width: 0px;
+  }
+  html.das-app-shell-active body.davenham-admin-shell .das-app-rail {
+    transform: translateX(-100%);
+    width: min(280px, 80vw);
+    transition: transform 0.25s ease;
+  }
+  html.das-app-shell-active body.davenham-admin-shell.das-app-nav-open .das-app-rail {
+    transform: translateX(0);
+  }
+  html.das-app-shell-active body.davenham-admin-shell .das-app-topbar {
+    left: 0;
+  }
+  html.das-app-shell-active body.davenham-admin-shell #wpcontent,
+  html.das-app-shell-active body.davenham-admin-shell #wpfooter {
+    margin-left: 0 !important;
+  }
+}
+</style>
+		<?php
 	}
 
 	public static function admin_body_class( $classes ) {
