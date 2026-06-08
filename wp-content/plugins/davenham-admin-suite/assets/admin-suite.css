@@ -2068,3 +2068,261 @@ html.das-app-shell-active body.davenham-admin-shell .das-app-brand img {
     width: 48px;
   }
 }
+
+/* ═══════════════════════════════════════════════════════════
+   Mobile sidebar — full-width drawer + accordion sub-nav
+   (only ≤782px — desktop stays as side rail)
+   ═══════════════════════════════════════════════════════════ */
+@media (max-width: 782px) {
+  /* Full-width drawer when open (was min(280px, 80vw)) */
+  html.das-app-shell-active body.davenham-admin-shell .das-app-rail {
+    width: 100vw !important;
+    max-width: 100vw !important;
+  }
+
+  /* On mobile, flyout panels become INLINE accordion sections
+     under their parent nav item rather than separate bottom sheets.
+     The chevron button still toggles them via the existing JS. */
+  html.das-app-shell-active body.davenham-admin-shell .das-app-flyout {
+    position: static !important;
+    width: 100% !important;
+    max-height: none !important;
+    transform: none !important;
+    visibility: visible !important;
+    background: rgba(0, 0, 0, 0.20);
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    padding: 12px 18px 18px !important;
+    margin: 0 0 4px;
+    display: none;
+  }
+
+  html.das-app-shell-active body.davenham-admin-shell .das-app-flyout.is-open {
+    display: block !important;
+    transform: none !important;
+  }
+
+  /* Pull-tab affordance not needed for inline accordions */
+  html.das-app-shell-active body.davenham-admin-shell .das-app-flyout::before {
+    display: none;
+  }
+
+  /* Flyout heading - tighter for inline use */
+  html.das-app-shell-active body.davenham-admin-shell .das-app-flyout-heading {
+    margin-bottom: 8px;
+    padding-bottom: 8px;
+  }
+
+  html.das-app-shell-active body.davenham-admin-shell .das-app-flyout-list a,
+  html.das-app-shell-active body.davenham-admin-shell .das-flyout-folder a {
+    color: rgba(255, 255, 255, 0.85);
+    background: transparent;
+    padding: 12px 8px;
+  }
+
+  html.das-app-shell-active body.davenham-admin-shell .das-app-flyout-list a:hover,
+  html.das-app-shell-active body.davenham-admin-shell .das-flyout-folder a:hover,
+  html.das-app-shell-active body.davenham-admin-shell .das-app-flyout-list a:active,
+  html.das-app-shell-active body.davenham-admin-shell .das-flyout-folder a:active {
+    background: rgba(255, 255, 255, 0.10);
+    color: #fff;
+  }
+
+  html.das-app-shell-active body.davenham-admin-shell .das-app-flyout-heading strong {
+    color: rgba(255, 255, 255, 0.95);
+  }
+
+  html.das-app-shell-active body.davenham-admin-shell .das-app-flyout-heading a {
+    color: #FFB4E5;
+  }
+
+  html.das-app-shell-active body.davenham-admin-shell .das-flyout-folder h3 {
+    color: rgba(255, 255, 255, 0.6);
+  }
+
+  /* Dim-rail-on-open from bottom-sheet behaviour no longer applies */
+  html.das-app-shell-active body.davenham-admin-shell:has(.das-app-flyout.is-open) .das-app-rail {
+    filter: none;
+  }
+
+  /* Sidebar-cut-off-at-top fix: ensure the drawer scrolls from the
+     very top of the viewport, no header offset. */
+  html.das-app-shell-active body.davenham-admin-shell .das-app-rail {
+    top: 0;
+    padding-top: env(safe-area-inset-top);
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   WP admin tables — responsive on mobile
+   ═══════════════════════════════════════════════════════════ */
+@media (max-width: 782px) {
+  /* Horizontal scroll wrapper for any WP table that doesn't fit.
+     WP-CLI .widefat tables, posts list, products list, etc. */
+  body.davenham-admin-shell .wp-list-table,
+  body.davenham-admin-shell table.widefat,
+  body.davenham-admin-shell .def-admin-card table,
+  body.davenham-admin-shell .woocommerce table.wp-list-table {
+    display: block;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    max-width: 100%;
+  }
+
+  /* Make the inner table still behave as a table */
+  body.davenham-admin-shell .wp-list-table > tbody,
+  body.davenham-admin-shell .wp-list-table > thead,
+  body.davenham-admin-shell .wp-list-table > tfoot {
+    display: table-row-group;
+  }
+
+  /* Action buttons row above tables — stack vertically + full width */
+  body.davenham-admin-shell .tablenav.top,
+  body.davenham-admin-shell .tablenav.bottom {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    height: auto !important;
+    padding: 8px 0;
+  }
+
+  body.davenham-admin-shell .tablenav .alignleft,
+  body.davenham-admin-shell .tablenav .alignright {
+    float: none !important;
+    margin: 0 !important;
+    width: 100%;
+  }
+
+  body.davenham-admin-shell .tablenav .actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  body.davenham-admin-shell .tablenav .actions select,
+  body.davenham-admin-shell .tablenav .actions input[type="submit"],
+  body.davenham-admin-shell .tablenav .actions .button {
+    margin: 0;
+    min-height: 36px;
+  }
+
+  body.davenham-admin-shell .tablenav-pages {
+    display: flex;
+    justify-content: center;
+    margin-top: 8px;
+  }
+
+  /* Search row above products / posts list */
+  body.davenham-admin-shell .search-box,
+  body.davenham-admin-shell p.search-box {
+    display: flex !important;
+    flex-direction: row;
+    gap: 6px;
+    width: 100%;
+    float: none !important;
+    margin: 8px 0;
+  }
+
+  body.davenham-admin-shell .search-box input[type="search"],
+  body.davenham-admin-shell .search-box input[type="text"] {
+    flex: 1;
+    min-width: 0;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   Events admin Sales Summary + Other tables on mobile
+   ═══════════════════════════════════════════════════════════ */
+@media (max-width: 782px) {
+  body.davenham-admin-shell .def-admin-card {
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    padding: 18px 16px !important;
+  }
+
+  body.davenham-admin-shell .def-admin-card > table,
+  body.davenham-admin-shell .def-event-financials table {
+    font-size: 13px;
+    display: block;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    width: 100%;
+    max-width: 100%;
+  }
+
+  body.davenham-admin-shell .def-admin-card > table th,
+  body.davenham-admin-shell .def-admin-card > table td {
+    padding: 8px 10px;
+    white-space: nowrap;
+  }
+
+  /* First column (Source / Section) stays anchored on the left */
+  body.davenham-admin-shell .def-admin-card > table th:first-child,
+  body.davenham-admin-shell .def-admin-card > table td:first-child {
+    position: sticky;
+    left: 0;
+    background: inherit;
+    z-index: 1;
+    box-shadow: 1px 0 0 #F1F1F1;
+  }
+
+  body.davenham-admin-shell .def-admin-card > table thead th:first-child {
+    background: #F1F1F1;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   Hide the orphaned "Menu" page-title-action on Media Library
+   ═══════════════════════════════════════════════════════════ */
+body.davenham-admin-shell.upload-php a.page-title-action[aria-haspopup="true"],
+body.davenham-admin-shell.upload-php #wpbody-content > .wrap > a.page-title-action[href*="#"] {
+  display: none !important;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   Media library "Load more" + "Jump" buttons — align in a row
+   ═══════════════════════════════════════════════════════════ */
+body.davenham-admin-shell .load-more-wrapper,
+body.davenham-admin-shell .more-loader {
+  display: flex !important;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  justify-content: flex-start;
+  margin: 18px 0 24px !important;
+}
+
+body.davenham-admin-shell .load-more-wrapper .button,
+body.davenham-admin-shell .more-loader .button {
+  margin: 0 !important;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   Products table — make the actions column not overflow
+   ═══════════════════════════════════════════════════════════ */
+@media (max-width: 782px) {
+  body.davenham-admin-shell .post-type-product .wp-list-table .column-thumb,
+  body.davenham-admin-shell .post-type-product .wp-list-table .column-featured,
+  body.davenham-admin-shell .post-type-product .wp-list-table .column-sku,
+  body.davenham-admin-shell .post-type-product .wp-list-table .column-product_cat,
+  body.davenham-admin-shell .post-type-product .wp-list-table .column-product_tag,
+  body.davenham-admin-shell .post-type-product .wp-list-table .column-date {
+    display: none;
+  }
+
+  body.davenham-admin-shell .post-type-product .wp-list-table {
+    display: table; /* override the overflow:auto block above for products specifically */
+    width: 100%;
+    table-layout: fixed;
+  }
+
+  body.davenham-admin-shell .post-type-product .wp-list-table .column-name {
+    width: 100%;
+  }
+
+  body.davenham-admin-shell .post-type-product .wp-list-table .row-actions {
+    visibility: visible;
+    opacity: 1;
+    padding-top: 6px;
+  }
+}

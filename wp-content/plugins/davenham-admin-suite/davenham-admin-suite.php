@@ -1326,10 +1326,14 @@ html.das-app-shell-active body.davenham-admin-shell .das-app-flyout.is-open {
 		// WC-Admin moved it under wc-admin's React router; the legacy
 		// slug now returns "Cannot load woocommerce-marketing".
 		$known_remaps = array(
-			'woocommerce-marketing' => 'admin.php?page=wc-admin&path=/marketing',
-			'wc-marketing'          => 'admin.php?page=wc-admin&path=/marketing',
-			'wc-analytics'          => 'admin.php?page=wc-admin&path=/analytics/overview',
-			'woocommerce-analytics' => 'admin.php?page=wc-admin&path=/analytics/overview',
+			'woocommerce-marketing'  => 'admin.php?page=wc-admin&path=/marketing',
+			'wc-marketing'           => 'admin.php?page=wc-admin&path=/marketing',
+			'wc-analytics'           => 'admin.php?page=wc-admin&path=/analytics/overview',
+			'woocommerce-analytics'  => 'admin.php?page=wc-admin&path=/analytics/overview',
+			'wc-admin&path=/payments' => 'admin.php?page=wc-settings&tab=checkout',
+			'wc-payments'            => 'admin.php?page=wc-settings&tab=checkout',
+			'woocommerce-payments'   => 'admin.php?page=wc-settings&tab=checkout',
+			'woocommerce'            => 'admin.php?page=wc-admin',
 		);
 		if ( isset( $known_remaps[ $slug ] ) ) {
 			return admin_url( $known_remaps[ $slug ] );
