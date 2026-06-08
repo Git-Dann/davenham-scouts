@@ -1861,3 +1861,78 @@ body.das-app-nav-collapsed .das-app-nav-chevron {
     width: 88vw !important;
   }
 }
+
+/* ══════════════════════════════════════════════════════════
+   ADMIN SHELL — round 2 mobile fixes
+   ══════════════════════════════════════════════════════════ */
+
+/* Hide WP's contextual help + screen options on every screen
+   (these are also hidden via PHP <style> when shell is on, but
+   this is a CSS backstop so they never slip through). */
+.davenham-admin-shell #contextual-help-link-wrap,
+.davenham-admin-shell #screen-options-link-wrap {
+  display: none !important;
+}
+
+/* Sidebar drawer was missing the brand logo because the IMG
+   was being inverted to white-on-white when the source PNG had
+   white content. Reset the filter and let the source PNG/SVG
+   render in its own colours; brand bg is already gradient so
+   most logos will read fine. */
+@media (max-width: 782px) {
+  html.das-app-shell-active body.davenham-admin-shell .das-app-brand img {
+    filter: none;
+    max-width: 44px;
+    max-height: 44px;
+    background: #fff;
+    border-radius: 8px;
+    padding: 4px;
+  }
+
+  /* Larger brand block at the top of the drawer */
+  html.das-app-shell-active body.davenham-admin-shell .das-app-brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 22px 18px 18px;
+    background: rgba(255, 255, 255, 0.06);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.18);
+  }
+
+  html.das-app-shell-active body.davenham-admin-shell .das-app-brand strong {
+    font-size: 16px;
+    line-height: 1.2;
+  }
+
+  /* Sidebar drawer truly full-height — use dynamic viewport
+     so iOS Safari's bottom toolbar doesn't crop it. */
+  html.das-app-shell-active body.davenham-admin-shell .das-app-rail {
+    height: 100vh;
+    height: 100dvh; /* dynamic viewport on supporting browsers */
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Bottom nav (Admin / Site settings etc.) anchored to the foot
+     of the drawer */
+  html.das-app-shell-active body.davenham-admin-shell .das-app-nav-bottom {
+    margin-top: auto;
+    padding-top: 12px;
+    border-top: 1px solid rgba(255, 255, 255, 0.18);
+  }
+
+  /* Also use dvh for the flyout bottom sheet so its 85vh doesn't
+     overshoot on iOS Safari */
+  html.das-app-shell-active body.davenham-admin-shell .das-app-flyout {
+    max-height: 85vh;
+    max-height: 85dvh;
+  }
+}
+
+/* Desktop brand block — also drop the filter inversion that was
+   making colour logos disappear */
+html.das-app-shell-active body.davenham-admin-shell .das-app-brand img {
+  filter: none;
+}

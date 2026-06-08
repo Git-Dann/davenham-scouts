@@ -563,11 +563,16 @@ final class Davenham_Admin_Suite {
 
 	public static function admin_shell_head() {
 		$settings = self::settings();
-		if ( $settings['hide_help_tabs'] !== '1' ) {
-			return;
-		}
 
-		echo '<style>#contextual-help-link-wrap,#screen-options-link-wrap{display:none!important;}</style>';
+		// Hide WP's contextual help + screen-options tabs whenever the
+		// admin shell is on — they sit at top:0;right:0 in the WP admin
+		// chrome and collide with our shell topbar (the user's screenshot
+		// showed "Help ▼" floating in the middle of the page on mobile).
+		// Independent of the hide_help_tabs setting because the shell IS
+		// the new chrome — these toggles never look right alongside it.
+		if ( $settings['admin_shell_enabled'] === '1' || $settings['hide_help_tabs'] === '1' ) {
+			echo '<style>#contextual-help-link-wrap,#screen-options-link-wrap{display:none!important;}</style>';
+		}
 	}
 
 	public static function admin_body_class( $classes ) {
@@ -1295,6 +1300,13 @@ final class Davenham_Admin_Suite {
 
 		if ( function_exists( 'get_site_icon_url' ) && get_site_icon_url( 128 ) ) {
 			return get_site_icon_url( 128 );
+		}
+
+		// Fall back to the bundled Scouts mark in the active theme so the
+		// sidebar always has a brand logo rather than a tiny Unicode fleur.
+		$theme_logo = get_template_directory_uri() . '/images/scouts-logo-standard.svg';
+		if ( file_exists( get_template_directory() . '/images/scouts-logo-standard.svg' ) ) {
+			return $theme_logo;
 		}
 
 		return '';

@@ -696,3 +696,96 @@
     font-size: 28px;
   }
 }
+
+/* ══════════════════════════════════════════════════════════
+   Events plugin admin — mobile cleanup
+   ══════════════════════════════════════════════════════════ */
+
+@media (max-width: 782px) {
+  /* Media-groups panel on mobile — was overlapping with WP's
+     "Help" tab and the "Add Media File" page-title-action. */
+  .def-media-groups-panel {
+    margin: 16px 12px;
+    padding: 16px;
+  }
+
+  .def-media-groups-panel__header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .def-media-groups-panel__header > div {
+    width: 100%;
+  }
+
+  .def-media-groups-panel h2 {
+    font-size: 18px;
+    margin: 0 0 4px;
+  }
+
+  .def-media-groups-panel p {
+    font-size: 13px;
+    margin: 0;
+  }
+
+  /* Group tiles 2-up on mobile (was 3-up on desktop) */
+  .def-media-group-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  .def-media-group-card {
+    padding: 12px 14px;
+    min-height: 0;
+  }
+
+  .def-media-group-card strong {
+    font-size: 14px;
+  }
+
+  .def-media-group-card span {
+    font-size: 11px;
+  }
+}
+
+@media (max-width: 480px) {
+  .def-media-group-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Tidy up WP's Media Library page chrome on mobile — the
+   .wrap > h1 has page-title-action buttons next to it that wrap
+   awkwardly with the events plugin's add-ons. */
+@media (max-width: 782px) {
+  .davenham-admin-shell.upload-php .wrap > h1.wp-heading-inline,
+  .davenham-admin-shell.upload-php .wrap > .page-title-action {
+    display: inline-block;
+    margin-right: 8px;
+    margin-bottom: 8px;
+  }
+
+  /* Generate Image / Menu dropdowns (extra page-title-actions from
+     WP core or other plugins) — stack them as button-style chips
+     so they don't overlap. */
+  .davenham-admin-shell.upload-php .page-title-action,
+  .davenham-admin-shell.upload-php .button.add-new-h2 {
+    min-height: 36px;
+    line-height: 1.4;
+    padding: 6px 12px;
+    border-radius: 4px;
+    font-size: 13px;
+    margin-bottom: 6px;
+  }
+
+  /* Specifically the "Menu ▼" link that looks like a hyperlink —
+     make it visually a real button. */
+  .davenham-admin-shell.upload-php a.page-title-action[role="button"],
+  .davenham-admin-shell.upload-php a.page-title-action {
+    text-decoration: none;
+    background: #fff;
+    border: 1px solid #CCCCCC;
+    color: #404040;
+  }
+}
