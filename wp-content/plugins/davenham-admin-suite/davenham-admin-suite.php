@@ -1233,6 +1233,15 @@ html.das-app-shell-active body.davenham-admin-shell .das-app-flyout.is-open {
 		$catalog      = self::available_menu_catalog();
 		$visible_keys = [];
 
+		// Known-dead admin pages that get captured by capture_menu_items
+		// but fail their own internal checks when clicked. Filter at the
+		// nav-building stage so they don't appear in the sidebar at all.
+		$dead_slugs = array(
+			'link-manager.php',                          // Legacy Link Manager (removed in WP 3.5)
+			'edit-tags.php?taxonomy=link_category',      // Legacy link taxonomy
+			'edit.php?post_type=link',                   // Some plugins register this dead variant
+		);
+
 		foreach ( $settings['menu_items'] as $slug => $item ) {
 			$placement = $item['placement'] ?? 'keep';
 			if ( ! in_array( $placement, [ 'keep', 'bottom' ], true ) ) {
@@ -1240,6 +1249,20 @@ html.das-app-shell-active body.davenham-admin-shell .das-app-flyout.is-open {
 			}
 
 			if ( 'edit.php?post_type=event' === $slug && isset( $settings['menu_items']['davenham-events-funds'] ) && in_array( $settings['menu_items']['davenham-events-funds']['placement'] ?? '', [ 'keep', 'bottom' ], true ) ) {
+				continue;
+			}
+
+			// Skip slugs that are known to error even with the right cap
+			// (their pages do their own internal checks that the captured
+			// cap alone doesn't reflect — e.g. the Link Manager pages
+			// require the legacy plugin to be active).
+			if ( in_array( $slug, $dead_slugs, true ) ) {
+				continue;
+			}
+			// Also catch any variant that contains link_category or
+			// link-manager — broad enough to block other plugin slugs
+			// that pile onto the same dead surface.
+			if ( false !== stripos( $slug, 'link_category' ) || false !== stripos( $slug, 'link-manager' ) ) {
 				continue;
 			}
 
