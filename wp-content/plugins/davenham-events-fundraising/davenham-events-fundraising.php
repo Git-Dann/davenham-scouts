@@ -48,6 +48,14 @@ final class Davenham_Events_Fundraising {
 		add_action( 'pre_get_posts', array( __CLASS__, 'sort_events_admin_query' ) );
 		add_filter( 'attachment_fields_to_edit', array( __CLASS__, 'attachment_fields_to_edit' ), 10, 2 );
 		add_filter( 'attachment_fields_to_save', array( __CLASS__, 'attachment_fields_to_save' ), 10, 2 );
+		// Photographer workflow — pick the media group BEFORE upload so
+		// every file dragged in is auto-tagged. Persisted across uploads
+		// via localStorage on the client; sent with every upload as a
+		// plupload param + assigned via add_attachment.
+		add_action( 'pre-upload-ui', array( __CLASS__, 'render_pre_upload_group_picker' ) );
+		add_action( 'post-upload-ui', array( __CLASS__, 'render_pre_upload_group_picker' ) );
+		add_filter( 'plupload_init', array( __CLASS__, 'inject_plupload_group_param' ) );
+		add_action( 'add_attachment', array( __CLASS__, 'assign_group_on_upload' ) );
 		add_action( 'restrict_manage_posts', array( __CLASS__, 'render_media_group_filter' ) );
 		add_action( 'all_admin_notices', array( __CLASS__, 'render_media_group_quick_filters' ) );
 		add_action( 'parse_query', array( __CLASS__, 'filter_media_by_group' ) );
@@ -223,6 +231,142 @@ final class Davenham_Events_Fundraising {
 		}
 
 		return $post;
+	}
+
+	/**
+	 * Render a "Tag uploads with" group picker above the upload UI on
+	 * the Add New Media screen, so a photographer can choose Beavers /
+	 * Cubs / Scouts / Events / etc. BEFORE dragging in files. Selection
+	 * persists across uploads via localStorage.
+	 */
+	public static function render_pre_upload_group_picker() {
+		global $pagenow;
+		if ( 'media-new.php' !== $pagenow || ! current_user_can( 'upload_files' ) ) {
+			return;
+		}
+
+		static $rendered = false;
+		if ( $rendered ) {
+			return; // pre-upload-ui + post-upload-ui both fire; only render once.
+		}
+		$rendered = true;
+
+		$terms = get_terms(
+			array(
+				'taxonomy'   => self::MEDIA_GROUP_TAXONOMY,
+				'hide_empty' => false,
+				'orderby'    => 'name',
+			)
+		);
+		if ( is_wp_error( $terms ) || empty( $terms ) ) {
+			return;
+		}
+		?>
+		<div class="def-upload-group-picker" style="background:#F1F1F1;border:1px solid #CCCCCC;border-radius:8px;padding:14px 16px;margin:0 0 16px;max-width:640px;">
+			<label for="def-upload-group" style="display:block;font-weight:700;font-size:13px;color:#333;margin-bottom:6px;">
+				<?php esc_html_e( 'Tag uploads with', 'davenham-events-fundraising' ); ?>
+				<span style="color:#590FA9;">&#9711;</span>
+			</label>
+			<select id="def-upload-group" style="width:100%;max-width:360px;padding:8px 10px;border:1px solid #CCCCCC;border-radius:6px;font-size:14px;">
+				<option value="0"><?php esc_html_e( '— None / pick later —', 'davenham-events-fundraising' ); ?></option>
+				<?php foreach ( $terms as $term ) : ?>
+					<option value="<?php echo (int) $term->term_id; ?>"><?php echo esc_html( $term->name ); ?></option>
+				<?php endforeach; ?>
+			</select>
+			<p class="description" style="margin:8px 0 0;font-size:12px;color:#6E6E6E;">
+				<?php esc_html_e( 'Choose a group and every file you upload below will be tagged automatically. The choice sticks across uploads in this session.', 'davenham-events-fundraising' ); ?>
+			</p>
+		</div>
+		<script>
+		(function () {
+			var select = document.getElementById('def-upload-group');
+			if (!select) return;
+
+			// Restore last selection from localStorage
+			try {
+				var stored = window.localStorage.getItem('def_upload_group');
+				if (stored && select.querySelector('option[value="' + stored + '"]')) {
+					select.value = stored;
+				}
+			} catch (e) {}
+
+			function setHidden(val) {
+				var existing = document.getElementById('def-upload-group-hidden');
+				if (existing) existing.value = val;
+			}
+
+			function ensureHiddenInput() {
+				// Add a hidden field inside the browser-uploader form fallback,
+				// so non-plupload uploads also carry the group ID.
+				var form = document.getElementById('file-form');
+				if (!form) return;
+				if (document.getElementById('def-upload-group-hidden')) return;
+				var hidden = document.createElement('input');
+				hidden.type = 'hidden';
+				hidden.name = 'davenham_media_group';
+				hidden.id = 'def-upload-group-hidden';
+				hidden.value = select.value;
+				form.appendChild(hidden);
+			}
+			ensureHiddenInput();
+
+			select.addEventListener('change', function () {
+				try { window.localStorage.setItem('def_upload_group', select.value); } catch (e) {}
+				setHidden(select.value);
+				// Update plupload multipart params so every async upload
+				// carries the group ID.
+				if (window.uploader && window.uploader.settings) {
+					window.uploader.settings.multipart_params = window.uploader.settings.multipart_params || {};
+					window.uploader.settings.multipart_params.davenham_media_group = select.value;
+				}
+			});
+
+			// On first ready, push the initial value into plupload params
+			document.addEventListener('DOMContentLoaded', function () {
+				select.dispatchEvent(new Event('change'));
+			});
+		})();
+		</script>
+		<?php
+	}
+
+	/**
+	 * Add davenham_media_group to plupload's default multipart params so
+	 * every async upload submits the group ID.
+	 */
+	public static function inject_plupload_group_param( $params ) {
+		if ( ! is_array( $params ) ) {
+			return $params;
+		}
+		if ( ! isset( $params['multipart_params'] ) || ! is_array( $params['multipart_params'] ) ) {
+			$params['multipart_params'] = array();
+		}
+		$params['multipart_params']['davenham_media_group'] = '0';
+		return $params;
+	}
+
+	/**
+	 * Assign the chosen media group to a freshly uploaded attachment.
+	 * Reads davenham_media_group from $_REQUEST — that key arrives via
+	 * the plupload multipart params (async uploads) or the browser
+	 * uploader's hidden input (sync uploads).
+	 */
+	public static function assign_group_on_upload( $attachment_id ) {
+		if ( ! $attachment_id ) {
+			return;
+		}
+		if ( empty( $_REQUEST['davenham_media_group'] ) ) {
+			return;
+		}
+		$term_id = absint( $_REQUEST['davenham_media_group'] );
+		if ( ! $term_id ) {
+			return;
+		}
+		// Make sure the term still exists before assigning.
+		if ( ! term_exists( $term_id, self::MEDIA_GROUP_TAXONOMY ) ) {
+			return;
+		}
+		wp_set_object_terms( (int) $attachment_id, array( $term_id ), self::MEDIA_GROUP_TAXONOMY, false );
 	}
 
 	public static function render_media_group_filter() {

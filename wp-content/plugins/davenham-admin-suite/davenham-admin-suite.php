@@ -394,9 +394,16 @@ final class Davenham_Admin_Suite {
 					continue;
 				}
 
+				// $item[1] is the capability required to access this menu.
+				// We store it so app_nav_items() can filter out anything the
+				// current user can't reach (e.g. plugin pages with elevated
+				// caps that show "You need a higher level of permission").
+				$cap = isset( $item[1] ) ? (string) $item[1] : 'read';
+
 				$captured[ $slug ] = [
 					'label' => self::clean_menu_label( $item[0] ?? $slug ),
 					'slug'  => $slug,
+					'capability' => $cap,
 					'children' => self::captured_submenu_items( $slug, $submenu ),
 				];
 			}
@@ -1233,6 +1240,15 @@ html.das-app-shell-active body.davenham-admin-shell .das-app-flyout.is-open {
 			}
 
 			if ( 'edit.php?post_type=event' === $slug && isset( $settings['menu_items']['davenham-events-funds'] ) && in_array( $settings['menu_items']['davenham-events-funds']['placement'] ?? '', [ 'keep', 'bottom' ], true ) ) {
+				continue;
+			}
+
+			// Skip items the current user can't access — captured menus
+			// can include plugin pages with elevated capability checks
+			// (Links / Backup tools) that show "higher permission required"
+			// even to admins when the cap isn't a WP-default one.
+			$cap = isset( $catalog[ $slug ]['capability'] ) ? $catalog[ $slug ]['capability'] : '';
+			if ( $cap && ! current_user_can( $cap ) ) {
 				continue;
 			}
 
