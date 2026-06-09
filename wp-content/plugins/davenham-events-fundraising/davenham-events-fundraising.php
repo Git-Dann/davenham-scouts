@@ -196,15 +196,15 @@ final class Davenham_Events_Fundraising {
 			return $form_fields;
 		}
 
-		$selected = wp_get_object_terms( $post->ID, self::MEDIA_GROUP_TAXONOMY, array( 'fields' => 'ids' ) );
-		$selected_id = ! is_wp_error( $selected ) && ! empty( $selected ) ? (int) $selected[0] : 0;
+		$selected = wp_get_object_terms( $post->ID, self::MEDIA_GROUP_TAXONOMY, array( 'fields' => 'slugs' ) );
+		$selected_slug = ! is_wp_error( $selected ) && ! empty( $selected ) ? $selected[0] : '';
 		$html = '<select name="attachments[' . esc_attr( (string) $post->ID ) . '][davenham_media_group]" class="widefat">';
-		$html .= '<option value="0">' . esc_html__( 'Choose a group', 'davenham-events-fundraising' ) . '</option>';
+		$html .= '<option value="">' . esc_html__( 'Choose a group', 'davenham-events-fundraising' ) . '</option>';
 		foreach ( $terms as $term ) {
 			$html .= sprintf(
-				'<option value="%1$d" %2$s>%3$s</option>',
-				(int) $term->term_id,
-				selected( $selected_id, (int) $term->term_id, false ),
+				'<option value="%1$s" %2$s>%3$s</option>',
+				esc_attr( $term->slug ),
+				selected( $selected_slug, $term->slug, false ),
 				esc_html( $term->name )
 			);
 		}
@@ -222,9 +222,9 @@ final class Davenham_Events_Fundraising {
 
 	public static function attachment_fields_to_save( $post, $attachment ) {
 		if ( isset( $attachment['davenham_media_group'] ) ) {
-			$term_id = absint( $attachment['davenham_media_group'] );
-			if ( $term_id ) {
-				wp_set_object_terms( (int) $post['ID'], array( $term_id ), self::MEDIA_GROUP_TAXONOMY, false );
+			$term_slug = sanitize_key( $attachment['davenham_media_group'] );
+			if ( $term_slug && term_exists( $term_slug, self::MEDIA_GROUP_TAXONOMY ) ) {
+				wp_set_object_terms( (int) $post['ID'], array( $term_slug ), self::MEDIA_GROUP_TAXONOMY, false );
 			} else {
 				wp_set_object_terms( (int) $post['ID'], array(), self::MEDIA_GROUP_TAXONOMY, false );
 			}
@@ -270,7 +270,7 @@ final class Davenham_Events_Fundraising {
 			<select id="def-upload-group" style="width:100%;max-width:360px;padding:8px 10px;border:1px solid #CCCCCC;border-radius:6px;font-size:14px;">
 				<option value="0"><?php esc_html_e( '— None / pick later —', 'davenham-events-fundraising' ); ?></option>
 				<?php foreach ( $terms as $term ) : ?>
-					<option value="<?php echo (int) $term->term_id; ?>"><?php echo esc_html( $term->name ); ?></option>
+					<option value="<?php echo esc_attr( $term->slug ); ?>"><?php echo esc_html( $term->name ); ?></option>
 				<?php endforeach; ?>
 			</select>
 			<p class="description" style="margin:8px 0 0;font-size:12px;color:#6E6E6E;">
@@ -358,15 +358,15 @@ final class Davenham_Events_Fundraising {
 		if ( empty( $_REQUEST['davenham_media_group'] ) ) {
 			return;
 		}
-		$term_id = absint( $_REQUEST['davenham_media_group'] );
-		if ( ! $term_id ) {
+		$term_slug = sanitize_key( $_REQUEST['davenham_media_group'] );
+		if ( ! $term_slug ) {
 			return;
 		}
 		// Make sure the term still exists before assigning.
-		if ( ! term_exists( $term_id, self::MEDIA_GROUP_TAXONOMY ) ) {
+		if ( ! term_exists( $term_slug, self::MEDIA_GROUP_TAXONOMY ) ) {
 			return;
 		}
-		wp_set_object_terms( (int) $attachment_id, array( $term_id ), self::MEDIA_GROUP_TAXONOMY, false );
+		wp_set_object_terms( (int) $attachment_id, array( $term_slug ), self::MEDIA_GROUP_TAXONOMY, false );
 	}
 
 	public static function render_media_group_filter() {
