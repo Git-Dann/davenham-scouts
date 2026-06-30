@@ -23,7 +23,10 @@
     $hero_intro = '';
     if ( has_excerpt() ) {
         $hero_intro = get_the_excerpt();
-    } elseif ( preg_match( '/<(h6|p)[^>]*>(.*?)<\/\1>/is', apply_filters( 'the_content', $raw_content ), $m ) ) {
+    } elseif ( ! $has_builder_blocks && preg_match( '/<(h6|p)[^>]*>(.*?)<\/\1>/is', apply_filters( 'the_content', $raw_content ), $m ) ) {
+        // Only auto-extract from classic content — on builder-block pages the
+        // first <p> is a block's internal text (e.g. a leader's role), which
+        // makes a misleading hero subtitle.
         $hero_intro = wp_trim_words( wp_strip_all_tags( html_entity_decode( $m[2] ) ), 26 );
     }
 

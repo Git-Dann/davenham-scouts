@@ -167,6 +167,8 @@
 .davenham-docs__name {
 	font-weight: 700;
 	line-height: 1.25;
+	overflow-wrap: anywhere;
+	word-break: break-word;
 }
 
 .davenham-docs__meta {

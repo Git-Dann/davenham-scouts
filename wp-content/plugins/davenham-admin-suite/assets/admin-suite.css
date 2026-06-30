@@ -990,7 +990,9 @@ body.davenham-admin-shell #wpfooter {
 
 .das-app-nav-label {
   min-width: 0;
-  overflow-wrap: anywhere;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .das-app-admin-groups {
@@ -1400,10 +1402,10 @@ html.das-app-shell-active body.davenham-admin-shell .def-dashboard {
   position: fixed;
   z-index: 100004;
   left: calc(var(--das-rail-width) + 12px);
-  top: 78px;
+  top: calc(var(--das-topbar-height) + 14px);
   display: none;
   width: min(390px, calc(100vw - var(--das-rail-width) - 28px));
-  max-height: calc(100vh - 24px);
+  max-height: calc(100vh - var(--das-topbar-height) - 28px);
   overflow: auto;
   padding: 12px;
   border: 1px solid #CCCCCC;

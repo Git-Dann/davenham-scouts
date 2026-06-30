@@ -140,7 +140,10 @@
 
 @media (max-width: 560px) {
 	.dpp-child-row {
-		grid-template-columns: 1fr auto;
+		grid-template-columns: 1fr;
+	}
+	.dpp-child-remove {
+		justify-self: end;
 	}
 }
 
