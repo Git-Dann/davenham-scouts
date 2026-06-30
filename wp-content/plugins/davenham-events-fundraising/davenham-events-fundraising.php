@@ -3,7 +3,7 @@
  * Plugin Name: Davenham Events & Fundraising
  * Plugin URI:  https://davenhamscouts.org.uk
  * Description: Event pages, WooCommerce ticket reporting, event profit tracking, media grouping, and a site-wide fundraising progress banner.
- * Version:     1.1.3
+ * Version:     1.1.5
  * Author:      Davenham Scout Group
  * Text Domain: davenham-events-fundraising
  * Requires at least: 6.0
@@ -12,7 +12,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'DEF_VERSION', '1.1.3' );
+define( 'DEF_VERSION', '1.1.5' );
 define( 'DEF_FILE', __FILE__ );
 define( 'DEF_DIR', plugin_dir_path( __FILE__ ) );
 define( 'DEF_URL', plugin_dir_url( __FILE__ ) );
@@ -23,6 +23,7 @@ final class Davenham_Events_Fundraising {
 	const NONCE_NAME  = 'davenham_event_details_nonce';
 	const NONCE_ACTION = 'davenham_event_details';
 	const MEDIA_GROUP_TAXONOMY = 'davenham_media_group';
+	const UPLOAD_GROUP_META    = 'davenham_media_upload_group';
 
 	private static $product_sales_cache = array();
 	private static $woo_sales_total_cache = null;
@@ -56,9 +57,13 @@ final class Davenham_Events_Fundraising {
 		add_action( 'post-upload-ui', array( __CLASS__, 'render_pre_upload_group_picker' ) );
 		add_filter( 'plupload_init', array( __CLASS__, 'inject_plupload_group_param' ) );
 		add_action( 'add_attachment', array( __CLASS__, 'assign_group_on_upload' ) );
+		// Persist the photographer's chosen group server-side so uploads are tagged
+		// reliably even when the plupload param does not reach the server.
+		add_action( 'wp_ajax_davenham_set_upload_group', array( __CLASS__, 'ajax_set_upload_group' ) );
 		add_action( 'restrict_manage_posts', array( __CLASS__, 'render_media_group_filter' ) );
 		add_action( 'all_admin_notices', array( __CLASS__, 'render_media_group_quick_filters' ) );
 		add_action( 'parse_query', array( __CLASS__, 'filter_media_by_group' ) );
+		add_filter( 'ajax_query_attachments_args', array( __CLASS__, 'filter_grid_attachments' ) );
 		add_filter( 'big_image_size_threshold', array( __CLASS__, 'big_image_size_threshold' ) );
 		add_filter( 'wp_editor_set_quality', array( __CLASS__, 'image_quality' ), 10, 2 );
 
@@ -261,16 +266,20 @@ final class Davenham_Events_Fundraising {
 		if ( is_wp_error( $terms ) || empty( $terms ) ) {
 			return;
 		}
+
+		$current    = self::current_upload_group_slug();
+		$ajax_url   = admin_url( 'admin-ajax.php' );
+		$ajax_nonce = wp_create_nonce( 'davenham_media_groups' );
 		?>
 		<div class="def-upload-group-picker" style="background:#F1F1F1;border:1px solid #CCCCCC;border-radius:8px;padding:14px 16px;margin:0 0 16px;max-width:640px;">
 			<label for="def-upload-group" style="display:block;font-weight:700;font-size:13px;color:#333;margin-bottom:6px;">
 				<?php esc_html_e( 'Tag uploads with', 'davenham-events-fundraising' ); ?>
 				<span style="color:#590FA9;">&#9711;</span>
 			</label>
-			<select id="def-upload-group" style="width:100%;max-width:360px;padding:8px 10px;border:1px solid #CCCCCC;border-radius:6px;font-size:14px;">
+			<select id="def-upload-group" data-ajax="<?php echo esc_url( $ajax_url ); ?>" data-nonce="<?php echo esc_attr( $ajax_nonce ); ?>" style="width:100%;max-width:360px;padding:8px 10px;border:1px solid #CCCCCC;border-radius:6px;font-size:14px;">
 				<option value="0"><?php esc_html_e( '— None / pick later —', 'davenham-events-fundraising' ); ?></option>
 				<?php foreach ( $terms as $term ) : ?>
-					<option value="<?php echo esc_attr( $term->slug ); ?>"><?php echo esc_html( $term->name ); ?></option>
+					<option value="<?php echo esc_attr( $term->slug ); ?>" <?php selected( $current, $term->slug ); ?>><?php echo esc_html( $term->name ); ?></option>
 				<?php endforeach; ?>
 			</select>
 			<p class="description" style="margin:8px 0 0;font-size:12px;color:#6E6E6E;">
@@ -282,13 +291,34 @@ final class Davenham_Events_Fundraising {
 			var select = document.getElementById('def-upload-group');
 			if (!select) return;
 
-			// Restore last selection from localStorage
-			try {
-				var stored = window.localStorage.getItem('def_upload_group');
-				if (stored && select.querySelector('option[value="' + stored + '"]')) {
-					select.value = stored;
-				}
-			} catch (e) {}
+			// The server-saved choice (rendered as the selected option) wins. Only
+			// fall back to localStorage when nothing is saved server-side yet.
+			if (select.value === '0') {
+				try {
+					var stored = window.localStorage.getItem('def_upload_group');
+					if (stored && select.querySelector('option[value="' + stored + '"]')) {
+						select.value = stored;
+					}
+				} catch (e) {}
+			}
+
+			function persist(val) {
+				// Save the choice server-side so add_attachment can tag uploads
+				// reliably, regardless of whether the plupload param gets through.
+				var url = select.getAttribute('data-ajax');
+				var nonce = select.getAttribute('data-nonce');
+				if (!url || !window.fetch) return;
+				var body = new window.URLSearchParams();
+				body.set('action', 'davenham_set_upload_group');
+				body.set('nonce', nonce || '');
+				body.set('group', val);
+				window.fetch(url, {
+					method: 'POST',
+					credentials: 'same-origin',
+					headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' },
+					body: body.toString()
+				}).catch(function () {});
+			}
 
 			function setHidden(val) {
 				var existing = document.getElementById('def-upload-group-hidden');
@@ -312,6 +342,7 @@ final class Davenham_Events_Fundraising {
 
 			select.addEventListener('change', function () {
 				try { window.localStorage.setItem('def_upload_group', select.value); } catch (e) {}
+				persist(select.value);
 				setHidden(select.value);
 				// Update plupload multipart params so every async upload
 				// carries the group ID.
@@ -355,18 +386,110 @@ final class Davenham_Events_Fundraising {
 		if ( ! $attachment_id ) {
 			return;
 		}
-		if ( empty( $_REQUEST['davenham_media_group'] ) ) {
+
+		// Prefer the slug sent with the upload itself (plupload param / hidden input)...
+		$term_slug = ! empty( $_REQUEST['davenham_media_group'] ) ? sanitize_key( wp_unslash( $_REQUEST['davenham_media_group'] ) ) : '';
+
+		// ...but fall back to the photographer's saved choice. This is the reliable
+		// path: the upload param does not always survive async uploads, the saved
+		// preference always does.
+		if ( '' === $term_slug || '0' === $term_slug ) {
+			$term_slug = self::current_upload_group_slug();
+		}
+
+		// Assign by slug (never a numeric ID) so wp_set_object_terms() can't
+		// auto-create a phantom term from an unrecognised value.
+		if ( '' === $term_slug || ! term_exists( $term_slug, self::MEDIA_GROUP_TAXONOMY ) ) {
 			return;
 		}
-		$term_slug = sanitize_key( $_REQUEST['davenham_media_group'] );
-		if ( ! $term_slug ) {
+
+		// Never override a group already chosen for this attachment.
+		$existing = wp_get_object_terms( $attachment_id, self::MEDIA_GROUP_TAXONOMY, array( 'fields' => 'ids' ) );
+		if ( ! is_wp_error( $existing ) && ! empty( $existing ) ) {
 			return;
 		}
-		// Make sure the term still exists before assigning.
-		if ( ! term_exists( $term_slug, self::MEDIA_GROUP_TAXONOMY ) ) {
-			return;
-		}
+
 		wp_set_object_terms( (int) $attachment_id, array( $term_slug ), self::MEDIA_GROUP_TAXONOMY, false );
+	}
+
+	/**
+	 * The Media Group slug the current user has chosen for new uploads ('' = none).
+	 */
+	public static function current_upload_group_slug( $user_id = 0 ) {
+		$user_id = $user_id ? (int) $user_id : get_current_user_id();
+		if ( ! $user_id ) {
+			return '';
+		}
+
+		$slug = sanitize_key( (string) get_user_meta( $user_id, self::UPLOAD_GROUP_META, true ) );
+		if ( '' === $slug || ! term_exists( $slug, self::MEDIA_GROUP_TAXONOMY ) ) {
+			return '';
+		}
+
+		return $slug;
+	}
+
+	/**
+	 * Persist the "Tag uploads with" choice for the current user (AJAX), so it can
+	 * be applied server-side on add_attachment regardless of the upload transport.
+	 */
+	public static function ajax_set_upload_group() {
+		if ( ! current_user_can( 'upload_files' ) ) {
+			wp_send_json_error( array( 'message' => 'forbidden' ), 403 );
+		}
+
+		check_ajax_referer( 'davenham_media_groups', 'nonce' );
+
+		$slug = isset( $_POST['group'] ) ? sanitize_key( wp_unslash( $_POST['group'] ) ) : '';
+		if ( '0' === $slug ) {
+			$slug = '';
+		}
+		if ( '' !== $slug && ! term_exists( $slug, self::MEDIA_GROUP_TAXONOMY ) ) {
+			$slug = '';
+		}
+
+		$user_id = get_current_user_id();
+		if ( '' !== $slug ) {
+			update_user_meta( $user_id, self::UPLOAD_GROUP_META, $slug );
+		} else {
+			delete_user_meta( $user_id, self::UPLOAD_GROUP_META );
+		}
+
+		wp_send_json_success( array( 'group' => $slug ) );
+	}
+
+	/**
+	 * Apply the Media Group filter to the grid / insert-media modal AJAX query so the
+	 * group cards filter in Grid view too (parse_query only covers list mode).
+	 */
+	public static function filter_grid_attachments( $args ) {
+		$slug = '';
+
+		if ( isset( $_REQUEST['query']['davenham_media_group'] ) ) {
+			$slug = sanitize_key( wp_unslash( $_REQUEST['query']['davenham_media_group'] ) );
+		} elseif ( ! empty( $_SERVER['HTTP_REFERER'] ) ) {
+			$referer = wp_parse_url( wp_unslash( $_SERVER['HTTP_REFERER'] ) );
+			if ( ! empty( $referer['query'] ) ) {
+				parse_str( $referer['query'], $referer_args );
+				if ( ! empty( $referer_args['davenham_media_group'] ) ) {
+					$slug = sanitize_key( $referer_args['davenham_media_group'] );
+				}
+			}
+		}
+
+		if ( '' === $slug || '0' === $slug ) {
+			return $args;
+		}
+
+		$args['tax_query'] = array(
+			array(
+				'taxonomy' => self::MEDIA_GROUP_TAXONOMY,
+				'field'    => 'slug',
+				'terms'    => $slug,
+			),
+		);
+
+		return $args;
 	}
 
 	public static function render_media_group_filter() {
