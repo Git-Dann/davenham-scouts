@@ -100,16 +100,32 @@
 
 	/** Grey dashed placeholder shown in the editor canvas. */
 	function placeholder( icon, title, detail ) {
+		var kids = [
+			el( 'div', { key: 'icon', style: { fontSize: 28 } }, icon ),
+			el( 'strong', { key: 'title', style: { display: 'block', marginTop: 6, fontSize: 15 } }, title ),
+		];
+		if ( detail ) {
+			kids.push( el( 'p', { key: 'detail', style: { color: '#666', fontSize: 13, marginTop: 4, marginBottom: 0 } }, detail ) );
+		}
+		// Blocks edited in the Visual Builder get a direct link there instead of a
+		// dead-end "manage in Visual Builder" message.
+		if ( detail && detail.indexOf( 'Visual Builder' ) !== -1 && window.wp && wp.data && wp.data.select( 'core/editor' ) ) {
+			var pid = wp.data.select( 'core/editor' ).getCurrentPostId();
+			if ( pid ) {
+				kids.push( el( 'a', {
+					key: 'cta',
+					href: 'admin.php?page=davenham-builder&post_id=' + pid,
+					className: 'button button-primary',
+					style: { marginTop: 12, textDecoration: 'none' },
+				}, 'Edit in Visual Builder →' ) );
+			}
+		}
 		return el( 'div', {
 			style: {
 				padding: '24px 20px', background: '#f6f7f7',
 				border: '2px dashed #bbb', borderRadius: 4, textAlign: 'center',
 			},
-		},
-			el( 'div', { style: { fontSize: 28 } }, icon ),
-			el( 'strong', { style: { display: 'block', marginTop: 6, fontSize: 15 } }, title ),
-			detail && el( 'p', { style: { color: '#666', fontSize: 13, marginTop: 4, marginBottom: 0 } }, detail )
-		);
+		}, kids );
 	}
 
 	// ─── 1. HERO SECTION ───────────────────────────────────────────────────────
