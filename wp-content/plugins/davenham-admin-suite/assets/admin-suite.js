@@ -67,23 +67,9 @@ jQuery(function ($) {
     updatePreview($(this));
   });
 
-  $('.das-add-custom-link').on('click', function (event) {
-    event.preventDefault();
-
-    var $wrap = $(this).closest('.das-custom-links');
-    var $rows = $wrap.find('.das-custom-link-rows');
-    var template = $('#das-custom-link-template').html();
-    var nextIndex = parseInt($wrap.attr('data-next-index'), 10) || 0;
-
-    template = template.replace(/__INDEX__/g, nextIndex);
-    $rows.append(template);
-    $wrap.attr('data-next-index', nextIndex + 1);
-  });
-
-  $(document).on('click', '.das-remove-custom-link', function (event) {
-    event.preventDefault();
-    $(this).closest('.das-custom-link-row').remove();
-  });
+  // Custom-link add/remove and folder/icon/search behaviours all live
+  // inside initMenuBuilder() — kept together so we have one place to
+  // reason about the menu builder UI.
 
   function storageAvailable() {
     try {
@@ -500,81 +486,387 @@ jQuery(function ($) {
   }
 
   function initMenuBuilder() {
-    var tbody = document.querySelector('.das-menu-builder-rows');
-    if (!tbody) {
+    var form = document.getElementById('das-menu-builder-form');
+    if (!form) {
       return;
     }
 
-    var draggedRow = null;
+    // ---- Helpers ----
+    function $$(sel, root) {
+      return Array.prototype.slice.call((root || form).querySelectorAll(sel));
+    }
+    function $1(sel, root) {
+      return (root || form).querySelector(sel);
+    }
+    var initialSnapshot = '';
 
-    function rows() {
-      return Array.prototype.slice.call(tbody.querySelectorAll('[data-das-menu-row]'));
+    // ---- Drag & drop across sections ----
+    var draggedCard = null;
+    var dropZones = $$('[data-das-drop-zone]');
+
+    function cards() {
+      return $$('[data-das-card]', form);
     }
 
     function updateOrderValues() {
-      rows().forEach(function (row, index) {
-        var order = row.querySelector('.das-menu-order');
-        if (order) {
-          order.value = String((index + 1) * 10);
+      // Per-section order: write a 10-step sequence so the saved
+      // sort is stable and sanitize_menu_items() / sanitize_custom_links()
+      // re-sort cleanly. Each section's cards start at 10.
+      dropZones.forEach(function (zone) {
+        $$('[data-das-card]', zone).forEach(function (card, idx) {
+          var order = card.querySelector('.das-mb-order');
+          if (order) {
+            order.value = String((idx + 1) * 10);
+          }
+        });
+      });
+      // Custom-links zone (its own container)
+      var customZone = $1('[data-das-custom-rows]');
+      if (customZone) {
+        $$('[data-das-card]', customZone).forEach(function (card, idx) {
+          var order = card.querySelector('.das-mb-order');
+          if (order) {
+            order.value = String((idx + 1) * 10);
+          }
+        });
+      }
+    }
+
+    function syncPlacementFromZone(card, zoneKey) {
+      // When a card lands in a new section, sync its hidden inputs.
+      var select = card.querySelector('[data-das-placement-select]');
+      if (select && select.value !== zoneKey) {
+        select.value = zoneKey;
+      }
+      card.setAttribute('data-das-placement', zoneKey);
+      // Show/hide folder dropdown only when placement is "admin".
+      var groupSelect = card.querySelector('[data-das-group-select]');
+      if (groupSelect) {
+        if (zoneKey === 'admin') {
+          groupSelect.removeAttribute('hidden');
+        } else {
+          groupSelect.setAttribute('hidden', '');
+        }
+      }
+    }
+
+    function refreshCounts() {
+      var totals = { keep: 0, bottom: 0, admin: 0, hide: 0, custom: 0 };
+      dropZones.forEach(function (zone) {
+        var key = zone.closest('[data-das-bucket]').getAttribute('data-das-bucket');
+        totals[key] = $$('[data-das-card]', zone).length;
+        var label = zone.parentNode.querySelector('[data-das-bucket-count]');
+        if (label) label.textContent = totals[key];
+      });
+      var customZone = $1('[data-das-custom-rows]');
+      if (customZone) {
+        totals.custom = $$('[data-das-card]', customZone).length;
+        var customLabel = $1('[data-das-custom-count]');
+        if (customLabel) customLabel.textContent = totals.custom;
+      }
+      $$('[data-das-count]', document.querySelector('.das-mb-counts')).forEach(function (el) {
+        var k = el.getAttribute('data-das-count');
+        var strong = el.querySelector('strong');
+        if (strong && typeof totals[k] !== 'undefined') strong.textContent = totals[k];
+      });
+    }
+
+    function ensureEmptyHint(zone) {
+      var existing = zone.querySelector('.das-mb-empty');
+      var hasCards = !!zone.querySelector('[data-das-card]');
+      if (hasCards && existing) {
+        existing.remove();
+      } else if (!hasCards && !existing) {
+        var p = document.createElement('p');
+        p.className = 'das-mb-empty';
+        p.textContent = 'Drop items here.';
+        zone.appendChild(p);
+      }
+    }
+
+    dropZones.forEach(function (zone) {
+      zone.addEventListener('dragover', function (event) {
+        if (!draggedCard) return;
+        event.preventDefault();
+        var afterCard = $$('[data-das-card]', zone).filter(function (c) {
+          return c !== draggedCard;
+        }).find(function (c) {
+          var rect = c.getBoundingClientRect();
+          return event.clientY < rect.top + rect.height / 2;
+        });
+        zone.insertBefore(draggedCard, afterCard || null);
+      });
+
+      zone.addEventListener('drop', function (event) {
+        if (!draggedCard) return;
+        event.preventDefault();
+        var bucketKey = zone.closest('[data-das-bucket]').getAttribute('data-das-bucket');
+        if (!draggedCard.hasAttribute('data-das-custom')) {
+          syncPlacementFromZone(draggedCard, bucketKey);
+        }
+      });
+    });
+
+    // Custom-links zone is also a drop target — but only for custom cards.
+    var customZone = $1('[data-das-custom-rows]');
+    if (customZone) {
+      customZone.addEventListener('dragover', function (event) {
+        if (!draggedCard || !draggedCard.hasAttribute('data-das-custom')) return;
+        event.preventDefault();
+        var afterCard = $$('[data-das-card]', customZone).filter(function (c) {
+          return c !== draggedCard;
+        }).find(function (c) {
+          var rect = c.getBoundingClientRect();
+          return event.clientY < rect.top + rect.height / 2;
+        });
+        customZone.insertBefore(draggedCard, afterCard || null);
+      });
+    }
+
+    function bindCardDrag(card) {
+      card.addEventListener('dragstart', function (event) {
+        draggedCard = card;
+        card.classList.add('is-dragging');
+        event.dataTransfer.effectAllowed = 'move';
+        // Firefox requires data to start the drag.
+        try { event.dataTransfer.setData('text/plain', card.getAttribute('data-das-slug') || ''); } catch (e) {}
+      });
+      card.addEventListener('dragend', function () {
+        card.classList.remove('is-dragging');
+        draggedCard = null;
+        updateOrderValues();
+        dropZones.forEach(ensureEmptyHint);
+        refreshCounts();
+        markDirty();
+      });
+    }
+
+    cards().forEach(bindCardDrag);
+
+    // ---- Placement <select> change moves the card to the new section ----
+    form.addEventListener('change', function (event) {
+      var sel = event.target.closest('[data-das-placement-select]');
+      if (!sel) return;
+      var card = sel.closest('[data-das-card]');
+      var bucketKey = sel.value;
+      var targetSection = $1('[data-das-bucket="' + bucketKey + '"] [data-das-drop-zone]');
+      if (card && targetSection) {
+        targetSection.appendChild(card);
+        syncPlacementFromZone(card, bucketKey);
+        updateOrderValues();
+        dropZones.forEach(ensureEmptyHint);
+        refreshCounts();
+      }
+    });
+
+    // ---- Search filter ----
+    var searchInput = document.getElementById('das-menu-search');
+    if (searchInput) {
+      searchInput.addEventListener('input', function () {
+        var q = searchInput.value.trim().toLowerCase();
+        $$('[data-das-card]').forEach(function (card) {
+          var hay = card.getAttribute('data-das-search') || '';
+          card.classList.toggle('is-filtered-out', q !== '' && hay.indexOf(q) === -1);
+        });
+      });
+    }
+
+    // ---- Icon popover (visual picker) ----
+    var popover = document.getElementById('das-icon-popover');
+    var popoverTarget = null;
+    function openPopover(trigger) {
+      if (!popover) return;
+      popoverTarget = trigger;
+      var rect = trigger.getBoundingClientRect();
+      popover.hidden = false;
+      // Position below the trigger, clamped to viewport.
+      var top = rect.bottom + window.scrollY + 6;
+      var left = rect.left + window.scrollX;
+      var maxLeft = window.scrollX + document.documentElement.clientWidth - popover.offsetWidth - 12;
+      if (left > maxLeft) left = maxLeft;
+      popover.style.top = top + 'px';
+      popover.style.left = left + 'px';
+    }
+    function closePopover() {
+      if (popover) popover.hidden = true;
+      popoverTarget = null;
+    }
+    document.addEventListener('click', function (event) {
+      var trigger = event.target.closest('[data-das-icon-trigger]');
+      if (trigger) {
+        event.preventDefault();
+        if (popoverTarget === trigger) {
+          closePopover();
+        } else {
+          openPopover(trigger);
+        }
+        return;
+      }
+      var pick = event.target.closest('.das-icon-popover__btn');
+      if (pick && popoverTarget) {
+        event.preventDefault();
+        var iconKey = pick.getAttribute('data-das-icon-key');
+        var card = popoverTarget.closest('[data-das-card]');
+        if (card) {
+          var hidden = card.querySelector('.das-mb-icon-value');
+          if (hidden) hidden.value = iconKey;
+          var glyph = popoverTarget.querySelector('.dashicons');
+          var newClass = pick.querySelector('.dashicons').className;
+          if (glyph) glyph.className = newClass;
+          markDirty();
+        }
+        closePopover();
+        return;
+      }
+      if (popover && !popover.hidden && !event.target.closest('#das-icon-popover')) {
+        closePopover();
+      }
+    });
+    document.addEventListener('keydown', function (event) {
+      if (event.key === 'Escape') closePopover();
+    });
+
+    // ---- Folder chips editor ----
+    var foldersWrap = $1('[data-das-folder-chips]');
+    var foldersMirror = document.getElementById('das-folders-mirror');
+
+    function rebuildFoldersMirror() {
+      if (!foldersMirror) return;
+      var names = $$('.das-folder-chip-input', foldersWrap).map(function (i) {
+        return i.value.trim();
+      }).filter(Boolean);
+      foldersMirror.value = names.join('\n');
+      // Sync each card's group <select> options so renames are reflected.
+      var optionsHtml = names.map(function (name) {
+        var slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+        return '<option value="' + slug + '">' + escapeHtml(name) + '</option>';
+      }).join('');
+      $$('.das-mb-group').forEach(function (sel) {
+        var current = sel.value;
+        sel.innerHTML = optionsHtml;
+        if (Array.prototype.slice.call(sel.options).some(function (o) { return o.value === current; })) {
+          sel.value = current;
         }
       });
     }
 
-    rows().forEach(function (row) {
-      row.addEventListener('dragstart', function (event) {
-        draggedRow = row;
-        row.classList.add('is-dragging');
-        event.dataTransfer.effectAllowed = 'move';
-        event.dataTransfer.setData('text/plain', '');
+    function escapeHtml(s) {
+      return String(s).replace(/[&<>"']/g, function (c) {
+        return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
       });
+    }
 
-      row.addEventListener('dragend', function () {
-        row.classList.remove('is-dragging');
-        draggedRow = null;
-        updateOrderValues();
+    if (foldersWrap) {
+      foldersWrap.addEventListener('input', function (event) {
+        if (event.target.classList.contains('das-folder-chip-input')) {
+          rebuildFoldersMirror();
+          markDirty();
+        }
       });
+      foldersWrap.addEventListener('click', function (event) {
+        if (event.target.classList.contains('das-folder-chip-remove')) {
+          event.preventDefault();
+          var chip = event.target.closest('[data-das-folder-chip]');
+          if (chip && foldersWrap.querySelectorAll('[data-das-folder-chip]').length > 1) {
+            chip.remove();
+            rebuildFoldersMirror();
+            markDirty();
+          }
+        }
+        if (event.target.classList.contains('das-add-folder')) {
+          event.preventDefault();
+          var chip = document.createElement('span');
+          chip.className = 'das-folder-chip';
+          chip.setAttribute('data-das-folder-chip', '');
+          chip.innerHTML = '<span class="dashicons dashicons-portfolio" aria-hidden="true"></span>' +
+            '<input type="text" class="das-folder-chip-input" value="New folder" aria-label="Folder name">' +
+            '<button type="button" class="das-folder-chip-remove" aria-label="Remove folder">&times;</button>';
+          foldersWrap.insertBefore(chip, event.target);
+          var input = chip.querySelector('input');
+          if (input) { input.focus(); input.select(); }
+          rebuildFoldersMirror();
+          markDirty();
+        }
+      });
+    }
+
+    // ---- Custom links: add / remove ----
+    document.addEventListener('click', function (event) {
+      if (event.target.classList.contains('das-add-custom-link')) {
+        event.preventDefault();
+        var wrap = $1('[data-das-custom-rows]');
+        var tpl = document.getElementById('das-custom-link-template');
+        if (!wrap || !tpl) return;
+        var nextIndex = parseInt(wrap.getAttribute('data-next-index'), 10) || 0;
+        var html = tpl.innerHTML.replace(/__INDEX__/g, String(nextIndex));
+        var temp = document.createElement('div');
+        temp.innerHTML = html.trim();
+        var newCard = temp.firstChild;
+        wrap.appendChild(newCard);
+        wrap.setAttribute('data-next-index', String(nextIndex + 1));
+        bindCardDrag(newCard);
+        refreshCounts();
+        markDirty();
+        var firstInput = newCard.querySelector('input[type="text"]');
+        if (firstInput) firstInput.focus();
+      }
+      if (event.target.classList.contains('das-remove-custom-link')) {
+        event.preventDefault();
+        var card = event.target.closest('[data-das-card]');
+        if (card) {
+          card.remove();
+          refreshCounts();
+          markDirty();
+        }
+      }
     });
 
-    tbody.addEventListener('dragover', function (event) {
-      if (!draggedRow) {
-        return;
+    // ---- Sticky save bar: dirty state + discard ----
+    var status = $1('[data-das-dirty-status]');
+    function snapshotForm() {
+      var data = new FormData(form);
+      var pairs = [];
+      data.forEach(function (v, k) { pairs.push(k + '=' + v); });
+      pairs.sort();
+      return pairs.join('|');
+    }
+    function markDirty() {
+      var now = snapshotForm();
+      if (now !== initialSnapshot) {
+        if (status) status.textContent = 'Unsaved changes';
+        status && status.classList.add('is-dirty');
+      } else {
+        if (status) status.textContent = 'No changes yet';
+        status && status.classList.remove('is-dirty');
       }
+    }
+    form.addEventListener('input', markDirty);
+    form.addEventListener('change', markDirty);
 
-      event.preventDefault();
-      var candidates = rows().filter(function (row) {
-        return row !== draggedRow;
+    var discardBtn = form.querySelector('.das-mb-discard');
+    if (discardBtn) {
+      discardBtn.addEventListener('click', function (event) {
+        event.preventDefault();
+        if (window.confirm('Discard unsaved changes and reload?')) {
+          window.location.reload();
+        }
       });
-      var next = candidates.find(function (row) {
-        return event.clientY < row.getBoundingClientRect().top + row.offsetHeight / 2;
+    }
+
+    // ---- Reset to defaults confirm ----
+    var resetLink = document.querySelector('.das-mb-reset[data-das-confirm]');
+    if (resetLink) {
+      resetLink.addEventListener('click', function (event) {
+        if (!window.confirm(resetLink.getAttribute('data-das-confirm'))) {
+          event.preventDefault();
+        }
       });
+    }
 
-      tbody.insertBefore(draggedRow, next || null);
-    });
-
-    tbody.addEventListener('click', function (event) {
-      var button = event.target.closest('[data-das-row-move]');
-      if (!button) {
-        return;
-      }
-
-      event.preventDefault();
-      var row = button.closest('[data-das-menu-row]');
-      if (!row) {
-        return;
-      }
-
-      if (button.getAttribute('data-das-row-move') === 'up' && row.previousElementSibling) {
-        tbody.insertBefore(row, row.previousElementSibling);
-      }
-
-      if (button.getAttribute('data-das-row-move') === 'down' && row.nextElementSibling) {
-        tbody.insertBefore(row.nextElementSibling, row);
-      }
-
-      updateOrderValues();
-    });
-
+    // ---- Init ----
     updateOrderValues();
+    refreshCounts();
+    initialSnapshot = snapshotForm();
   }
 
   initAdminShell();

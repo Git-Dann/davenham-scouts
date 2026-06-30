@@ -3,14 +3,14 @@
  * Plugin Name: Davenham Admin Suite
  * Plugin URI:  https://davenhamscouts.org.uk
  * Description: White-label admin customisation, menu cleanup, and editorial polish for Davenham Scouts.
- * Version:     1.4.4
+ * Version:     1.6.0
  * Author:      Davenham Scout Group
  * Text Domain: davenham-admin-suite
  */
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'DAS_VERSION', '1.4.4' );
+define( 'DAS_VERSION', '1.6.0' );
 define( 'DAS_FILE', __FILE__ );
 define( 'DAS_DIR', plugin_dir_path( __FILE__ ) );
 define( 'DAS_URL', plugin_dir_url( __FILE__ ) );
@@ -46,6 +46,7 @@ final class Davenham_Admin_Suite {
 		add_action( 'admin_init', [ __CLASS__, 'maybe_upgrade_settings' ], 5 );
 		add_action( 'admin_init', [ __CLASS__, 'register_settings' ] );
 		add_action( 'admin_post_davenham_admin_suite_save', [ __CLASS__, 'handle_save' ] );
+		add_action( 'admin_post_davenham_admin_suite_reset_menu', [ __CLASS__, 'handle_reset_menu' ] );
 		add_action( 'admin_menu', [ __CLASS__, 'register_admin_hub' ], 5 );
 		add_action( 'admin_menu', [ __CLASS__, 'capture_menu_items' ], 998 );
 		add_action( 'admin_menu', [ __CLASS__, 'tidy_admin_menus' ], 999 );
@@ -809,6 +810,31 @@ html.das-app-shell-active body.davenham-admin-shell .das-app-flyout.is-open {
 		exit;
 	}
 
+	/**
+	 * Reset only the menu builder portion of settings (items + groups +
+	 * custom links) back to defaults. Keeps branding/colours intact.
+	 */
+	public static function handle_reset_menu() {
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_die( 'Not allowed.' );
+		}
+
+		check_admin_referer( 'davenham_admin_suite_reset_menu' );
+
+		$current  = self::settings();
+		$defaults = self::defaults();
+
+		$current['menu_groups']  = $defaults['menu_groups'];
+		$current['menu_items']   = $defaults['menu_items'];
+		$current['custom_links'] = $defaults['custom_links'];
+
+		update_option( self::OPTION_NAME, $current, false );
+
+		$redirect = admin_url( 'admin.php?page=davenham-admin-suite-menu-builder&reset=1' );
+		wp_safe_redirect( $redirect );
+		exit;
+	}
+
 	public static function render_overview_page() {
 		if ( ! current_user_can( 'manage_options' ) ) {
 			wp_die( 'Not allowed.' );
@@ -945,121 +971,317 @@ html.das-app-shell-active body.davenham-admin-shell .das-app-flyout.is-open {
 
 		$settings = self::settings();
 		$catalog  = self::available_menu_catalog();
+		$items    = $settings['menu_items'];
+		$groups   = $settings['menu_groups'];
+
+		// Pre-sort catalog by saved order so the cards render in their
+		// current sidebar order; missing items fall back to 500/alphabetical.
 		uksort(
 			$catalog,
-			function ( $left, $right ) use ( $settings, $catalog ) {
-				$left_order  = isset( $settings['menu_items'][ $left ]['order'] ) ? (int) $settings['menu_items'][ $left ]['order'] : 500;
-				$right_order = isset( $settings['menu_items'][ $right ]['order'] ) ? (int) $settings['menu_items'][ $right ]['order'] : 500;
-				if ( $left_order === $right_order ) {
+			function ( $left, $right ) use ( $items, $catalog ) {
+				$lo = isset( $items[ $left ]['order'] ) ? (int) $items[ $left ]['order'] : 500;
+				$ro = isset( $items[ $right ]['order'] ) ? (int) $items[ $right ]['order'] : 500;
+				if ( $lo === $ro ) {
 					return strcasecmp( $catalog[ $left ]['label'], $catalog[ $right ]['label'] );
 				}
-
-				return $left_order <=> $right_order;
+				return $lo <=> $ro;
 			}
 		);
+
+		// Bucket catalog items by their saved placement so each section can
+		// render its own card list. Items the saved config calls "admin"
+		// further subdivide by group; everything else lands under the
+		// placement bucket only.
+		$buckets = [
+			'keep'   => [],
+			'bottom' => [],
+			'admin'  => [],
+			'hide'   => [],
+		];
+		foreach ( $catalog as $slug => $item ) {
+			$config    = isset( $items[ $slug ] ) ? $items[ $slug ] : null;
+			$placement = $config && isset( $config['placement'] ) ? $config['placement'] : 'keep';
+			if ( ! isset( $buckets[ $placement ] ) ) {
+				$placement = 'keep';
+			}
+			$buckets[ $placement ][ $slug ] = [ 'catalog' => $item, 'config' => $config ];
+		}
+
+		$counts = [
+			'keep'   => count( $buckets['keep'] ),
+			'bottom' => count( $buckets['bottom'] ),
+			'admin'  => count( $buckets['admin'] ),
+			'hide'   => count( $buckets['hide'] ),
+			'custom' => count( $settings['custom_links'] ),
+		];
+
+		$reset_url = wp_nonce_url(
+			admin_url( 'admin-post.php?action=davenham_admin_suite_reset_menu' ),
+			'davenham_admin_suite_reset_menu'
+		);
+
+		$reset_notice = isset( $_GET['reset'] ) && '1' === (string) $_GET['reset'];
 		?>
-		<div class="wrap davenham-admin-suite">
-			<h1>Menu Builder</h1>
-			<p>Drag to reorder the sidebar, choose icons, add dividers, move technical items into Admin, or hide items completely.</p>
+		<div class="wrap davenham-admin-suite das-menu-builder">
+			<div class="das-mb-header">
+				<div>
+					<h1>Menu Builder</h1>
+					<p class="das-mb-lede">Drag items between sections to control the sidebar. Click an icon to change it. Rename anything inline. Changes save in one click.</p>
+				</div>
+				<div class="das-mb-counts" aria-live="polite">
+					<span class="das-mb-count" data-das-count="keep"><strong><?php echo (int) $counts['keep']; ?></strong> Main</span>
+					<span class="das-mb-count" data-das-count="bottom"><strong><?php echo (int) $counts['bottom']; ?></strong> Bottom</span>
+					<span class="das-mb-count" data-das-count="admin"><strong><?php echo (int) $counts['admin']; ?></strong> Admin</span>
+					<span class="das-mb-count" data-das-count="hide"><strong><?php echo (int) $counts['hide']; ?></strong> Hidden</span>
+					<span class="das-mb-count" data-das-count="custom"><strong><?php echo (int) $counts['custom']; ?></strong> Custom</span>
+				</div>
+			</div>
+
 			<?php self::render_updated_notice(); ?>
-			<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
+			<?php if ( $reset_notice ) : ?>
+				<div class="notice notice-success"><p>Menu builder restored to defaults.</p></div>
+			<?php endif; ?>
+
+			<div class="das-mb-toolbar">
+				<label class="das-mb-search">
+					<span class="dashicons dashicons-search" aria-hidden="true"></span>
+					<input type="search" id="das-menu-search" placeholder="Search menu items…" autocomplete="off">
+				</label>
+				<a class="button button-link-delete das-mb-reset" href="<?php echo esc_url( $reset_url ); ?>" data-das-confirm="Reset the sidebar to defaults? Your icons, labels, and folders for menu items will be discarded. Branding and colours stay.">Reset to defaults</a>
+			</div>
+
+			<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" class="das-mb-form" id="das-menu-builder-form">
 				<?php wp_nonce_field( 'davenham_admin_suite_save' ); ?>
 				<input type="hidden" name="action" value="davenham_admin_suite_save">
 
-				<section class="das-builder-section">
-					<div>
+				<section class="das-mb-section das-mb-folders">
+					<header class="das-mb-section-head">
 						<h2>Admin folders</h2>
-						<p class="description">One folder per line. Items set to Admin are shown inside these folders in the Admin flyout.</p>
+						<p class="description">Items set to <em>Admin flyout</em> live inside one of these folders.</p>
+					</header>
+					<div class="das-folder-chips" data-das-folder-chips>
+						<?php foreach ( $groups as $group_slug => $group_label ) : ?>
+							<span class="das-folder-chip" data-das-folder-chip>
+								<span class="dashicons dashicons-portfolio" aria-hidden="true"></span>
+								<input type="text" class="das-folder-chip-input" value="<?php echo esc_attr( $group_label ); ?>" aria-label="Folder name">
+								<button type="button" class="das-folder-chip-remove" aria-label="Remove folder">&times;</button>
+							</span>
+						<?php endforeach; ?>
+						<button type="button" class="button button-secondary das-add-folder">+ Add folder</button>
 					</div>
-					<textarea class="large-text code" rows="4" name="<?php echo esc_attr( self::OPTION_NAME ); ?>[menu_groups_text]"><?php echo esc_textarea( self::groups_textarea_value( $settings['menu_groups'] ) ); ?></textarea>
+					<textarea hidden name="<?php echo esc_attr( self::OPTION_NAME ); ?>[menu_groups_text]" id="das-folders-mirror"><?php echo esc_textarea( self::groups_textarea_value( $groups ) ); ?></textarea>
 				</section>
 
-				<h2>Existing Menu Items</h2>
-				<table class="widefat striped das-menu-table">
-					<thead>
-						<tr>
-							<th class="das-menu-table__handle">Move</th>
-							<th>Icon</th>
-							<th>Custom Label</th>
-							<th>Group</th>
-							<th>Placement</th>
-							<th>Divider</th>
-							<th>Source</th>
-						</tr>
-					</thead>
-					<tbody class="das-menu-builder-rows">
-						<?php foreach ( $catalog as $slug => $item ) : ?>
+				<?php
+				$sections = [
+					'keep'   => [ 'title' => 'Main sidebar', 'help' => 'Items here show in the main sidebar.' ],
+					'bottom' => [ 'title' => 'Bottom sidebar', 'help' => 'Pushed to the bottom of the sidebar (useful for settings, logout, etc.).' ],
+					'admin'  => [ 'title' => 'Admin flyout', 'help' => 'Items pile inside the Admin folder dropdown, grouped by folder.' ],
+					'hide'   => [ 'title' => 'Hidden', 'help' => 'Items here are removed from the sidebar entirely.' ],
+				];
+				foreach ( $sections as $bucket_key => $meta ) :
+					?>
+					<section class="das-mb-section das-mb-bucket das-mb-bucket--<?php echo esc_attr( $bucket_key ); ?>" data-das-bucket="<?php echo esc_attr( $bucket_key ); ?>">
+						<header class="das-mb-section-head">
+							<h2><?php echo esc_html( $meta['title'] ); ?> <span class="das-mb-bucket-count" data-das-bucket-count><?php echo (int) $counts[ $bucket_key ]; ?></span></h2>
+							<p class="description"><?php echo esc_html( $meta['help'] ); ?></p>
+						</header>
+						<div class="das-mb-cards" data-das-drop-zone>
 							<?php
-							$config = $settings['menu_items'][ $slug ] ?? [
-								'label'     => $item['label'],
-								'group'     => self::default_group_slug( $settings['menu_groups'] ),
-								'placement' => 'keep',
-								'icon'      => self::menu_icon_key( $slug, $item['label'] ),
-								'order'     => 500,
-								'divider_before' => '0',
-							];
+							if ( empty( $buckets[ $bucket_key ] ) ) {
+								echo '<p class="das-mb-empty">Drop items here.</p>';
+							} else {
+								foreach ( $buckets[ $bucket_key ] as $slug => $entry ) {
+									self::render_menu_item_card( $slug, $entry['catalog'], $entry['config'], $groups );
+								}
+							}
 							?>
-							<tr class="das-menu-builder-row" draggable="true" data-das-menu-row>
-								<td class="das-menu-table__handle">
-									<div class="das-row-move-controls">
-										<button type="button" class="button-link das-drag-handle" aria-label="Drag <?php echo esc_attr( $config['label'] ); ?>"><span class="dashicons dashicons-menu" aria-hidden="true"></span></button>
-										<button type="button" class="button-link das-row-move" data-das-row-move="up" aria-label="Move <?php echo esc_attr( $config['label'] ); ?> up"><span class="dashicons dashicons-arrow-up-alt2" aria-hidden="true"></span></button>
-										<button type="button" class="button-link das-row-move" data-das-row-move="down" aria-label="Move <?php echo esc_attr( $config['label'] ); ?> down"><span class="dashicons dashicons-arrow-down-alt2" aria-hidden="true"></span></button>
-									</div>
-									<input type="hidden" class="das-menu-order" name="<?php echo esc_attr( self::OPTION_NAME ); ?>[menu_items][<?php echo esc_attr( $slug ); ?>][order]" value="<?php echo esc_attr( (string) (int) ( $config['order'] ?? 500 ) ); ?>">
-								</td>
-								<td><?php self::render_icon_select( self::OPTION_NAME . '[menu_items][' . $slug . '][icon]', $config['icon'] ?? self::menu_icon_key( $slug, $config['label'] ) ); ?></td>
-								<td><input type="text" class="regular-text" name="<?php echo esc_attr( self::OPTION_NAME ); ?>[menu_items][<?php echo esc_attr( $slug ); ?>][label]" value="<?php echo esc_attr( $config['label'] ); ?>"></td>
-								<td><?php self::render_group_select( self::OPTION_NAME . '[menu_items][' . $slug . '][group]', $config['group'], $settings['menu_groups'] ); ?></td>
-								<td>
-									<select name="<?php echo esc_attr( self::OPTION_NAME ); ?>[menu_items][<?php echo esc_attr( $slug ); ?>][placement]">
-										<option value="keep" <?php selected( $config['placement'], 'keep' ); ?>>Main sidebar</option>
-										<option value="bottom" <?php selected( $config['placement'], 'bottom' ); ?>>Bottom sidebar</option>
-										<option value="admin" <?php selected( $config['placement'], 'admin' ); ?>>Admin flyout</option>
-										<option value="hide" <?php selected( $config['placement'], 'hide' ); ?>>Hide completely</option>
-									</select>
-								</td>
-								<td>
-									<label class="das-compact-check"><input type="checkbox" name="<?php echo esc_attr( self::OPTION_NAME ); ?>[menu_items][<?php echo esc_attr( $slug ); ?>][divider_before]" value="1" <?php checked( ! empty( $config['divider_before'] ) && '1' === (string) $config['divider_before'] ); ?>> Before</label>
-								</td>
-								<td>
-									<strong><?php echo esc_html( $item['label'] ); ?></strong>
-									<div class="description"><code><?php echo esc_html( $slug ); ?></code></div>
-									<?php if ( ! empty( $item['children'] ) ) : ?>
-										<div class="description"><?php echo esc_html( sprintf( '%d flyout item(s)', count( $item['children'] ) ) ); ?></div>
-									<?php endif; ?>
-								</td>
-							</tr>
-						<?php endforeach; ?>
-					</tbody>
-				</table>
+						</div>
+					</section>
+					<?php
+				endforeach;
+				?>
 
-				<h2>Custom Admin Links</h2>
-				<p class="description">Add quick links for team shortcuts, plugin screens, documentation, or external services.</p>
-				<div class="das-custom-links" data-next-index="<?php echo esc_attr( (string) count( $settings['custom_links'] ) ); ?>">
-					<div class="das-custom-link-rows">
+				<section class="das-mb-section das-mb-custom" data-das-custom-section>
+					<header class="das-mb-section-head">
+						<div>
+							<h2>Custom links <span class="das-mb-bucket-count" data-das-custom-count><?php echo (int) $counts['custom']; ?></span></h2>
+							<p class="description">Add quick shortcuts to plugin screens, docs, or external tools.</p>
+						</div>
+						<button type="button" class="button button-secondary das-add-custom-link">+ Add custom link</button>
+					</header>
+					<div class="das-mb-cards das-mb-cards--custom" data-das-custom-rows data-next-index="<?php echo esc_attr( (string) count( $settings['custom_links'] ) ); ?>">
 						<?php foreach ( $settings['custom_links'] as $index => $link ) : ?>
-							<?php self::render_custom_link_row( $index, $link, $settings['menu_groups'] ); ?>
+							<?php self::render_custom_link_card( $index, $link, $groups ); ?>
 						<?php endforeach; ?>
 					</div>
-					<p><button type="button" class="button button-secondary das-add-custom-link">Add custom link</button></p>
-				</div>
+					<script type="text/template" id="das-custom-link-template">
+						<?php
+						self::render_custom_link_card(
+							'__INDEX__',
+							[ 'label' => '', 'url' => '', 'group' => self::default_group_slug( $groups ), 'icon' => 'pin', 'order' => 500 ],
+							$groups
+						);
+						?>
+					</script>
+				</section>
 
-				<script type="text/template" id="das-custom-link-template">
-					<?php self::render_custom_link_row( '__INDEX__', [ 'label' => '', 'url' => '', 'group' => self::default_group_slug( $settings['menu_groups'] ) ], $settings['menu_groups'] ); ?>
-				</script>
-
-				<p>
-					<label>
+				<section class="das-mb-section das-mb-section--extras">
+					<label class="das-compact-check">
 						<input type="checkbox" name="<?php echo esc_attr( self::OPTION_NAME ); ?>[hide_wp_updates]" value="1" <?php checked( $settings['hide_wp_updates'], '1' ); ?>>
 						Hide update banners and update shortcuts outside the Admin area.
 					</label>
-				</p>
+				</section>
 
-				<?php submit_button( 'Save Menu Builder' ); ?>
+				<div class="das-mb-savebar">
+					<div class="das-mb-savebar__status" data-das-dirty-status>No changes yet</div>
+					<div class="das-mb-savebar__actions">
+						<button type="button" class="button button-secondary das-mb-discard">Discard changes</button>
+						<?php submit_button( 'Save menu', 'primary', 'submit', false ); ?>
+					</div>
+				</div>
 			</form>
+
+			<?php self::render_icon_popover_grid(); ?>
 		</div>
 		<?php
+	}
+
+	/**
+	 * One menu item card. Used inside each section's drop-zone. Stores
+	 * placement / group / order / icon / label / divider as hidden inputs
+	 * so the existing sanitize_menu_items() pipeline still works unchanged.
+	 */
+	private static function render_menu_item_card( $slug, $catalog_item, $config, $groups ) {
+		if ( ! is_array( $config ) ) {
+			$config = [
+				'label'          => $catalog_item['label'],
+				'group'          => self::default_group_slug( $groups ),
+				'placement'      => 'keep',
+				'icon'           => self::menu_icon_key( $slug, $catalog_item['label'] ),
+				'order'          => 500,
+				'divider_before' => '0',
+			];
+		}
+
+		$prefix      = self::OPTION_NAME . '[menu_items][' . $slug . ']';
+		$icon_key    = self::valid_icon_key( $config['icon'] ?? self::menu_icon_key( $slug, $catalog_item['label'] ) );
+		$icon_class  = self::icon_dashicon( $icon_key );
+		$url         = self::menu_slug_url( $slug );
+		$placement   = isset( $config['placement'] ) ? $config['placement'] : 'keep';
+		$group_value = isset( $config['group'] ) ? $config['group'] : self::default_group_slug( $groups );
+		$divider_on  = ! empty( $config['divider_before'] ) && '1' === (string) $config['divider_before'];
+		$child_count = ! empty( $catalog_item['children'] ) && is_array( $catalog_item['children'] ) ? count( $catalog_item['children'] ) : 0;
+
+		$search_text = strtolower( $config['label'] . ' ' . $catalog_item['label'] . ' ' . $slug );
+		?>
+		<div class="das-mb-card" draggable="true" data-das-card data-das-slug="<?php echo esc_attr( $slug ); ?>" data-das-placement="<?php echo esc_attr( $placement ); ?>" data-das-search="<?php echo esc_attr( $search_text ); ?>">
+			<button type="button" class="das-mb-card__handle" aria-label="Drag <?php echo esc_attr( $config['label'] ); ?>" tabindex="-1"><span class="dashicons dashicons-menu" aria-hidden="true"></span></button>
+
+			<button type="button" class="das-mb-card__icon" data-das-icon-trigger aria-label="Change icon">
+				<span class="dashicons <?php echo esc_attr( $icon_class ); ?>" aria-hidden="true"></span>
+			</button>
+			<input type="hidden" class="das-mb-icon-value" name="<?php echo esc_attr( $prefix ); ?>[icon]" value="<?php echo esc_attr( $icon_key ); ?>">
+
+			<div class="das-mb-card__body">
+				<input type="text" class="das-mb-card__label" name="<?php echo esc_attr( $prefix ); ?>[label]" value="<?php echo esc_attr( $config['label'] ); ?>" placeholder="<?php echo esc_attr( $catalog_item['label'] ); ?>" aria-label="Display label">
+				<div class="das-mb-card__meta">
+					<?php if ( ! empty( $url ) ) : ?>
+						<span class="das-mb-card__url" title="<?php echo esc_attr( $url ); ?>"><?php echo esc_html( self::shorten_admin_url( $url ) ); ?></span>
+					<?php endif; ?>
+					<?php if ( $child_count ) : ?>
+						<span class="das-mb-card__children"><?php echo (int) $child_count; ?> sub-items</span>
+					<?php endif; ?>
+					<span class="das-mb-card__slug"><code><?php echo esc_html( $slug ); ?></code></span>
+				</div>
+			</div>
+
+			<div class="das-mb-card__controls">
+				<select class="das-mb-placement" name="<?php echo esc_attr( $prefix ); ?>[placement]" data-das-placement-select>
+					<option value="keep" <?php selected( $placement, 'keep' ); ?>>Main</option>
+					<option value="bottom" <?php selected( $placement, 'bottom' ); ?>>Bottom</option>
+					<option value="admin" <?php selected( $placement, 'admin' ); ?>>Admin</option>
+					<option value="hide" <?php selected( $placement, 'hide' ); ?>>Hidden</option>
+				</select>
+				<select class="das-mb-group" name="<?php echo esc_attr( $prefix ); ?>[group]" data-das-group-select <?php echo 'admin' === $placement ? '' : 'hidden'; ?>>
+					<?php foreach ( $groups as $g_slug => $g_label ) : ?>
+						<option value="<?php echo esc_attr( $g_slug ); ?>" <?php selected( $group_value, $g_slug ); ?>><?php echo esc_html( $g_label ); ?></option>
+					<?php endforeach; ?>
+				</select>
+				<label class="das-mb-card__divider" title="Show a divider line above this item">
+					<input type="checkbox" name="<?php echo esc_attr( $prefix ); ?>[divider_before]" value="1" <?php checked( $divider_on ); ?>>
+					<span>Divider</span>
+				</label>
+			</div>
+
+			<input type="hidden" class="das-mb-order" name="<?php echo esc_attr( $prefix ); ?>[order]" value="<?php echo esc_attr( (string) (int) ( $config['order'] ?? 500 ) ); ?>">
+		</div>
+		<?php
+	}
+
+	/** Custom-link card variant (label + URL + icon + group + drag). */
+	private static function render_custom_link_card( $index, $link, $groups ) {
+		$prefix      = self::OPTION_NAME . '[custom_links][' . $index . ']';
+		$icon_key    = self::valid_icon_key( $link['icon'] ?? 'pin' );
+		$icon_class  = self::icon_dashicon( $icon_key );
+		$group_value = isset( $link['group'] ) ? $link['group'] : self::default_group_slug( $groups );
+		$search_text = strtolower( ( $link['label'] ?? '' ) . ' ' . ( $link['url'] ?? '' ) );
+		?>
+		<div class="das-mb-card das-mb-card--custom" draggable="true" data-das-card data-das-custom data-das-search="<?php echo esc_attr( $search_text ); ?>">
+			<button type="button" class="das-mb-card__handle" aria-label="Drag link" tabindex="-1"><span class="dashicons dashicons-menu" aria-hidden="true"></span></button>
+
+			<button type="button" class="das-mb-card__icon" data-das-icon-trigger aria-label="Change icon">
+				<span class="dashicons <?php echo esc_attr( $icon_class ); ?>" aria-hidden="true"></span>
+			</button>
+			<input type="hidden" class="das-mb-icon-value" name="<?php echo esc_attr( $prefix ); ?>[icon]" value="<?php echo esc_attr( $icon_key ); ?>">
+
+			<div class="das-mb-card__body">
+				<input type="text" class="das-mb-card__label" name="<?php echo esc_attr( $prefix ); ?>[label]" value="<?php echo esc_attr( $link['label'] ?? '' ); ?>" placeholder="Label (e.g. Site Health)" aria-label="Link label">
+				<input type="text" class="das-mb-card__url-input" name="<?php echo esc_attr( $prefix ); ?>[url]" value="<?php echo esc_attr( $link['url'] ?? '' ); ?>" placeholder="plugins.php or https://…" aria-label="Link URL">
+			</div>
+
+			<div class="das-mb-card__controls">
+				<select class="das-mb-group" name="<?php echo esc_attr( $prefix ); ?>[group]">
+					<?php foreach ( $groups as $g_slug => $g_label ) : ?>
+						<option value="<?php echo esc_attr( $g_slug ); ?>" <?php selected( $group_value, $g_slug ); ?>><?php echo esc_html( $g_label ); ?></option>
+					<?php endforeach; ?>
+				</select>
+				<button type="button" class="button-link-delete das-remove-custom-link" aria-label="Remove link">Remove</button>
+			</div>
+
+			<input type="hidden" class="das-mb-order" name="<?php echo esc_attr( $prefix ); ?>[order]" value="<?php echo esc_attr( (string) (int) ( $link['order'] ?? 500 ) ); ?>">
+		</div>
+		<?php
+	}
+
+	/**
+	 * Visual icon picker popover. Rendered once at the bottom of the page;
+	 * JS positions and shows it next to the card whose icon button was
+	 * clicked. Replaces the dropdown <select> with glyphs you can see.
+	 */
+	private static function render_icon_popover_grid() {
+		?>
+		<div class="das-icon-popover" id="das-icon-popover" hidden role="dialog" aria-label="Choose icon">
+			<div class="das-icon-popover__grid">
+				<?php foreach ( self::icon_choices() as $icon_key => $label ) : ?>
+					<button type="button" class="das-icon-popover__btn" data-das-icon-key="<?php echo esc_attr( $icon_key ); ?>" title="<?php echo esc_attr( $label ); ?>" aria-label="<?php echo esc_attr( $label ); ?>">
+						<span class="dashicons <?php echo esc_attr( self::icon_dashicon( $icon_key ) ); ?>" aria-hidden="true"></span>
+					</button>
+				<?php endforeach; ?>
+			</div>
+		</div>
+		<?php
+	}
+
+	/** Trim an admin URL to a short caption like "admin.php?page=foo". */
+	private static function shorten_admin_url( $url ) {
+		$url = (string) $url;
+		$admin_base = admin_url();
+		if ( 0 === strpos( $url, $admin_base ) ) {
+			$short = substr( $url, strlen( $admin_base ) );
+			return '/' . ltrim( $short, '/' );
+		}
+		return $url;
 	}
 
 	public static function render_updates_page() {
@@ -1348,7 +1570,7 @@ html.das-app-shell-active body.davenham-admin-shell .das-app-flyout.is-open {
 		return $groups;
 	}
 
-	private static function menu_slug_url( $slug ) {
+	public static function menu_slug_url( $slug ) {
 		$slug = (string) $slug;
 
 		if ( '' === $slug ) {
@@ -1463,6 +1685,46 @@ html.das-app-shell-active body.davenham-admin-shell .das-app-flyout.is-open {
 		$choices = self::icon_choices();
 
 		return isset( $choices[ $icon ] ) ? $icon : 'pin';
+	}
+
+	/**
+	 * Map an internal icon key to its WP dashicon CSS class. Public so the
+	 * Menu Builder UI can preview the same glyphs the sidebar actually
+	 * renders. Kept in sync with the same table in templates/admin-shell.php.
+	 */
+	public static function icon_dashicon( $icon ) {
+		$map = [
+			'dashboard'  => 'dashicons-dashboard',
+			'tickets'    => 'dashicons-tickets-alt',
+			'calendar'   => 'dashicons-calendar-alt',
+			'pages'      => 'dashicons-admin-page',
+			'media'      => 'dashicons-format-image',
+			'cart'       => 'dashicons-cart',
+			'orders'     => 'dashicons-cart',
+			'products'   => 'dashicons-products',
+			'users'      => 'dashicons-admin-users',
+			'posts'      => 'dashicons-admin-post',
+			'forms'      => 'dashicons-feedback',
+			'links'      => 'dashicons-admin-links',
+			'payments'   => 'dashicons-money-alt',
+			'marketing'  => 'dashicons-megaphone',
+			'builder'    => 'dashicons-layout',
+			'appearance' => 'dashicons-admin-appearance',
+			'analytics'  => 'dashicons-chart-bar',
+			'folder'     => 'dashicons-portfolio',
+			'admin'      => 'dashicons-admin-tools',
+			'plugins'    => 'dashicons-admin-plugins',
+			'tools'      => 'dashicons-admin-tools',
+			'updates'    => 'dashicons-update',
+			'security'   => 'dashicons-shield',
+			'backup'     => 'dashicons-database',
+			'health'     => 'dashicons-heart',
+			'speed'      => 'dashicons-performance',
+			'pin'        => 'dashicons-marker',
+		];
+
+		$icon = (string) $icon;
+		return isset( $map[ $icon ] ) ? $map[ $icon ] : 'dashicons-marker';
 	}
 
 	private static function update_summary() {
@@ -1737,6 +1999,8 @@ html.das-app-shell-active body.davenham-admin-shell .das-app-flyout.is-open {
 			$label = sanitize_text_field( $link['label'] ?? '' );
 			$url   = sanitize_text_field( $link['url'] ?? '' );
 			$group = sanitize_title( $link['group'] ?? '' );
+			$icon  = self::valid_icon_key( $link['icon'] ?? 'pin' );
+			$order = isset( $link['order'] ) ? (int) $link['order'] : 500;
 
 			if ( '' === $label && '' === $url ) {
 				continue;
@@ -1750,8 +2014,18 @@ html.das-app-shell-active body.davenham-admin-shell .das-app-flyout.is-open {
 				'label' => $label,
 				'url'   => $url,
 				'group' => '' !== $group ? $group : 'technical',
+				'icon'  => $icon,
+				'order' => $order,
 			];
 		}
+
+		// Preserve user-defined order across saves.
+		usort(
+			$clean,
+			function ( $left, $right ) {
+				return (int) $left['order'] <=> (int) $right['order'];
+			}
+		);
 
 		return array_values( $clean );
 	}
@@ -1773,33 +2047,6 @@ html.das-app-shell-active body.davenham-admin-shell .das-app-flyout.is-open {
 		return implode( "\n", array_values( $groups ) );
 	}
 
-	private static function render_group_select( $name, $selected, $groups ) {
-		echo '<select name="' . esc_attr( $name ) . '">';
-		foreach ( $groups as $group_slug => $group_label ) {
-			echo '<option value="' . esc_attr( $group_slug ) . '" ' . selected( $selected, $group_slug, false ) . '>' . esc_html( $group_label ) . '</option>';
-		}
-		echo '</select>';
-	}
-
-	private static function render_icon_select( $name, $selected ) {
-		$selected = self::valid_icon_key( $selected );
-		echo '<select class="das-icon-picker" name="' . esc_attr( $name ) . '">';
-		foreach ( self::icon_choices() as $icon_key => $label ) {
-			echo '<option value="' . esc_attr( $icon_key ) . '" ' . selected( $selected, $icon_key, false ) . '>' . esc_html( $label ) . '</option>';
-		}
-		echo '</select>';
-	}
-
-	private static function render_custom_link_row( $index, $link, $groups ) {
-		?>
-		<div class="das-custom-link-row">
-			<input type="text" class="regular-text" name="<?php echo esc_attr( self::OPTION_NAME ); ?>[custom_links][<?php echo esc_attr( (string) $index ); ?>][label]" value="<?php echo esc_attr( $link['label'] ?? '' ); ?>" placeholder="Label">
-			<input type="text" class="regular-text" name="<?php echo esc_attr( self::OPTION_NAME ); ?>[custom_links][<?php echo esc_attr( (string) $index ); ?>][url]" value="<?php echo esc_attr( $link['url'] ?? '' ); ?>" placeholder="plugins.php or full URL">
-			<?php self::render_group_select( self::OPTION_NAME . '[custom_links][' . $index . '][group]', $link['group'] ?? self::default_group_slug( $groups ), $groups ); ?>
-			<button type="button" class="button-link-delete das-remove-custom-link">Remove</button>
-		</div>
-		<?php
-	}
 }
 
 Davenham_Admin_Suite::init();

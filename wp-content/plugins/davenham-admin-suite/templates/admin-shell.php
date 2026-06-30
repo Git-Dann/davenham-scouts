@@ -21,36 +21,12 @@ defined( 'ABSPATH' ) || exit;
 // Helpers used only inside this template.
 if ( ! function_exists( 'das_shell_icon_class' ) ) {
 	function das_shell_icon_class( $icon ) {
-		$map = array(
-			'dashboard'  => 'dashicons-dashboard',
-			'tickets'    => 'dashicons-tickets-alt',
-			'calendar'   => 'dashicons-calendar-alt',
-			'pages'      => 'dashicons-admin-page',
-			'media'      => 'dashicons-format-image',
-			'cart'       => 'dashicons-cart',
-			'orders'     => 'dashicons-cart',
-			'products'   => 'dashicons-products',
-			'users'      => 'dashicons-admin-users',
-			'posts'      => 'dashicons-admin-post',
-			'forms'      => 'dashicons-feedback',
-			'links'      => 'dashicons-admin-links',
-			'payments'   => 'dashicons-money-alt',
-			'marketing'  => 'dashicons-megaphone',
-			'builder'    => 'dashicons-layout',
-			'appearance' => 'dashicons-admin-appearance',
-			'analytics'  => 'dashicons-chart-bar',
-			'folder'     => 'dashicons-portfolio',
-			'admin'      => 'dashicons-admin-tools',
-			'plugins'    => 'dashicons-admin-plugins',
-			'tools'      => 'dashicons-admin-tools',
-			'updates'    => 'dashicons-update',
-			'security'   => 'dashicons-shield',
-			'backup'     => 'dashicons-database',
-			'health'     => 'dashicons-heart',
-			'speed'      => 'dashicons-performance',
-			'pin'        => 'dashicons-marker',
-		);
-		return isset( $map[ $icon ] ) ? $map[ $icon ] : 'dashicons-marker';
+		// Defer to the central mapper on the main class so the Menu Builder
+		// preview and the live sidebar can never drift apart.
+		if ( class_exists( 'Davenham_Admin_Suite' ) ) {
+			return Davenham_Admin_Suite::icon_dashicon( $icon );
+		}
+		return 'dashicons-marker';
 	}
 }
 
