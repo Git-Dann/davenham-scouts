@@ -2,8 +2,8 @@
 /**
  * Plugin Name: Davenham Parent Portal
  * Plugin URI:  https://davenhamscouts.org.uk
- * Description: Parents self-register, an admin approves them, and they get a Parent login to a dashboard. Foundation for digital event consent forms.
- * Version:     1.0.0
+ * Description: Parents self-register, an admin approves them, and they get a Parent login to a dashboard with digital event consent forms.
+ * Version:     1.1.0
  * Author:      Davenham Scout Group
  * Text Domain: davenham-parent-portal
  * Requires at least: 6.0
@@ -12,7 +12,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'DPP_VERSION', '1.0.0' );
+define( 'DPP_VERSION', '1.1.0' );
 define( 'DPP_FILE', __FILE__ );
 define( 'DPP_DIR', plugin_dir_path( __FILE__ ) );
 define( 'DPP_URL', plugin_dir_url( __FILE__ ) );
@@ -29,6 +29,12 @@ final class Davenham_Parent_Portal {
 	const VERSION_OPTION = 'davenham_parent_portal_version';
 	const PORTAL_PAGE_OPTION = 'dpp_portal_page_id';
 	const REGISTER_NONCE = 'dpp_register';
+
+	// Event consent (1B).
+	const CONSENT_CPT    = 'dpp_consent';
+	const VIEW_CAP       = 'view_event_consents';
+	const CONSENT_NONCE  = 'dpp_consent';
+	const CONSENT_META   = '_dpp_consent';
 
 	/**
 	 * Single source of truth for sections (slug => label). Filterable so the
@@ -51,12 +57,19 @@ final class Davenham_Parent_Portal {
 
 	public static function init() {
 		add_action( 'init', array( __CLASS__, 'register_application_cpt' ) );
+		add_action( 'init', array( __CLASS__, 'register_consent_cpt' ) );
 		add_action( 'init', array( __CLASS__, 'register_shortcodes' ) );
 
 		add_action( 'admin_init', array( __CLASS__, 'maybe_upgrade' ) );
 
 		// Front-end registration submit.
 		add_action( 'template_redirect', array( __CLASS__, 'handle_registration' ) );
+
+		// Event consent (1B).
+		add_action( 'template_redirect', array( __CLASS__, 'handle_consent' ) );
+		add_filter( 'the_content', array( __CLASS__, 'inject_event_consent' ) );
+		add_action( 'admin_menu', array( __CLASS__, 'register_consents_admin_page' ) );
+		add_action( 'admin_post_dpp_export_consents', array( __CLASS__, 'export_consents_csv' ) );
 
 		// Approval workflow.
 		add_action( 'admin_post_dpp_approve', array( __CLASS__, 'handle_approve' ) );
@@ -119,6 +132,16 @@ final class Davenham_Parent_Portal {
 		$admin = get_role( 'administrator' );
 		if ( $admin ) {
 			$admin->add_cap( self::CAP );
+			$admin->add_cap( self::VIEW_CAP );
+		}
+
+		// Leaders and trustees (from the documents plugin) may view consents,
+		// if those roles exist. No hard dependency on that plugin.
+		foreach ( array( 'davenham_trustee', 'davenham_leader' ) as $role_slug ) {
+			$role = get_role( $role_slug );
+			if ( $role ) {
+				$role->add_cap( self::VIEW_CAP );
+			}
 		}
 	}
 
@@ -632,6 +655,7 @@ final class Davenham_Parent_Portal {
 	public static function register_shortcodes() {
 		add_shortcode( 'davenham_parent_register', array( __CLASS__, 'render_register' ) );
 		add_shortcode( 'davenham_parent_dashboard', array( __CLASS__, 'render_dashboard' ) );
+		add_shortcode( 'davenham_event_consent', array( __CLASS__, 'render_consent' ) );
 	}
 
 	public static function register_public_assets() {
@@ -716,6 +740,372 @@ final class Davenham_Parent_Portal {
 
 	public static function section_label_public( $slug ) {
 		return self::section_label( $slug );
+	}
+
+	/* =====================================================================
+	 * Event consent (1B)
+	 * =================================================================== */
+
+	public static function register_consent_cpt() {
+		if ( post_type_exists( self::CONSENT_CPT ) ) {
+			return;
+		}
+		$caps = array(
+			'edit_posts'          => self::VIEW_CAP,
+			'edit_others_posts'   => self::VIEW_CAP,
+			'publish_posts'       => self::VIEW_CAP,
+			'read_private_posts'  => self::VIEW_CAP,
+			'delete_posts'        => 'manage_options',
+			'delete_others_posts' => 'manage_options',
+			'create_posts'        => 'do_not_allow', // consents only arrive via the form
+		);
+		register_post_type(
+			self::CONSENT_CPT,
+			array(
+				'labels'       => array(
+					'name'          => __( 'Event Consents', 'davenham-parent-portal' ),
+					'singular_name' => __( 'Consent', 'davenham-parent-portal' ),
+				),
+				'public'       => false,
+				'show_ui'      => false,
+				'show_in_menu' => false,
+				'show_in_rest' => false,
+				'supports'     => array( 'title' ),
+				'capabilities' => $caps,
+				'map_meta_cap' => true,
+			)
+		);
+	}
+
+	private static function parent_children_for( $user_id = 0 ) {
+		$user_id  = $user_id ? (int) $user_id : get_current_user_id();
+		$children = get_user_meta( $user_id, self::CHILDREN_META, true );
+		return is_array( $children ) ? $children : array();
+	}
+
+	private static function find_consent( $event_id, $user_id, $child_name ) {
+		$q = new WP_Query(
+			array(
+				'post_type'      => self::CONSENT_CPT,
+				'post_status'    => array( 'private', 'publish' ),
+				'posts_per_page' => 1,
+				'no_found_rows'  => true,
+				'fields'         => 'ids',
+				'meta_query'     => array(
+					'relation' => 'AND',
+					array( 'key' => '_dpp_event_id', 'value' => (int) $event_id ),
+					array( 'key' => '_dpp_user_id', 'value' => (int) $user_id ),
+					array( 'key' => '_dpp_child', 'value' => $child_name ),
+				),
+			)
+		);
+		return ! empty( $q->posts ) ? (int) $q->posts[0] : 0;
+	}
+
+	public static function handle_consent() {
+		if ( empty( $_POST['dpp_form'] ) || 'consent' !== $_POST['dpp_form'] ) {
+			return;
+		}
+		if ( ! is_user_logged_in() || ! current_user_can( self::CAP ) ) {
+			self::redirect_with_flash( 'error', array( 'errors' => array( __( 'Please log in as a parent first.', 'davenham-parent-portal' ) ) ) );
+		}
+		if ( ! isset( $_POST['dpp_consent_nonce'] ) ||
+			! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['dpp_consent_nonce'] ) ), self::CONSENT_NONCE ) ) {
+			self::redirect_with_flash( 'error', array( 'errors' => array( __( 'Your session expired. Please try again.', 'davenham-parent-portal' ) ) ) );
+		}
+
+		$event_id = isset( $_POST['dpp_event_id'] ) ? absint( $_POST['dpp_event_id'] ) : 0;
+		$event    = $event_id ? get_post( $event_id ) : null;
+		if ( ! $event || 'event' !== $event->post_type ) {
+			self::redirect_with_flash( 'error', array( 'errors' => array( __( 'That event could not be found.', 'davenham-parent-portal' ) ) ) );
+		}
+
+		$children = self::parent_children_for();
+		$idx      = isset( $_POST['dpp_child_index'] ) ? intval( $_POST['dpp_child_index'] ) : -1;
+		if ( ! isset( $children[ $idx ] ) ) {
+			self::redirect_with_flash( 'error', array( 'errors' => array( __( 'Please choose which child this consent is for.', 'davenham-parent-portal' ) ) ) );
+		}
+		$child = $children[ $idx ];
+
+		$attending = ( isset( $_POST['dpp_attending'] ) && 'yes' === $_POST['dpp_attending'] ) ? 'yes' : 'no';
+		$data      = array(
+			'attending'       => $attending,
+			'photo_consent'   => ( isset( $_POST['dpp_photo'] ) && 'yes' === $_POST['dpp_photo'] ) ? 'yes' : 'no',
+			'medical'         => isset( $_POST['dpp_medical'] ) ? sanitize_textarea_field( wp_unslash( $_POST['dpp_medical'] ) ) : '',
+			'medications'     => isset( $_POST['dpp_medications'] ) ? sanitize_textarea_field( wp_unslash( $_POST['dpp_medications'] ) ) : '',
+			'dietary'         => isset( $_POST['dpp_dietary'] ) ? sanitize_textarea_field( wp_unslash( $_POST['dpp_dietary'] ) ) : '',
+			'additional'      => isset( $_POST['dpp_additional'] ) ? sanitize_textarea_field( wp_unslash( $_POST['dpp_additional'] ) ) : '',
+			'emergency_name'  => isset( $_POST['dpp_emergency_name'] ) ? sanitize_text_field( wp_unslash( $_POST['dpp_emergency_name'] ) ) : '',
+			'emergency_phone' => isset( $_POST['dpp_emergency_phone'] ) ? sanitize_text_field( wp_unslash( $_POST['dpp_emergency_phone'] ) ) : '',
+			'signature'       => isset( $_POST['dpp_signature'] ) ? sanitize_text_field( wp_unslash( $_POST['dpp_signature'] ) ) : '',
+		);
+
+		$errors = array();
+		if ( '' === $data['signature'] ) {
+			$errors[] = __( 'Please type your name to sign the form.', 'davenham-parent-portal' );
+		}
+		if ( 'yes' === $attending && ( '' === $data['emergency_name'] || '' === $data['emergency_phone'] ) ) {
+			$errors[] = __( 'Please give an emergency contact name and phone number.', 'davenham-parent-portal' );
+		}
+		if ( ! empty( $errors ) ) {
+			self::redirect_with_flash( 'error', array( 'errors' => $errors ) );
+		}
+
+		$user_id  = get_current_user_id();
+		$existing = self::find_consent( $event_id, $user_id, $child['name'] );
+		$postarr  = array(
+			'post_type'   => self::CONSENT_CPT,
+			'post_status' => 'private',
+			'post_title'  => 'Consent — ' . $child['name'] . ' — ' . get_the_title( $event ),
+		);
+		if ( $existing ) {
+			$postarr['ID'] = $existing;
+			$cid = wp_update_post( $postarr, true );
+		} else {
+			$cid = wp_insert_post( $postarr, true );
+		}
+		if ( is_wp_error( $cid ) || ! $cid ) {
+			self::redirect_with_flash( 'error', array( 'errors' => array( __( 'Sorry, your consent could not be saved. Please try again.', 'davenham-parent-portal' ) ) ) );
+		}
+
+		update_post_meta( $cid, '_dpp_event_id', (int) $event_id );
+		update_post_meta( $cid, '_dpp_user_id', (int) $user_id );
+		update_post_meta( $cid, '_dpp_child', $child['name'] );
+		update_post_meta( $cid, '_dpp_section', isset( $child['section'] ) ? $child['section'] : '' );
+		update_post_meta( $cid, self::CONSENT_META, $data );
+		update_post_meta( $cid, '_dpp_signed_at', current_time( 'mysql' ) );
+
+		self::redirect_with_flash( 'consent_saved', array() );
+	}
+
+	public static function render_consent( $atts ) {
+		$atts     = shortcode_atts( array( 'event_id' => 0 ), $atts, 'davenham_event_consent' );
+		$event_id = absint( $atts['event_id'] );
+		if ( ! $event_id && is_singular( 'event' ) ) {
+			$event_id = (int) get_the_ID();
+		}
+		return self::consent_markup( $event_id );
+	}
+
+	public static function inject_event_consent( $content ) {
+		if ( is_singular( 'event' ) && in_the_loop() && is_main_query() &&
+			is_user_logged_in() && current_user_can( self::CAP ) &&
+			false === strpos( $content, 'davenham_event_consent' ) ) {
+			$content .= self::consent_markup( (int) get_the_ID() );
+		}
+		return $content;
+	}
+
+	public static function consent_markup( $event_id ) {
+		$event_id = (int) $event_id;
+		if ( ! $event_id || ! post_type_exists( 'event' ) ) {
+			return '';
+		}
+		wp_enqueue_style( 'davenham-parent-portal' );
+
+		$can      = is_user_logged_in() && current_user_can( self::CAP );
+		$here     = get_permalink();
+		$login_url = wp_login_url( $here ? $here : home_url( '/' ) );
+		$children = $can ? self::parent_children_for() : array();
+		$user_id  = get_current_user_id();
+
+		$status = isset( $_GET['dpp_status'] ) ? sanitize_key( wp_unslash( $_GET['dpp_status'] ) ) : '';
+		$flash  = isset( $_GET['dpp_token'] ) ? self::get_flash( sanitize_text_field( wp_unslash( $_GET['dpp_token'] ) ) ) : null;
+		$errors = ( $flash && ! empty( $flash['errors'] ) ) ? $flash['errors'] : array();
+
+		$existing_map = array();
+		if ( $can ) {
+			foreach ( $children as $i => $child ) {
+				$cid = self::find_consent( $event_id, $user_id, $child['name'] );
+				if ( $cid ) {
+					$existing_map[ $i ] = array(
+						'signed_at' => get_post_meta( $cid, '_dpp_signed_at', true ),
+					);
+				}
+			}
+		}
+
+		ob_start();
+		include DPP_DIR . 'templates/consent-form.php';
+		return ob_get_clean();
+	}
+
+	/* ----- Leader/trustee admin: view + export ----- */
+
+	public static function register_consents_admin_page() {
+		add_menu_page(
+			__( 'Event Consents', 'davenham-parent-portal' ),
+			__( 'Event Consents', 'davenham-parent-portal' ),
+			self::VIEW_CAP,
+			'dpp-consents',
+			array( __CLASS__, 'render_consents_page' ),
+			'dashicons-clipboard',
+			27
+		);
+	}
+
+	private static function consents_for_event( $event_id ) {
+		$q = new WP_Query(
+			array(
+				'post_type'      => self::CONSENT_CPT,
+				'post_status'    => array( 'private', 'publish' ),
+				'posts_per_page' => 500,
+				'no_found_rows'  => true,
+				'orderby'        => 'title',
+				'order'          => 'ASC',
+				'meta_key'       => '_dpp_event_id',
+				'meta_value'     => (int) $event_id,
+			)
+		);
+		return $q->posts;
+	}
+
+	public static function render_consents_page() {
+		if ( ! current_user_can( self::VIEW_CAP ) ) {
+			wp_die( esc_html__( 'You are not allowed to view consents.', 'davenham-parent-portal' ) );
+		}
+		$event_id = isset( $_GET['event'] ) ? absint( $_GET['event'] ) : 0;
+		echo '<div class="wrap">';
+		echo '<h1>' . esc_html__( 'Event Consents', 'davenham-parent-portal' ) . '</h1>';
+		if ( $event_id ) {
+			self::render_event_consents_table( $event_id );
+		} else {
+			self::render_consents_overview();
+		}
+		echo '</div>';
+	}
+
+	private static function render_consents_overview() {
+		if ( ! post_type_exists( 'event' ) ) {
+			echo '<p>' . esc_html__( 'No events found.', 'davenham-parent-portal' ) . '</p>';
+			return;
+		}
+		$events = get_posts(
+			array(
+				'post_type'      => 'event',
+				'post_status'    => 'publish',
+				'posts_per_page' => 100,
+				'orderby'        => 'date',
+				'order'          => 'DESC',
+			)
+		);
+		if ( empty( $events ) ) {
+			echo '<p>' . esc_html__( 'No events yet.', 'davenham-parent-portal' ) . '</p>';
+			return;
+		}
+		echo '<p>' . esc_html__( 'Choose an event to see its consent forms.', 'davenham-parent-portal' ) . '</p>';
+		echo '<table class="widefat striped"><thead><tr>';
+		echo '<th>' . esc_html__( 'Event', 'davenham-parent-portal' ) . '</th>';
+		echo '<th>' . esc_html__( 'Date', 'davenham-parent-portal' ) . '</th>';
+		echo '<th>' . esc_html__( 'Consents', 'davenham-parent-portal' ) . '</th></tr></thead><tbody>';
+		foreach ( $events as $event ) {
+			$count = count( self::consents_for_event( $event->ID ) );
+			$date  = get_post_meta( $event->ID, 'event_date', true );
+			$url   = add_query_arg( array( 'page' => 'dpp-consents', 'event' => $event->ID ), admin_url( 'admin.php' ) );
+			echo '<tr>';
+			echo '<td><a href="' . esc_url( $url ) . '">' . esc_html( get_the_title( $event ) ) . '</a></td>';
+			echo '<td>' . esc_html( $date ? $date : '—' ) . '</td>';
+			echo '<td>' . esc_html( (string) $count ) . '</td>';
+			echo '</tr>';
+		}
+		echo '</tbody></table>';
+	}
+
+	private static function render_event_consents_table( $event_id ) {
+		$event = get_post( $event_id );
+		if ( ! $event || 'event' !== $event->post_type ) {
+			echo '<p>' . esc_html__( 'Event not found.', 'davenham-parent-portal' ) . '</p>';
+			return;
+		}
+		$back = add_query_arg( array( 'page' => 'dpp-consents' ), admin_url( 'admin.php' ) );
+		echo '<p><a href="' . esc_url( $back ) . '">&larr; ' . esc_html__( 'All events', 'davenham-parent-portal' ) . '</a></p>';
+		echo '<h2>' . esc_html( get_the_title( $event ) ) . '</h2>';
+
+		$consents = self::consents_for_event( $event_id );
+
+		$export = wp_nonce_url(
+			admin_url( 'admin-post.php?action=dpp_export_consents&event=' . (int) $event_id ),
+			'dpp_export_' . (int) $event_id
+		);
+		echo '<p><a class="button button-primary" href="' . esc_url( $export ) . '">' . esc_html__( 'Download CSV', 'davenham-parent-portal' ) . '</a></p>';
+
+		if ( empty( $consents ) ) {
+			echo '<p>' . esc_html__( 'No consents submitted yet.', 'davenham-parent-portal' ) . '</p>';
+			return;
+		}
+
+		$cols = array( 'Child', 'Section', 'Attending', 'Photos', 'Medical', 'Medications', 'Dietary', 'Additional', 'Emergency contact', 'Signed by', 'Signed at' );
+		echo '<table class="widefat striped"><thead><tr>';
+		foreach ( $cols as $c ) {
+			echo '<th>' . esc_html( $c ) . '</th>';
+		}
+		echo '</tr></thead><tbody>';
+		foreach ( $consents as $consent ) {
+			$row = self::consent_row( $consent->ID );
+			echo '<tr>';
+			foreach ( $row as $cell ) {
+				echo '<td>' . esc_html( $cell ) . '</td>';
+			}
+			echo '</tr>';
+		}
+		echo '</tbody></table>';
+	}
+
+	/**
+	 * Flatten one consent post into an ordered row of display strings.
+	 */
+	private static function consent_row( $consent_id ) {
+		$d   = get_post_meta( $consent_id, self::CONSENT_META, true );
+		$d   = is_array( $d ) ? $d : array();
+		$get = function ( $k ) use ( $d ) {
+			return isset( $d[ $k ] ) ? $d[ $k ] : '';
+		};
+		$emergency = trim( $get( 'emergency_name' ) . ' ' . $get( 'emergency_phone' ) );
+		return array(
+			(string) get_post_meta( $consent_id, '_dpp_child', true ),
+			self::section_label( (string) get_post_meta( $consent_id, '_dpp_section', true ) ),
+			'yes' === $get( 'attending' ) ? 'Yes' : 'No',
+			'yes' === $get( 'photo_consent' ) ? 'Yes' : 'No',
+			$get( 'medical' ),
+			$get( 'medications' ),
+			$get( 'dietary' ),
+			$get( 'additional' ),
+			$emergency,
+			$get( 'signature' ),
+			(string) get_post_meta( $consent_id, '_dpp_signed_at', true ),
+		);
+	}
+
+	public static function export_consents_csv() {
+		$event_id = isset( $_GET['event'] ) ? absint( $_GET['event'] ) : 0;
+		if ( ! current_user_can( self::VIEW_CAP ) ) {
+			wp_die( esc_html__( 'Not allowed.', 'davenham-parent-portal' ) );
+		}
+		check_admin_referer( 'dpp_export_' . $event_id );
+
+		$event = get_post( $event_id );
+		if ( ! $event || 'event' !== $event->post_type ) {
+			wp_die( esc_html__( 'Event not found.', 'davenham-parent-portal' ) );
+		}
+
+		$consents = self::consents_for_event( $event_id );
+		$filename = 'consents-' . sanitize_title( get_the_title( $event ) ) . '.csv';
+
+		nocache_headers();
+		header( 'Content-Type: text/csv; charset=utf-8' );
+		header( 'Content-Disposition: attachment; filename="' . $filename . '"' );
+
+		while ( ob_get_level() ) {
+			@ob_end_clean();
+		}
+
+		$out = fopen( 'php://output', 'w' );
+		fputcsv( $out, array( 'Child', 'Section', 'Attending', 'Photos', 'Medical', 'Medications', 'Dietary', 'Additional', 'Emergency contact', 'Signed by', 'Signed at' ) );
+		foreach ( $consents as $consent ) {
+			fputcsv( $out, self::consent_row( $consent->ID ) );
+		}
+		fclose( $out );
+		exit;
 	}
 }
 

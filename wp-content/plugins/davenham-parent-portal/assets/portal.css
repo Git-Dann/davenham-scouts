@@ -251,3 +251,78 @@
 	color: #6b7280;
 	font-size: 13px;
 }
+
+.dpp-event-main {
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
+	min-width: 0;
+}
+
+.dpp-event-consent {
+	flex: 0 0 auto;
+	font-weight: 700;
+	font-size: 13px;
+	color: #590FA9;
+	white-space: nowrap;
+}
+
+/* ---- Consent form ---- */
+.dpp-consent {
+	margin: 28px 0 0;
+	padding: 20px 22px;
+	border: 1px solid #e2e8f0;
+	border-top: 3px solid #590FA9;
+	border-radius: 12px;
+	background: #fff;
+}
+
+.dpp-consent-title {
+	margin: 0 0 12px;
+}
+
+.dpp-consent-done {
+	color: #6b7280;
+	font-size: 14px;
+}
+
+.dpp-consent-form textarea {
+	width: 100%;
+	padding: 10px 12px;
+	border: 1px solid #d7dfeb;
+	border-radius: 8px;
+	font-size: 15px;
+	line-height: 1.4;
+}
+
+.dpp-consent-form textarea:focus {
+	outline: none;
+	border-color: #590FA9;
+	box-shadow: 0 0 0 3px rgba(89, 15, 169, 0.15);
+}
+
+.dpp-field-label {
+	display: block;
+	font-weight: 700;
+	margin-bottom: 4px;
+}
+
+.dpp-inline {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	margin-right: 16px;
+	font-weight: 400;
+}
+
+.dpp-consent-emergency {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 12px;
+}
+
+@media (max-width: 560px) {
+	.dpp-consent-emergency {
+		grid-template-columns: 1fr;
+	}
+}

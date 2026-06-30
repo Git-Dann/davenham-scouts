@@ -57,19 +57,22 @@ defined( 'ABSPATH' ) || exit;
 						$nice     = $date ? date_i18n( get_option( 'date_format' ), strtotime( $date ) ) : '';
 						?>
 						<li class="dpp-event">
-							<a href="<?php echo esc_url( get_permalink( $event ) ); ?>"><?php echo esc_html( get_the_title( $event ) ); ?></a>
-							<span class="dpp-event-meta">
-								<?php
-								$bits = array();
-								if ( $nice ) {
-									$bits[] = $nice;
-								}
-								if ( $location ) {
-									$bits[] = $location;
-								}
-								echo esc_html( implode( ' · ', $bits ) );
-								?>
+							<span class="dpp-event-main">
+								<a href="<?php echo esc_url( get_permalink( $event ) ); ?>"><?php echo esc_html( get_the_title( $event ) ); ?></a>
+								<span class="dpp-event-meta">
+									<?php
+									$bits = array();
+									if ( $nice ) {
+										$bits[] = $nice;
+									}
+									if ( $location ) {
+										$bits[] = $location;
+									}
+									echo esc_html( implode( ' · ', $bits ) );
+									?>
+								</span>
 							</span>
+							<a class="dpp-event-consent" href="<?php echo esc_url( get_permalink( $event ) . '#dpp-consent' ); ?>"><?php esc_html_e( 'Complete consent →', 'davenham-parent-portal' ); ?></a>
 						</li>
 					<?php endforeach; ?>
 				</ul>
