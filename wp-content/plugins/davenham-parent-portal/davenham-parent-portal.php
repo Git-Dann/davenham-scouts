@@ -3,7 +3,7 @@
  * Plugin Name: Davenham Parent Portal
  * Plugin URI:  https://davenhamscouts.org.uk
  * Description: Parents self-register, an admin approves them, and they get a Parent login to a dashboard with digital event consent forms.
- * Version:     1.1.0
+ * Version:     1.2.0
  * Author:      Davenham Scout Group
  * Text Domain: davenham-parent-portal
  * Requires at least: 6.0
@@ -12,7 +12,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'DPP_VERSION', '1.1.0' );
+define( 'DPP_VERSION', '1.2.0' );
 define( 'DPP_FILE', __FILE__ );
 define( 'DPP_DIR', plugin_dir_path( __FILE__ ) );
 define( 'DPP_URL', plugin_dir_url( __FILE__ ) );
@@ -36,28 +36,119 @@ final class Davenham_Parent_Portal {
 	const CONSENT_NONCE  = 'dpp_consent';
 	const CONSENT_META   = '_dpp_consent';
 
+	// Admin-managed sections taxonomy (grows over time, no code change).
+	const SECTION_TAX    = 'davenham_section';
+
+	private static $sections_cache = null;
+
 	/**
-	 * Single source of truth for sections (slug => label). Filterable so the
-	 * volunteer tracker (plugin 2) and events can share it.
+	 * Default sections seeded on first activation (and the fallback if the
+	 * taxonomy is ever empty, so the forms never break).
+	 */
+	private static function default_sections() {
+		return array( 'Monday Beavers', 'Monday Scouts', 'Tuesday Cubs', 'Friday Cubs' );
+	}
+
+	/**
+	 * Single source of truth for sections (slug => label), read from the
+	 * admin-managed taxonomy. Filterable so other plugins can extend it.
 	 */
 	public static function sections() {
-		$sections = array(
-			'monday-beavers' => 'Monday Beavers',
-			'monday-scouts'  => 'Monday Scouts',
-			'tuesday-cubs'   => 'Tuesday Cubs',
-			'friday-cubs'    => 'Friday Cubs',
-		);
-		return apply_filters( 'davenham_sections', $sections );
+		if ( null !== self::$sections_cache ) {
+			return self::$sections_cache;
+		}
+
+		$out = array();
+		if ( taxonomy_exists( self::SECTION_TAX ) ) {
+			$terms = get_terms(
+				array(
+					'taxonomy'   => self::SECTION_TAX,
+					'hide_empty' => false,
+					'orderby'    => 'name',
+				)
+			);
+			if ( ! is_wp_error( $terms ) ) {
+				foreach ( $terms as $term ) {
+					$out[ $term->slug ] = $term->name;
+				}
+			}
+		}
+
+		if ( empty( $out ) ) {
+			foreach ( self::default_sections() as $label ) {
+				$out[ sanitize_title( $label ) ] = $label;
+			}
+		}
+
+		self::$sections_cache = apply_filters( 'davenham_sections', $out );
+		return self::$sections_cache;
 	}
 
 	public static function section_label( $slug ) {
 		$sections = self::sections();
-		return isset( $sections[ $slug ] ) ? $sections[ $slug ] : '';
+		if ( isset( $sections[ $slug ] ) ) {
+			return $sections[ $slug ];
+		}
+		// Graceful fallback if a section was later renamed/removed.
+		return $slug ? ucwords( str_replace( '-', ' ', $slug ) ) : '';
+	}
+
+	public static function register_section_taxonomy() {
+		register_taxonomy(
+			self::SECTION_TAX,
+			array( self::APP_CPT ),
+			array(
+				'labels'            => array(
+					'name'          => __( 'Sections', 'davenham-parent-portal' ),
+					'singular_name' => __( 'Section', 'davenham-parent-portal' ),
+					'menu_name'     => __( 'Sections', 'davenham-parent-portal' ),
+					'add_new_item'  => __( 'Add New Section', 'davenham-parent-portal' ),
+					'edit_item'     => __( 'Edit Section', 'davenham-parent-portal' ),
+					'search_items'  => __( 'Search Sections', 'davenham-parent-portal' ),
+				),
+				'public'            => false,
+				'show_ui'           => true,
+				'show_in_menu'      => true,
+				'show_admin_column' => false,
+				'show_in_rest'      => false,
+				'hierarchical'      => true,
+				'rewrite'           => false,
+				'capabilities'      => array(
+					'manage_terms' => 'manage_options',
+					'edit_terms'   => 'manage_options',
+					'delete_terms' => 'manage_options',
+					'assign_terms' => 'manage_options',
+				),
+			)
+		);
+	}
+
+	public static function ensure_default_sections() {
+		if ( ! taxonomy_exists( self::SECTION_TAX ) ) {
+			self::register_section_taxonomy();
+		}
+		$terms = get_terms(
+			array(
+				'taxonomy'   => self::SECTION_TAX,
+				'hide_empty' => false,
+			)
+		);
+		// Only seed when there are no sections at all — never re-add after the
+		// group starts managing their own list.
+		if ( ! is_wp_error( $terms ) && ! empty( $terms ) ) {
+			return;
+		}
+		foreach ( self::default_sections() as $label ) {
+			if ( ! term_exists( $label, self::SECTION_TAX ) ) {
+				wp_insert_term( $label, self::SECTION_TAX );
+			}
+		}
 	}
 
 	public static function init() {
 		add_action( 'init', array( __CLASS__, 'register_application_cpt' ) );
 		add_action( 'init', array( __CLASS__, 'register_consent_cpt' ) );
+		add_action( 'init', array( __CLASS__, 'register_section_taxonomy' ) );
 		add_action( 'init', array( __CLASS__, 'register_shortcodes' ) );
 
 		add_action( 'admin_init', array( __CLASS__, 'maybe_upgrade' ) );
@@ -96,7 +187,9 @@ final class Davenham_Parent_Portal {
 
 	public static function activate() {
 		self::register_application_cpt();
+		self::register_section_taxonomy();
 		self::create_role();
+		self::ensure_default_sections();
 		self::ensure_portal_page();
 		update_option( self::VERSION_OPTION, DPP_VERSION, false );
 		flush_rewrite_rules();
@@ -111,6 +204,7 @@ final class Davenham_Parent_Portal {
 			return;
 		}
 		self::create_role();
+		self::ensure_default_sections();
 		self::ensure_portal_page();
 		update_option( self::VERSION_OPTION, DPP_VERSION, false );
 	}
@@ -570,6 +664,10 @@ final class Davenham_Parent_Portal {
 	}
 
 	public static function register_meta_boxes() {
+		// The sections taxonomy is attached to this CPT only to surface its
+		// management menu — don't clutter the application screen with its box.
+		remove_meta_box( 'davenham_sectiondiv', self::APP_CPT, 'side' );
+
 		add_meta_box(
 			'dpp_application_details',
 			__( 'Application', 'davenham-parent-portal' ),
