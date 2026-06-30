@@ -441,6 +441,7 @@ final class Davenham_Documents {
 
 	public static function register_public_assets() {
 		wp_register_style( 'davenham-documents', DDOC_URL . 'assets/documents.css', array(), DDOC_VERSION );
+		wp_register_script( 'davenham-documents', DDOC_URL . 'assets/documents.js', array(), DDOC_VERSION, true );
 	}
 
 	public static function current_user_can_view() {
@@ -461,6 +462,7 @@ final class Davenham_Documents {
 
 	public static function render_library_shortcode( $atts ) {
 		wp_enqueue_style( 'davenham-documents' );
+		wp_enqueue_script( 'davenham-documents' );
 
 		$can_view = self::current_user_can_view();
 
@@ -574,16 +576,36 @@ final class Davenham_Documents {
 		$mime = get_post_meta( $doc_id, '_davenham_doc_mime', true );
 		$mime = $mime ? $mime : 'application/octet-stream';
 
+		$ascii_name = str_replace( array( '"', "\r", "\n" ), '', $name );
+
 		nocache_headers();
 		header( 'Content-Type: ' . $mime );
-		header( 'Content-Disposition: attachment; filename="' . str_replace( '"', '', $name ) . '"' );
+		header( "Content-Disposition: attachment; filename=\"{$ascii_name}\"; filename*=UTF-8''" . rawurlencode( $name ) );
 		header( 'Content-Length: ' . filesize( $path ) );
+		header( 'Content-Transfer-Encoding: binary' );
 		header( 'X-Content-Type-Options: nosniff' );
+		header( 'X-Robots-Tag: noindex, nofollow', true );
 
-		if ( ob_get_level() ) {
+		// Drop any buffering so the file streams cleanly, then send it in
+		// chunks — readfile() on a large PDF can exceed the shared-host memory
+		// limit; an 8KB fread loop stays flat regardless of file size.
+		while ( ob_get_level() ) {
 			@ob_end_clean();
 		}
-		readfile( $path );
+		if ( function_exists( 'set_time_limit' ) ) {
+			@set_time_limit( 0 );
+		}
+
+		$handle = fopen( $path, 'rb' );
+		if ( false === $handle ) {
+			status_header( 500 );
+			exit;
+		}
+		while ( ! feof( $handle ) ) {
+			echo fread( $handle, 8192 ); // phpcs:ignore WordPress.Security.EscapeOutput
+			flush();
+		}
+		fclose( $handle );
 		exit;
 	}
 
