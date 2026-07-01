@@ -612,6 +612,11 @@ add_action( 'wp_head', 'scouts_favicon' );
 
 add_filter( 'body_class', function( $classes ) {
     $classes[] = 'no-js';
+    // Flag single products with no real image so CSS can drop the big empty
+    // WooCommerce placeholder box and let the summary span full width.
+    if ( function_exists( 'is_product' ) && is_product() && ! has_post_thumbnail() ) {
+        $classes[] = 'dvh-no-product-image';
+    }
     return $classes;
 } );
 

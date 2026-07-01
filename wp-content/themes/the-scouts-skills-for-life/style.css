@@ -149,101 +149,189 @@ Text Domain: the-scouts-skills-for-life
   border-radius: 10px;
 }
 
-/* Footer 4-column layout — override production.css which sets
-   .footer .top .col { width: calc(25% - 18px) } and .footer .col { width: 23.5%; float: left }.
-   We use higher specificity + !important to win cleanly. */
-.footer .top .wrapper.footer-grid {
-  display: grid !important;
-  grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1.2fr);
-  gap: 36px;
-  align-items: start;
-}
-
-.footer .top .wrapper.footer-grid > .footer-brand,
-.footer .top .wrapper.footer-grid > .col {
-  width: auto !important;
-  max-width: none !important;
-  float: none !important;
-  margin: 0 !important;
-  min-width: 0;
-  box-sizing: border-box;
-}
-
-.footer .footer-brand .footer-logo-wrap {
-  text-align: left;
-  margin: 0 0 24px;
-}
-
-.footer .footer-brand h6 {
-  margin: 0 0 14px;
-  color: #fff;
-  font-size: 26px;
-}
-
-.footer .footer-brand p {
-  margin: 0 0 14px;
-}
-
-.footer .footer-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-  margin-top: 22px;
-}
-
-.footer .footer-actions a {
-  display: inline-block;
-  padding: 12px 18px;
-  border: 1px solid rgba(255, 255, 255, 0.45);
-  border-radius: 0px;
-  color: #fff;
-  font-weight: 700;
-  text-decoration: none;
-}
-
-.footer .footer-actions a:hover {
-  background: rgba(255, 255, 255, 0.12);
-}
-
-.footer .footer-social {
-  margin-top: 18px;
-}
-
-@media only screen and (max-width: 960px) {
-  .footer .top .wrapper.footer-grid {
-    grid-template-columns: 1fr 1fr !important;
-  }
-  .footer .top .wrapper.footer-grid > .footer-brand,
-  .footer .top .wrapper.footer-grid > .col {
-    width: auto !important;
-    margin: 0 !important;
-  }
-}
-
 @media only screen and (max-width: 700px) {
   .hero.standard .inner {
     padding: 110px 4% 40px;
   }
-
   .hero.standard .inner p {
     font-size: 15px;
   }
-
   .main_content.playground article p,
   .main_content.playground article li {
     font-size: 16px;
     line-height: 1.65;
   }
+}
 
-  .footer .top .wrapper.footer-grid {
-    grid-template-columns: 1fr !important;
-    gap: 28px;
+/* ============================================================================
+   Site footer — modern rebuild (namespaced .site-footer; escapes production.css
+   .footer baggage, same approach as .site-header). Tokenised per design.md.
+   ============================================================================ */
+.site-footer {
+  background: var(--scout-purple-deep, #2C0A54);
+  color: rgba(255, 255, 255, 0.72);
+  font-family: "Nunito Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+.site-footer__inner {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 64px 32px 48px;
+  display: grid;
+  grid-template-columns: 1.7fr 1fr 1fr 1.4fr;
+  gap: 48px;
+  align-items: start;
+}
+
+/* ---- Brand column ---- */
+.site-footer__logo { display: inline-block; margin: 0 0 20px; }
+.site-footer__logo img { height: 64px; width: auto; display: block; }
+
+.site-footer__tagline {
+  margin: 0 0 24px;
+  max-width: 34ch;
+  font-size: 15px;
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.72);
+}
+
+.site-footer__cta-row { display: flex; flex-wrap: wrap; gap: 12px; }
+
+.site-footer__cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 10px 22px;
+  border-radius: 0;
+  background: #fff;
+  color: var(--scout-purple, #590FA9) !important;
+  font-weight: 800;
+  font-size: 15px;
+  text-decoration: none;
+  border: 2px solid #fff;
+  transition: background var(--scout-motion-fast, 0.15s ease), color var(--scout-motion-fast, 0.15s ease);
+}
+.site-footer__cta:hover { background: transparent; color: #fff !important; }
+
+.site-footer__cta--ghost {
+  background: transparent;
+  color: #fff !important;
+  border-color: rgba(255, 255, 255, 0.4);
+}
+.site-footer__cta--ghost:hover { background: rgba(255, 255, 255, 0.1); border-color: #fff; color: #fff !important; }
+
+/* ---- Link columns ---- */
+.site-footer__col { min-width: 0; }
+
+.site-footer__heading {
+  margin: 0 0 18px;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #fff;
+}
+
+.site-footer__menu {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.site-footer__menu li { margin: 0 0 2px; }
+.site-footer__menu a {
+  display: inline-block;
+  padding: 6px 0;
+  font-size: 15px;
+  line-height: 1.4;
+  color: rgba(255, 255, 255, 0.72);
+  text-decoration: none;
+  transition: color var(--scout-motion-fast, 0.15s ease);
+}
+.site-footer__menu a:hover { color: #fff; text-decoration: underline; text-underline-offset: 3px; }
+
+/* ---- Contact column ---- */
+.site-footer__address {
+  font-style: normal;
+  font-size: 15px;
+  line-height: 1.7;
+  color: rgba(255, 255, 255, 0.72);
+  margin: 0 0 16px;
+}
+.site-footer__contact-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 15px;
+  font-weight: 700;
+  color: #fff;
+  text-decoration: none;
+  transition: gap var(--scout-motion-fast, 0.15s ease);
+}
+.site-footer__contact-link:hover { gap: 10px; text-decoration: underline; text-underline-offset: 3px; }
+.site-footer__contact-link span { transition: transform var(--scout-motion-fast, 0.15s ease); }
+
+.site-footer__social {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 22px 0 0;
+  padding: 0;
+}
+.site-footer__social a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 40px;
+  padding: 8px 16px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 999px;
+  font-size: 14px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.85);
+  text-decoration: none;
+  transition: background var(--scout-motion-fast, 0.15s ease), border-color var(--scout-motion-fast, 0.15s ease), color var(--scout-motion-fast, 0.15s ease);
+}
+.site-footer__social a:hover { background: rgba(255, 255, 255, 0.12); border-color: #fff; color: #fff; }
+
+/* ---- Bottom bar ---- */
+.site-footer__bar {
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+}
+.site-footer__bar-inner {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 22px 32px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 8px 24px;
+}
+.site-footer__bar-inner p {
+  margin: 0;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.55);
+}
+
+/* ---- Responsive ---- */
+@media (max-width: 960px) {
+  .site-footer__inner {
+    grid-template-columns: 1fr 1fr;
+    gap: 40px 32px;
+    padding: 48px 24px 40px;
   }
-  .footer .top .wrapper.footer-grid > .footer-brand,
-  .footer .top .wrapper.footer-grid > .col {
-    width: auto !important;
-    margin: 0 !important;
+  .site-footer__brand { grid-column: 1 / -1; }
+}
+
+@media (max-width: 600px) {
+  .site-footer__inner {
+    grid-template-columns: 1fr;
+    gap: 36px;
+    padding: 40px 20px 32px;
   }
+  .site-footer__bar-inner { flex-direction: column; padding: 20px; }
+  .site-footer__cta-row { flex-direction: column; align-items: stretch; }
+  .site-footer__cta { width: 100%; }
 }
 
 .scouts-form-message {
@@ -3936,20 +4024,6 @@ nav.pagination {
   }
 }
 
-/* ── 8. Footer was redesigned earlier; just ensure pickup CTA
-   buttons don't wrap awkwardly ────────────────────────────── */
-@media (max-width: 700px) {
-  .footer .footer-actions {
-    flex-direction: column;
-    gap: 8px;
-  }
-
-  .footer .footer-actions a {
-    width: 100%;
-    text-align: center;
-  }
-}
-
 /* ── 9. Block buttons on mobile — make sure no CTA renders
    smaller than the 44px touch-target standard ─────────────── */
 @media (max-width: 700px) {
@@ -4377,4 +4451,68 @@ html, body {
 }
 @media (max-width: 560px) {
   .woocommerce ul.products li.product a img { height: 180px; }
+}
+
+/* ── 15. Hide WooCommerce's default archive H1 (the custom hero already shows
+   the category title — otherwise it renders a duplicate "Event Tickets"). ── */
+body.tax-product_cat .page-title,
+body.post-type-archive-product .page-title,
+.woocommerce-products-header .page-title { display: none; }
+
+/* ── 16. One consistent dropdown chevron on every <select> — never the OS
+   default arrow (design.md: a single clean CSS chevron everywhere). ── */
+#page select,
+.site-content select,
+.woocommerce select,
+.woocommerce-ordering select,
+.dpp-form select,
+.dpp-portal select,
+.def-library select,
+main select,
+.site-header select {
+  -webkit-appearance: none !important;
+  -moz-appearance: none !important;
+  appearance: none !important;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='9' viewBox='0 0 14 9'%3E%3Cpath d='M1 1.5l6 6 6-6' fill='none' stroke='%23590FA9' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") !important;
+  background-repeat: no-repeat !important;
+  background-position: right 14px center !important;
+  background-size: 12px 8px !important;
+  padding-right: 40px !important;
+}
+
+/* ── 17. Single product page ─────────────────────────────────────────────
+   (a) Imageless products (event tickets etc.) currently render a huge empty
+   WooCommerce placeholder box — the "white gap". Drop it and let the summary
+   span full width. (b) Give the "Related products" block a clean, deliberate
+   treatment consistent with the archive cards. ───────────────────────────── */
+body.dvh-no-product-image .woocommerce-product-gallery {
+  display: none !important;
+}
+/* The theme lays div.product out as a 2-col grid (gallery | summary). With the
+   gallery gone, span the remaining items across all columns and left-align. */
+body.dvh-no-product-image div.product .summary,
+body.dvh-no-product-image div.product .entry-summary,
+body.dvh-no-product-image div.product .woocommerce-tabs,
+body.dvh-no-product-image div.product .related.products {
+  grid-column: 1 / -1 !important;
+  float: none !important;
+  width: 100% !important;
+  margin-left: 0 !important;
+}
+body.dvh-no-product-image div.product .summary { max-width: 760px; }
+
+/* Related products — tighten spacing + polish the heading */
+.woocommerce .related.products,
+.woocommerce .up-sells.upsells {
+  margin-top: 48px;
+  padding-top: 40px;
+  border-top: 1px solid var(--scout-card-border, #E5E7EB);
+  clear: both;
+}
+.woocommerce .related.products > h2,
+.woocommerce .up-sells.upsells > h2 {
+  font-size: 24px;
+  font-weight: 800;
+  color: var(--scout-text-dark, #333333);
+  margin: 0 0 28px;
 }

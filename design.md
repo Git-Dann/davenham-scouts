@@ -52,6 +52,7 @@ scouts.org.uk design language exactly.
 | `green` | `#008A1C` | `rgb(0, 138, 28)` | Success / positive status |
 | `navy` | `#003982` | `rgb(0, 57, 130)` | Deep navy accent, gradient start, dark panels |
 | `dark-grape` | `#490499` | `rgb(73, 4, 153)` | Deeper purple variant, gradient end |
+| `purple-deep` | `#2C0A54` | `rgb(44, 10, 84)` | Darkened brand purple — dark surfaces (site footer) |
 | `red` | `#ED3F23` | `rgb(237, 63, 35)` | Error states, danger alerts, destructive actions |
 
 ### 2.3 Grays & Neutrals
@@ -99,6 +100,7 @@ scouts.org.uk design language exactly.
   --purple:        #590FA9;
   --grape:         #590FA9;
   --dark-grape:    #490499;
+  --purple-deep:   #2C0A54;
   --pink:          #ffb4e5;
   --navy:          #003982;
   --green:         #008A1C;
