@@ -1880,8 +1880,10 @@ Text Domain: the-scouts-skills-for-life
   grid-row-gap: 24px !important;
   column-gap: 24px !important;
   row-gap: 24px !important;
-  padding: 0 !important;
-  margin: 0 !important;
+  /* Space the divider (this ul's top border) from the results bar, and the
+     first row of cards from the divider — they were sitting flush. */
+  padding: 40px 0 0 !important;
+  margin: 28px 0 0 !important;
   list-style: none;
   width: 100%;
   clear: both;
@@ -2432,16 +2434,15 @@ Text Domain: the-scouts-skills-for-life
 
 .scouts-woocommerce--product div.product .woocommerce-tabs .panel {
   padding: 0 !important;
-  font-size: 16px;
-  line-height: 1.6;
+  font-size: 17px;
+  line-height: 1.7;
   color: #404040;
 }
 
+/* The tab label already reads "Description" — hide the panel's duplicate
+   heading so it isn't shown twice. */
 .scouts-woocommerce--product div.product .woocommerce-tabs .panel h2 {
-  font-size: 22px;
-  font-weight: 900;
-  color: #333333;
-  margin: 0 0 16px;
+  display: none;
 }
 
 /* ── Related Products section under the tabs ──────────────── */
@@ -4530,4 +4531,131 @@ body.dvh-no-product-image div.product .summary { max-width: 760px; }
 main > .db-block-shell:last-child,
 #primary > .db-block-shell:last-child {
   padding-bottom: 16px !important;
+}
+
+/* ── 19. Single product — event-ticket overhaul ──────────────────────────
+   A cleaner, more deliberate layout: bold title, a lead description, a
+   self-contained purchase card (price + stock pill + quantity + add to
+   basket + trust note), category chip, and a tidy description panel. ────── */
+.scouts-woocommerce--product .wrapper { max-width: 1180px; }
+
+.scouts-woocommerce--product .product_title.entry-title {
+  font-size: 42px;
+  line-height: 1.08;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  color: var(--scout-text-dark, #333333);
+  margin: 8px 0 14px;
+}
+
+/* Lead short description (promoted above the buy card) */
+.scouts-woocommerce--product .woocommerce-product-details__short-description,
+.scouts-woocommerce--product .woocommerce-product-details__short-description p {
+  font-size: 19px;
+  line-height: 1.6;
+  color: var(--scout-text, #404040);
+  margin: 0 0 26px;
+  max-width: 62ch;
+}
+
+/* Purchase card */
+.scouts-woocommerce--product .dvh-buy-card {
+  background: #fff;
+  border: 1px solid var(--scout-card-border, #E5E7EB);
+  border-radius: var(--scout-radius-card, 10px);
+  box-shadow: var(--scout-shadow-card, 0 4px 16px rgba(15, 23, 42, 0.06));
+  padding: 26px 26px 22px;
+  max-width: 560px;
+  margin: 0 0 26px;
+}
+
+.scouts-woocommerce--product .dvh-buy-card .price,
+.scouts-woocommerce--product .dvh-buy-card .price .woocommerce-Price-amount {
+  display: block;
+  color: var(--scout-teal, #088486) !important;
+  font-size: 34px !important;
+  font-weight: 800;
+  line-height: 1;
+  margin: 0 0 16px;
+}
+
+/* Stock pill */
+.scouts-woocommerce--product .dvh-buy-card .stock {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  padding: 6px 12px;
+  border-radius: 999px;
+  margin: 0 0 18px;
+}
+.scouts-woocommerce--product .dvh-buy-card .stock.in-stock {
+  background: var(--scout-success-tint, rgba(0, 138, 28, 0.08));
+  color: var(--scout-success, #008A1C);
+}
+.scouts-woocommerce--product .dvh-buy-card .stock.out-of-stock {
+  background: var(--scout-danger-tint, rgba(237, 63, 35, 0.08));
+  color: var(--scout-danger, #ED3F23);
+}
+
+/* Quantity + add to basket on one row */
+.scouts-woocommerce--product .dvh-buy-card form.cart {
+  display: flex;
+  align-items: stretch;
+  gap: 12px;
+  margin: 0;
+}
+.scouts-woocommerce--product .dvh-buy-card .quantity { margin: 0; }
+.scouts-woocommerce--product .dvh-buy-card .quantity .qty {
+  width: 76px;
+  height: 54px;
+  text-align: center;
+  font-size: 17px;
+  font-weight: 700;
+  border: 1px solid var(--scout-border, #CCCCCC);
+  border-radius: var(--scout-radius-input, 5px);
+}
+.scouts-woocommerce--product .dvh-buy-card .single_add_to_cart_button {
+  flex: 1;
+  min-height: 54px;
+  margin: 0 !important;
+  font-size: 16px;
+  font-weight: 800;
+}
+.scouts-woocommerce--product .dvh-buy-card__note {
+  margin: 16px 0 0;
+  font-size: 13px;
+  color: var(--scout-text-2, #6E6E6E);
+}
+
+/* Meta — category as a chip, SKU muted */
+.scouts-woocommerce--product .product_meta {
+  border-top: 1px solid var(--scout-card-border, #E5E7EB);
+  padding-top: 20px;
+  font-size: 14px;
+  color: var(--scout-text-2, #6E6E6E);
+}
+.scouts-woocommerce--product .product_meta > span { display: block; margin-bottom: 8px; }
+.scouts-woocommerce--product .product_meta .sku_wrapper { color: var(--scout-text-muted, #999999); }
+.scouts-woocommerce--product .product_meta .posted_in a {
+  display: inline-block;
+  background: rgba(89, 15, 169, 0.08);
+  color: var(--scout-purple, #590FA9);
+  font-weight: 700;
+  padding: 4px 12px;
+  border-radius: 999px;
+  text-decoration: none;
+  margin-left: 4px;
+}
+.scouts-woocommerce--product .product_meta .posted_in a:hover { background: rgba(89, 15, 169, 0.16); }
+
+/* Description content sizing (the authoritative tabs block lives at §"Single
+   product tabs" above; we only bump the body copy to the larger reading size). */
+.scouts-woocommerce--product div.product .woocommerce-tabs .panel p {
+  font-size: 17px;
+  line-height: 1.7;
+  max-width: 72ch;
 }

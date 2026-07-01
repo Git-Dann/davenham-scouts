@@ -547,8 +547,25 @@ function scouts_customize_woocommerce() {
 
     remove_action( 'woocommerce_before_main_content', 'woocommerce_breadcrumb', 20 );
     add_filter( 'woocommerce_enqueue_styles', '__return_empty_array' );
+
+    // Single-product summary → modern event-ticket layout. Promote the short
+    // description to a lead paragraph above the price, then wrap the price,
+    // stock badge and add-to-cart form into one cohesive purchase card.
+    remove_action( 'woocommerce_single_product_summary', 'woocommerce_template_single_excerpt', 20 );
+    add_action( 'woocommerce_single_product_summary', 'woocommerce_template_single_excerpt', 6 );
+    add_action( 'woocommerce_single_product_summary', 'scouts_open_buy_card', 9 );
+    add_action( 'woocommerce_single_product_summary', 'scouts_close_buy_card', 31 );
 }
 add_action( 'wp', 'scouts_customize_woocommerce' );
+
+function scouts_open_buy_card() {
+    echo '<div class="dvh-buy-card">';
+}
+
+function scouts_close_buy_card() {
+    echo '<p class="dvh-buy-card__note"><span aria-hidden="true">&#128274;</span> Secure checkout &middot; instant email confirmation</p>';
+    echo '</div>';
+}
 
 /**
  * Brand WooCommerce transactional emails with Scouts purple.
