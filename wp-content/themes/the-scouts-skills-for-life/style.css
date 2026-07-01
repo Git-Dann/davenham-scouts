@@ -4516,3 +4516,16 @@ body.dvh-no-product-image div.product .summary { max-width: 760px; }
   color: var(--scout-text-dark, #333333);
   margin: 0 0 28px;
 }
+
+/* ── 18. Trim the empty white band above the footer ──────────────────────
+   Content sections (.db-block-shell) carry 64px bottom padding for inter-
+   section rhythm; the footer supplies its own 64px top padding. Stacked,
+   that leaves ~120px of dead white above the purple footer. Drop the final
+   section's bottom padding so content meets the footer cleanly. ─────────── */
+.scouts-woocommerce > .db-block-shell:last-child,
+.entry-content > .db-block-shell:last-child,
+.site-main > .db-block-shell:last-child,
+main > .db-block-shell:last-child,
+#primary > .db-block-shell:last-child {
+  padding-bottom: 16px !important;
+}
