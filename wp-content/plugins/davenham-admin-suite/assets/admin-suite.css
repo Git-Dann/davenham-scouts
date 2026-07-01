@@ -833,11 +833,25 @@ body.davenham-admin-shell {
 body.davenham-admin-shell #wpbody-content > .wrap {
   max-width: var(--das-content-max);
 }
+/* Screens that are meant to run full-bleed: the block editor, the classic
+   post-edit screen (its 2-column layout is built to use the full width — a
+   cap just shrinks the editor and strands an empty right column), WooCommerce
+   React, and the media grid. */
 body.davenham-admin-shell.block-editor-page #wpbody-content > .wrap,
+body.davenham-admin-shell.post-php #wpbody-content > .wrap,
+body.davenham-admin-shell.post-new-php #wpbody-content > .wrap,
 body.davenham-admin-shell .woocommerce-layout,
-body.davenham-admin-shell #wpbody-content > .wrap.edit-php,
 body.davenham-admin-shell #wpbody-content > .upload-php {
   max-width: none;
+}
+
+/* The classic content editor defaults to a tall box that dominates custom
+   post-type screens (e.g. an Event whose description is usually short). Give
+   it a calmer default height; it still scrolls and can be resized taller. */
+body.davenham-admin-shell.post-type-event #wp-content-editor-container .wp-editor-area,
+body.davenham-admin-shell.post-type-event #content_ifr {
+  height: 220px !important;
+  min-height: 220px !important;
 }
 
 body.davenham-admin-shell #wpadminbar,
