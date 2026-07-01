@@ -4026,114 +4026,72 @@ html, body {
   }
 }
 
-/* ── 13b. HEADER REDESIGN — sticky, condensing, single "Join" CTA ──────
-   Full rework of the top section for desktop + mobile. Semantic markup is
-   preserved so the existing mobile-menu JS keeps working; this restyles it. */
+/* ── 13b. HEADER — clean, sticky, single Join CTA (full redesign) ──────
+   Fixed-height sticky bar (no scroll-condense — that was causing jitter).
+   Semantic markup preserved so the mobile-menu JS keeps working. Critical
+   properties are forced (!important) to beat the theme's own header rules. */
 
 .new-header {
   position: sticky;
   top: 0;
   z-index: 200;
   background: var(--scout-white, #fff);
-  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.08);
-  transition: box-shadow 0.2s ease;
+  border-bottom: 1px solid var(--scout-border, #CCCCCC);
 }
-
-/* Sit below the WP admin bar for logged-in users. */
 .admin-bar .new-header { top: 32px; }
 @media (max-width: 782px) { .admin-bar .new-header { top: 46px; } }
 
-.new-header.is-scrolled { box-shadow: 0 6px 20px rgba(15, 23, 42, 0.10); }
-
-/* Main bar */
-.new-header .header-main-content { padding: 0; background: var(--scout-white, #fff); }
-
+/* Main bar: logo left, action right */
+.new-header .header-main-content { padding: 0 !important; background: var(--scout-white, #fff); }
 .new-header .logo-cta-container {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 24px;
-  padding: 16px 0;
-  transition: padding 0.2s ease;
+  padding: 14px 0;
 }
-.new-header.is-scrolled .logo-cta-container { padding: 8px 0; }
-
 .new-header .logo { display: inline-flex; align-items: center; }
-.new-header .logo img {
-  height: 52px;
-  width: auto;
-  display: block;
-  transition: height 0.2s ease;
-}
-.new-header.is-scrolled .logo img { height: 40px; }
+.new-header .logo img { height: 50px !important; width: auto; display: block; }
 
-/* Right cluster: search + single CTA */
+/* Right actions — just the CTA on desktop. Search + hamburger are mobile-only. */
 .new-header .icon_wrap { display: flex; align-items: center; gap: 14px; }
+.new-header .search-form.desktop { display: none; }
+.new-header .icon_wrap-small { display: none; }
 
-.new-header .search-form.desktop form { display: flex; align-items: stretch; }
-.new-header .search-form.desktop .text {
-  min-width: 190px;
-  height: 44px;
-  padding: 0 14px;
-  border: 1px solid var(--scout-border, #CCCCCC);
-  border-right: 0;
-  border-radius: var(--scout-radius-input, 5px) 0 0 var(--scout-radius-input, 5px);
-  font-size: 15px;
-  background: var(--scout-white, #fff);
-}
-.new-header .search-form.desktop .text:focus {
-  outline: none;
-  border-color: var(--scout-purple, #590FA9);
-  box-shadow: var(--scout-focus, 0 0 0 3px rgba(89, 15, 169, 0.15));
-}
-.new-header .search-form.desktop .submit {
-  width: 46px;
-  height: 44px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border: 1px solid var(--scout-border, #CCCCCC);
-  border-radius: 0 var(--scout-radius-input, 5px) var(--scout-radius-input, 5px) 0;
-  background: var(--scout-bg, #F1F1F1);
-  color: var(--scout-text, #404040);
-  cursor: pointer;
-}
-.new-header .search-form.desktop .submit:hover {
-  background: var(--scout-purple, #590FA9);
-  color: var(--scout-white, #fff);
-}
-
-/* Single primary CTA (Join) — filled blue, sharp corners (design.md). */
+/* Single primary CTA (Join) — filled blue, forced over the theme link colour. */
 .new-header .header-cta {
   display: inline-flex;
   align-items: center;
   white-space: nowrap;
-  height: 44px;
-  padding: 0 22px;
+  height: 46px;
+  padding: 0 26px;
   font-size: 15px;
   font-weight: 700;
   line-height: 1;
-  text-decoration: none;
-  background: var(--scout-blue, #006DDF);
-  color: var(--scout-white, #fff);
-  border: 2px solid var(--scout-blue, #006DDF);
+  text-decoration: none !important;
+  background: var(--scout-blue, #006DDF) !important;
+  color: var(--scout-white, #fff) !important;
+  border: 2px solid var(--scout-blue, #006DDF) !important;
   border-radius: var(--scout-radius-button, 0);
   transition: background 0.15s ease, border-color 0.15s ease;
 }
 .new-header .header-cta:hover,
 .new-header .header-cta:focus {
-  background: var(--scout-navy, #003982);
-  border-color: var(--scout-navy, #003982);
-  color: var(--scout-white, #fff);
+  background: var(--scout-navy, #003982) !important;
+  border-color: var(--scout-navy, #003982) !important;
+  color: var(--scout-white, #fff) !important;
 }
 
 /* Primary nav bar */
-.new-header .main-menu { border-top: 1px solid var(--scout-border, #CCCCCC); }
+.new-header .main-menu {
+  border-top: 1px solid var(--scout-border, #CCCCCC);
+  background: var(--scout-white, #fff);
+}
 .new-header .main-menu .menu {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  gap: 2px 22px;
+  gap: 2px 26px;
   margin: 0;
   padding: 12px 0;
   list-style: none;
@@ -4157,12 +4115,11 @@ html, body {
   border-bottom-color: var(--scout-purple, #590FA9);
 }
 
-/* ── Mobile: logo + hamburger; desktop nav/actions hidden, overlay for nav ── */
+/* ── Mobile: logo left + hamburger right; desktop nav/CTA hidden, nav via overlay ── */
 @media (max-width: 992px) {
   .new-header .icon_wrap,
   .new-header .main-menu { display: none; }
-  .new-header .icon_wrap-small { display: flex; align-items: center; gap: 12px; }
+  .new-header .icon_wrap-small { display: flex !important; align-items: center; gap: 14px; margin-left: auto; }
   .new-header .logo-cta-container { padding: 12px 0; }
-  .new-header.is-scrolled .logo img,
-  .new-header .logo img { height: 42px; }
+  .new-header .logo img { height: 42px !important; }
 }
