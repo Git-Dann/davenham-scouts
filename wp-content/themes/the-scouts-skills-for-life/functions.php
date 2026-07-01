@@ -210,6 +210,24 @@ function scouts_site_header_nav_toggle() {
         document.addEventListener('keydown', function (e) {
             if (e.key === 'Escape' && !panel.hasAttribute('hidden')) { setOpen(false); burger.focus(); }
         });
+
+        // Collapsible submenu accordions in the mobile panel.
+        var parents = panel.querySelectorAll('.menu-item-has-children');
+        Array.prototype.forEach.call(parents, function (li) {
+            var link = li.querySelector('a');
+            var sub = li.querySelector('.sub-menu');
+            if (!link || !sub) { return; }
+            var btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'site-header__submenu-toggle';
+            btn.setAttribute('aria-label', 'Toggle submenu');
+            btn.setAttribute('aria-expanded', 'false');
+            link.parentNode.insertBefore(btn, link.nextSibling);
+            btn.addEventListener('click', function () {
+                var open = li.classList.toggle('is-open');
+                btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+            });
+        });
     }());
     </script>
     <?php
