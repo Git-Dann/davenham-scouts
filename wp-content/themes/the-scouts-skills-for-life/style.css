@@ -4028,13 +4028,13 @@ html, body {
 
 /* Header CTA buttons — modern on-brand pair (design.md: sharp corners, blue
    leads CTAs). Both explicitly styled so neither renders as an empty box. */
-.header-main-content .icon_wrap .cta-btn {
+.new-header .header-main-content .icon_wrap .cta-btn {
   display: flex;
   align-items: center;
   gap: 10px;
 }
 
-.header-main-content .icon_wrap .cta-btn a {
+.new-header .header-main-content .icon_wrap .cta-btn a {
   display: inline-flex;
   align-items: center;
   white-space: nowrap;
@@ -4052,21 +4052,21 @@ html, body {
     border-color var(--scout-motion-fast, 0.15s ease);
 }
 
-.header-main-content .icon_wrap .cta-btn a:hover,
-.header-main-content .icon_wrap .cta-btn a:focus {
+.new-header .header-main-content .icon_wrap .cta-btn a:hover,
+.new-header .header-main-content .icon_wrap .cta-btn a:focus {
   background: var(--scout-purple, #590FA9);
   color: var(--scout-white, #fff);
 }
 
 /* Last CTA (Join) = primary, filled blue. */
-.header-main-content .icon_wrap .cta-btn a:last-child {
+.new-header .header-main-content .icon_wrap .cta-btn a:last-child {
   background: var(--scout-blue, #006DDF);
   border-color: var(--scout-blue, #006DDF);
   color: var(--scout-white, #fff);
 }
 
-.header-main-content .icon_wrap .cta-btn a:last-child:hover,
-.header-main-content .icon_wrap .cta-btn a:last-child:focus {
+.new-header .header-main-content .icon_wrap .cta-btn a:last-child:hover,
+.new-header .header-main-content .icon_wrap .cta-btn a:last-child:focus {
   background: var(--scout-navy, #003982);
   border-color: var(--scout-navy, #003982);
   color: var(--scout-white, #fff);
