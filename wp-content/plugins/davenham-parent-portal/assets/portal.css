@@ -1,6 +1,6 @@
-/* Davenham Parent Portal — registration form + dashboard.
-   Structural styling; Scouts purple (#590FA9) reused for accents.
-   Buttons left to the theme (.button) per design system. */
+/* Davenham Parent Portal — registration form + dashboard + consent.
+   Fully tokenised to design.md (var(--scout-*), theme/tokens.css). No hardcoded
+   palette values. Buttons left to the theme (.button) per design system. */
 
 .dpp-register,
 .dpp-dashboard {
@@ -21,24 +21,24 @@
 	border: 0;
 }
 
-/* ---- Messages ---- */
+/* ---- Messages (design.md §2.8 state tints) ---- */
 .dpp-message {
-	border: 1px solid #d7dfeb;
-	border-left: 4px solid #590FA9;
-	border-radius: 8px;
+	border: 1px solid var(--scout-border, #CCCCCC);
+	border-left: 4px solid var(--scout-purple, #590FA9);
+	border-radius: var(--scout-radius-card, 10px);
 	padding: 14px 18px;
 	margin: 0 0 18px;
-	background: #faf7ff;
+	background: var(--scout-bg, #F1F1F1);
 }
 
 .dpp-message--success {
-	border-left-color: #1d6f42;
-	background: #f3fbf6;
+	border-left-color: var(--scout-success, #008A1C);
+	background: var(--scout-success-tint, rgba(0, 138, 28, 0.08));
 }
 
 .dpp-message--error {
-	border-left-color: #c0392b;
-	background: #fdf3f2;
+	border-left-color: var(--scout-danger, #ED3F23);
+	background: var(--scout-danger-tint, rgba(237, 63, 35, 0.08));
 }
 
 .dpp-message ul {
@@ -46,7 +46,7 @@
 }
 
 .dpp-note {
-	color: #6b7280;
+	color: var(--scout-text-2, #6E6E6E);
 }
 
 /* ---- Form ---- */
@@ -65,7 +65,7 @@
 }
 
 .dpp-req {
-	color: #c0392b;
+	color: var(--scout-danger, #ED3F23);
 }
 
 .dpp-form input[type="text"],
@@ -75,8 +75,8 @@
 .dpp-form select {
 	width: 100%;
 	padding: 10px 12px;
-	border: 1px solid #d7dfeb;
-	border-radius: 8px;
+	border: 1px solid var(--scout-border, #CCCCCC);
+	border-radius: var(--scout-radius-input, 5px);
 	font-size: 15px;
 	line-height: 1.3;
 }
@@ -84,14 +84,14 @@
 .dpp-form input:focus,
 .dpp-form select:focus {
 	outline: none;
-	border-color: #590FA9;
-	box-shadow: 0 0 0 3px rgba(89, 15, 169, 0.15);
+	border-color: var(--scout-purple, #590FA9);
+	box-shadow: var(--scout-focus, 0 0 0 3px rgba(89, 15, 169, 0.15));
 }
 
 /* ---- Children rows ---- */
 .dpp-children {
-	border: 1px solid #e2e8f0;
-	border-radius: 10px;
+	border: 1px solid var(--scout-border, #CCCCCC);
+	border-radius: var(--scout-radius-card, 10px);
 	padding: 14px 16px;
 	margin: 0 0 16px;
 }
@@ -114,25 +114,25 @@
 }
 
 .dpp-child-remove {
-	border: 1px solid #d7dfeb;
-	background: #fff;
-	border-radius: 8px;
+	border: 1px solid var(--scout-border, #CCCCCC);
+	background: var(--scout-white, #FFFFFF);
+	border-radius: var(--scout-radius-input, 5px);
 	width: 38px;
 	height: 38px;
 	font-size: 18px;
 	line-height: 1;
 	cursor: pointer;
-	color: #c0392b;
+	color: var(--scout-danger, #ED3F23);
 }
 
 .dpp-child-remove:hover {
-	border-color: #c0392b;
+	border-color: var(--scout-danger, #ED3F23);
 }
 
 .dpp-add-child {
 	background: none;
 	border: 0;
-	color: #590FA9;
+	color: var(--scout-purple, #590FA9);
 	font-weight: 700;
 	cursor: pointer;
 	padding: 4px 0;
@@ -161,16 +161,16 @@
 }
 
 .dpp-privacy {
-	color: #6b7280;
+	color: var(--scout-text-2, #6E6E6E);
 	font-size: 13px;
 }
 
 /* ---- Dashboard ---- */
 .dpp-gate {
-	border: 1px solid #d7dfeb;
-	border-left: 4px solid #590FA9;
-	border-radius: 10px;
-	background: #faf7ff;
+	border: 1px solid var(--scout-border, #CCCCCC);
+	border-left: 4px solid var(--scout-purple, #590FA9);
+	border-radius: var(--scout-radius-card, 10px);
+	background: var(--scout-bg, #F1F1F1);
 	padding: 22px 24px;
 	max-width: 560px;
 }
@@ -180,17 +180,18 @@
 }
 
 .dpp-card {
-	border: 1px solid #e2e8f0;
-	border-radius: 12px;
+	border: 1px solid var(--scout-card-border, #E5E7EB);
+	border-radius: var(--scout-radius-card, 10px);
 	padding: 18px 20px;
 	margin: 0 0 16px;
-	background: #fff;
+	background: var(--scout-white, #FFFFFF);
+	box-shadow: var(--scout-shadow-card, 0 4px 16px rgba(15, 23, 42, 0.06));
 }
 
 .dpp-card h3 {
 	margin: 0 0 12px;
 	padding-bottom: 6px;
-	border-bottom: 2px solid #590FA9;
+	border-bottom: 2px solid var(--scout-purple, #590FA9);
 }
 
 .dpp-kids,
@@ -208,7 +209,7 @@
 	justify-content: space-between;
 	gap: 10px;
 	padding: 8px 0;
-	border-bottom: 1px solid #f1f5f9;
+	border-bottom: 1px solid var(--scout-border, #CCCCCC);
 }
 
 .dpp-kid-name {
@@ -216,7 +217,7 @@
 }
 
 .dpp-kid-section {
-	color: #590FA9;
+	color: var(--scout-purple, #590FA9);
 	font-weight: 700;
 	font-size: 13px;
 }
@@ -228,7 +229,7 @@
 	justify-content: space-between;
 	gap: 8px;
 	padding: 8px 0;
-	border-bottom: 1px solid #f1f5f9;
+	border-bottom: 1px solid var(--scout-border, #CCCCCC);
 }
 
 .dpp-event a {
@@ -236,13 +237,13 @@
 }
 
 .dpp-event-meta {
-	color: #6b7280;
+	color: var(--scout-text-2, #6E6E6E);
 	font-size: 13px;
 	font-weight: 600;
 }
 
 .dpp-muted {
-	color: #6b7280;
+	color: var(--scout-text-2, #6E6E6E);
 	font-style: italic;
 }
 
@@ -251,7 +252,7 @@
 }
 
 .dpp-logout a {
-	color: #6b7280;
+	color: var(--scout-text-2, #6E6E6E);
 	font-size: 13px;
 }
 
@@ -266,7 +267,7 @@
 	flex: 0 0 auto;
 	font-weight: 700;
 	font-size: 13px;
-	color: #590FA9;
+	color: var(--scout-purple, #590FA9);
 	white-space: nowrap;
 }
 
@@ -274,10 +275,10 @@
 .dpp-consent {
 	margin: 28px 0 0;
 	padding: 20px 22px;
-	border: 1px solid #e2e8f0;
-	border-top: 3px solid #590FA9;
-	border-radius: 12px;
-	background: #fff;
+	border: 1px solid var(--scout-card-border, #E5E7EB);
+	border-top: 3px solid var(--scout-purple, #590FA9);
+	border-radius: var(--scout-radius-card, 10px);
+	background: var(--scout-white, #FFFFFF);
 }
 
 .dpp-consent-title {
@@ -285,23 +286,23 @@
 }
 
 .dpp-consent-done {
-	color: #6b7280;
+	color: var(--scout-text-2, #6E6E6E);
 	font-size: 14px;
 }
 
 .dpp-consent-form textarea {
 	width: 100%;
 	padding: 10px 12px;
-	border: 1px solid #d7dfeb;
-	border-radius: 8px;
+	border: 1px solid var(--scout-border, #CCCCCC);
+	border-radius: var(--scout-radius-input, 5px);
 	font-size: 15px;
 	line-height: 1.4;
 }
 
 .dpp-consent-form textarea:focus {
 	outline: none;
-	border-color: #590FA9;
-	box-shadow: 0 0 0 3px rgba(89, 15, 169, 0.15);
+	border-color: var(--scout-purple, #590FA9);
+	box-shadow: var(--scout-focus, 0 0 0 3px rgba(89, 15, 169, 0.15));
 }
 
 .dpp-field-label {

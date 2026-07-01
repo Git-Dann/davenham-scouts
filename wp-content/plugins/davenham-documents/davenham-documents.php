@@ -3,7 +3,7 @@
  * Plugin Name: Davenham Documents
  * Plugin URI:  https://davenhamscouts.org.uk
  * Description: Gated document library — leaders and trustees log in to share and download key documents (risk assessments, policies, minutes). Files are stored outside the public media library and served only to authorised users.
- * Version:     1.0.1
+ * Version:     1.0.2
  * Author:      Davenham Scout Group
  * Text Domain: davenham-documents
  * Requires at least: 6.0
@@ -12,7 +12,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'DDOC_VERSION', '1.0.1' );
+define( 'DDOC_VERSION', '1.0.2' );
 define( 'DDOC_FILE', __FILE__ );
 define( 'DDOC_DIR', plugin_dir_path( __FILE__ ) );
 define( 'DDOC_URL', plugin_dir_url( __FILE__ ) );

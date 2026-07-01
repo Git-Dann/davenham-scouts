@@ -3,7 +3,7 @@
  * Plugin Name: Davenham Parent Portal
  * Plugin URI:  https://davenhamscouts.org.uk
  * Description: Parents self-register, an admin approves them, and they get a Parent login to a dashboard with digital event consent forms.
- * Version:     1.2.1
+ * Version:     1.2.2
  * Author:      Davenham Scout Group
  * Text Domain: davenham-parent-portal
  * Requires at least: 6.0
@@ -12,7 +12,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'DPP_VERSION', '1.2.1' );
+define( 'DPP_VERSION', '1.2.2' );
 define( 'DPP_FILE', __FILE__ );
 define( 'DPP_DIR', plugin_dir_path( __FILE__ ) );
 define( 'DPP_URL', plugin_dir_url( __FILE__ ) );
