@@ -143,7 +143,7 @@
 .def-media-group-card:focus,
 .def-media-group-card.is-active {
   border-color: #590FA9;
-  background: #f3eaff;
+  background: rgba(89, 15, 169, 0.06);
   color: #490499;
 }
 
@@ -201,7 +201,7 @@
 .def-event-profit-card__meta span {
   display: block;
   padding: 9px 10px;
-  border-radius: 6px;
+  border-radius: 8px;
   background: rgba(255, 255, 255, 0.12);
   color: #fff;
 }
@@ -503,7 +503,7 @@
 .def-repeatable-row select {
   min-height: 34px;
   padding: 4px 8px;
-  border-radius: 6px;
+  border-radius: 8px;
   font-size: 13px;
 }
 
@@ -545,7 +545,7 @@
   min-height: 32px;
   padding: 0;
   border: 1px solid transparent;
-  border-radius: 6px;
+  border-radius: 8px;
   color: #ED3F23;
   text-decoration: none;
 }
@@ -774,7 +774,7 @@
     min-height: 36px;
     line-height: 1.4;
     padding: 6px 12px;
-    border-radius: 4px;
+    border-radius: 8px;
     font-size: 13px;
     margin-bottom: 6px;
   }
