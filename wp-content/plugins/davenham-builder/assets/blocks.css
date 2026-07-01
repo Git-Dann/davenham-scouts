@@ -171,7 +171,9 @@
 
 /* ── Leaders / Team ───────────────────────────────────────── */
 .leaders_grid {
-  display: grid;
+  /* !important defeats a stale `.leaders_grid { display:flex }` in the theme's
+     production.css (targets the old .leader markup) that loads after this file. */
+  display: grid !important;
   grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
   gap: 28px;
   margin-top: 28px;
@@ -234,8 +236,9 @@
 
 /* Optional short bio — widen the cards so the copy is comfortable to read. */
 .leaders_grid--bio {
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-  gap: 32px 28px;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)) !important;
+  gap: 36px 28px;
+  align-items: start;
 }
 .leader_card__bio {
   font-size: 14px;
