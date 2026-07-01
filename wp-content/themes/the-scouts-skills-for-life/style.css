@@ -4038,8 +4038,8 @@ html, body {
   background: var(--scout-white, #fff);
   border-bottom: 1px solid var(--scout-border, #CCCCCC);
 }
-.admin-bar .site-header { top: 32px; }
-@media (max-width: 782px) { .admin-bar .site-header { top: 46px; } }
+/* No admin-bar top offset: WP's html margin-top already seats the header below
+   the admin bar at rest, and a sticky top:32 was double-counting → a 32px gap. */
 
 .site-header__inner {
   display: flex;
