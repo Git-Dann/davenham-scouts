@@ -4026,7 +4026,8 @@ html, body {
   }
 }
 
-/* Header CTA buttons: single row, never wrap the label. */
+/* Header CTA buttons — modern on-brand pair (design.md: sharp corners, blue
+   leads CTAs). Both explicitly styled so neither renders as an empty box. */
 .header-main-content .icon_wrap .cta-btn {
   display: flex;
   align-items: center;
@@ -4034,5 +4035,39 @@ html, body {
 }
 
 .header-main-content .icon_wrap .cta-btn a {
+  display: inline-flex;
+  align-items: center;
   white-space: nowrap;
+  padding: 11px 20px;
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1;
+  text-decoration: none;
+  border-radius: var(--scout-radius-button, 0);
+  border: 2px solid var(--scout-purple, #590FA9);
+  background: transparent;
+  color: var(--scout-purple, #590FA9);
+  transition: background var(--scout-motion-fast, 0.15s ease),
+    color var(--scout-motion-fast, 0.15s ease),
+    border-color var(--scout-motion-fast, 0.15s ease);
+}
+
+.header-main-content .icon_wrap .cta-btn a:hover,
+.header-main-content .icon_wrap .cta-btn a:focus {
+  background: var(--scout-purple, #590FA9);
+  color: var(--scout-white, #fff);
+}
+
+/* Last CTA (Join) = primary, filled blue. */
+.header-main-content .icon_wrap .cta-btn a:last-child {
+  background: var(--scout-blue, #006DDF);
+  border-color: var(--scout-blue, #006DDF);
+  color: var(--scout-white, #fff);
+}
+
+.header-main-content .icon_wrap .cta-btn a:last-child:hover,
+.header-main-content .icon_wrap .cta-btn a:last-child:focus {
+  background: var(--scout-navy, #003982);
+  border-color: var(--scout-navy, #003982);
+  color: var(--scout-white, #fff);
 }

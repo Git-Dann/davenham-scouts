@@ -395,9 +395,9 @@
 
 .block-icon {
   text-align: center;
-  flex: 1;
-  min-width: 120px;
-  max-width: 200px;
+  flex: 1 1 240px;
+  min-width: 200px;
+  max-width: 300px;
 }
 
 .block-icon img {
@@ -410,7 +410,7 @@
 .icon-text {
   font-size: 14px;
   line-height: 1.55;
-  color: #444;
+  color: var(--scout-text, #404040);
 }
 
 /* ── CTA Heading (optional heading above button rows) ─────── */
