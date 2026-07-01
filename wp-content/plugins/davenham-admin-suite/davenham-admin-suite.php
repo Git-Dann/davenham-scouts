@@ -502,6 +502,10 @@ final class Davenham_Admin_Suite {
 		$wp_admin_bar->add_node(
 			[
 				'id'    => 'davenham-admin-logo',
+				// Link the branding to the dashboard so it's the way into
+				// the admin from the front-end toolbar (we remove the
+				// default "site-name → Dashboard" node below).
+				'href'  => admin_url(),
 				'title' => sprintf(
 					'%s<span class="ab-label">%s</span>',
 					$logo,
@@ -513,7 +517,24 @@ final class Davenham_Admin_Suite {
 	}
 
 	public static function cleanup_admin_bar( WP_Admin_Bar $wp_admin_bar ) {
-		$wp_admin_bar->remove_node( 'site-name' );
+		// On the front end, keep a clear route into wp-admin. The default
+		// site-name node carries the "Dashboard" sub-link; rather than drop
+		// it entirely, re-point its top link straight at the dashboard and
+		// relabel it so there's an obvious way in.
+		if ( ! is_admin() ) {
+			$site_name = $wp_admin_bar->get_node( 'site-name' );
+			if ( $site_name ) {
+				$wp_admin_bar->add_node(
+					[
+						'id'    => 'site-name',
+						'title' => 'Dashboard',
+						'href'  => admin_url(),
+					]
+				);
+			}
+		} else {
+			$wp_admin_bar->remove_node( 'site-name' );
+		}
 
 		if ( self::settings()['hide_wp_updates'] === '1' ) {
 			$wp_admin_bar->remove_node( 'updates' );
@@ -1522,11 +1543,20 @@ html.das-app-shell-active body.davenham-admin-shell .das-app-flyout.is-open {
 			$children       = isset( $catalog[ $slug ]['children'] ) && is_array( $catalog[ $slug ]['children'] ) ? $catalog[ $slug ]['children'] : [];
 			$kind           = 'davenham-admin-suite' === $slug ? 'admin-tools' : 'link';
 
+			// A stored icon of 'pin' (or empty) is the generic fallback, not a
+			// deliberate choice — re-derive a real dashicon from the slug/label
+			// so captured menus (Products, Payments, Posts, Users, …) don't all
+			// render as the same blank circle. An explicitly chosen icon wins.
+			$stored_icon = isset( $item['icon'] ) ? (string) $item['icon'] : '';
+			$icon_key    = ( '' === $stored_icon || 'pin' === $stored_icon )
+				? self::menu_icon_key( $slug, $item['label'] )
+				: $stored_icon;
+
 			$items[] = [
 				'slug'          => $slug,
 				'label'         => $item['label'],
 				'url'           => self::menu_slug_url( $slug ),
-				'icon'          => self::valid_icon_key( $item['icon'] ?? self::menu_icon_key( $slug, $item['label'] ) ),
+				'icon'          => self::valid_icon_key( $icon_key ),
 				'placement'     => $placement,
 				'order'         => (int) ( $item['order'] ?? 500 ),
 				'dividerBefore' => ! empty( $item['divider_before'] ),
@@ -1642,27 +1672,46 @@ html.das-app-shell-active body.davenham-admin-shell .das-app-flyout.is-open {
 	private static function menu_icon_key( $slug, $label = '' ) {
 		$haystack = strtolower( $slug . ' ' . $label );
 
-		if ( false !== strpos( $haystack, 'event' ) || false !== strpos( $haystack, 'ticket' ) ) {
-			return 'tickets';
+		// Ordered keyword rules — most specific first. Ordering matters:
+		// `products`/`pages` are checked before `posts` because the
+		// edit.php?post_type=… slugs all contain the substring "post".
+		// Semantic content-type rules come BEFORE the generic `post` rule,
+		// because every custom-post-type menu slug (edit.php?post_type=…)
+		// contains the substring "post" and would otherwise all grab the
+		// Posts icon.
+		$rules = array(
+			'tickets'   => array( 'event', 'ticket' ),
+			'products'  => array( 'post_type=product', 'product' ),
+			'payments'  => array( 'payment', 'gateway', 'wc-settings', 'checkout' ),
+			'analytics' => array( 'analytic', 'wc-admin', 'stats', 'report', 'insight' ),
+			'orders'    => array( 'woocommerce', 'order', 'shop', 'store' ),
+			'folder'    => array( 'document', 'file', 'download', 'resource', 'library' ),
+			'forms'     => array( 'contact', 'form', 'feedback', 'enquir', 'consent', 'submission' ),
+			'users'     => array( 'user', 'member', 'people', 'parent', 'application', 'volunteer' ),
+			'builder'   => array( 'builder', 'layout', 'block' ),
+			'marketing' => array( 'market', 'promo', 'campaign', 'newsletter' ),
+			'media'     => array( 'upload', 'media', 'image', 'gallery' ),
+			'pages'     => array( 'post_type=page', 'page' ),
+			'posts'     => array( 'post' ),
+			'links'     => array( 'link' ),
+			'security'  => array( 'security', 'firewall' ),
+			'backup'    => array( 'backup' ),
+			'health'    => array( 'health' ),
+			'speed'     => array( 'speed', 'cache', 'performance' ),
+			'updates'   => array( 'update' ),
+			'admin'     => array( 'plugin', 'tool', 'setting', 'option', 'config' ),
+			'dashboard' => array( 'dashboard' ),
+		);
+
+		foreach ( $rules as $key => $words ) {
+			foreach ( $words as $word ) {
+				if ( false !== strpos( $haystack, $word ) ) {
+					return $key;
+				}
+			}
 		}
 
-		if ( false !== strpos( $haystack, 'upload' ) || false !== strpos( $haystack, 'media' ) || false !== strpos( $haystack, 'image' ) ) {
-			return 'media';
-		}
-
-		if ( false !== strpos( $haystack, 'page' ) ) {
-			return 'pages';
-		}
-
-		if ( false !== strpos( $haystack, 'woocommerce' ) || false !== strpos( $haystack, 'order' ) || false !== strpos( $haystack, 'shop' ) ) {
-			return 'orders';
-		}
-
-		if ( false !== strpos( $haystack, 'plugin' ) || false !== strpos( $haystack, 'tool' ) || false !== strpos( $haystack, 'setting' ) ) {
-			return 'admin';
-		}
-
-		if ( false !== strpos( $haystack, 'dashboard' ) || 'index.php' === $slug ) {
+		if ( 'index.php' === $slug ) {
 			return 'dashboard';
 		}
 
