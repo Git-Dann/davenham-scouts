@@ -8,99 +8,48 @@
 <body <?php body_class(); ?>>
 <?php wp_body_open(); ?>
 <a class="scouts-skip-link" href="#main-content"><?php esc_html_e( 'Skip to main content', 'the-scouts-skills-for-life' ); ?></a>
-<?php $scouts_site_settings = function_exists( 'scouts_get_site_settings' ) ? scouts_get_site_settings() : []; ?>
+<?php
+// Single primary CTA (Join). Volunteer removed — it duplicated Join, which is
+// in the nav. Uses the saved CTA setting, with a sensible fallback.
+$dvh_join_url  = ! empty( $scouts_site_settings['header_secondary_cta_url'] ) ? $scouts_site_settings['header_secondary_cta_url'] : home_url( '/join/' );
+$dvh_join_text = ! empty( $scouts_site_settings['header_secondary_cta_text'] ) ? $scouts_site_settings['header_secondary_cta_text'] : __( 'Join Us', 'the-scouts-skills-for-life' );
+$dvh_logo_url  = function_exists( 'scouts_get_site_logo_url' ) ? scouts_get_site_logo_url() : get_template_directory_uri() . '/images/scouts-logo-standard.svg';
+?>
 
-<header class="new-header" role="banner">
-    <nav class="secondary_navold sec-menu cf" aria-label="<?php esc_attr_e( 'Secondary', 'the-scouts-skills-for-life' ); ?>">
-        <div class="wrapper">
-            <?php wp_nav_menu( [
-                'theme_location' => 'secondary',
-                'menu_id'        => 'top-navigation',
-                'fallback_cb'    => false,
-                'container'      => false,
-            ] ); ?>
-        </div>
-    </nav>
+<header class="site-header" role="banner">
+    <div class="site-header__inner">
+        <a class="site-header__logo" href="<?php echo esc_url( home_url( '/' ) ); ?>" aria-label="<?php bloginfo( 'name' ); ?>">
+            <img src="<?php echo esc_url( $dvh_logo_url ); ?>" alt="<?php bloginfo( 'name' ); ?>" />
+        </a>
 
-    <div class="header-main-content">
-        <div class="wrapper">
-            <div class="logo-cta-container">
-                <a href="<?php echo esc_url( home_url( '/' ) ); ?>" class="logo">
-                    <img src="<?php echo esc_url( function_exists( 'scouts_get_site_logo_url' ) ? scouts_get_site_logo_url() : get_template_directory_uri() . '/images/scouts-logo-standard.svg' ); ?>" alt="<?php bloginfo( 'name' ); ?>" />
-                </a>
-
-                <div class="icon_wrap">
-                    <div class="block-icon cta-btn">
-                        <?php
-                        // Single primary CTA (Join) — de-duplicated: Volunteer/Join were
-                        // redundant and Join is already in the nav. Uses the secondary
-                        // CTA setting, falling back to a sensible default.
-                        $join_url  = ! empty( $scouts_site_settings['header_secondary_cta_url'] ) ? $scouts_site_settings['header_secondary_cta_url'] : home_url( '/join/' );
-                        $join_text = ! empty( $scouts_site_settings['header_secondary_cta_text'] ) ? $scouts_site_settings['header_secondary_cta_text'] : __( 'Join Us', 'the-scouts-skills-for-life' );
-                        ?>
-                        <a class="header-cta" href="<?php echo esc_url( $join_url ); ?>"><?php echo esc_html( $join_text ); ?></a>
-                    </div>
-
-                    <div class="block_icon search-form desktop">
-                        <form class="cf" action="<?php echo esc_url( home_url( '/' ) ); ?>" method="get" role="search" autocomplete="off">
-                            <label class="screen-reader-text" for="header-search-desktop"><?php esc_html_e( 'Search', 'the-scouts-skills-for-life' ); ?></label>
-                            <input type="search" id="header-search-desktop" class="text" placeholder="<?php esc_attr_e( 'Search', 'the-scouts-skills-for-life' ); ?>" name="s" value="<?php echo esc_attr( get_search_query() ); ?>">
-                            <button type="submit" class="submit" aria-label="<?php esc_attr_e( 'Submit search', 'the-scouts-skills-for-life' ); ?>">
-                                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><circle cx="6.5" cy="6.5" r="5" stroke="currentColor" stroke-width="2"/><line x1="10.5" y1="10.5" x2="15" y2="15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-                            </button>
-                        </form>
-                    </div>
-                </div>
-
-                <div class="icon_wrap-small">
-                    <div class="key_links">
-                        <button type="button" class="block_icon hamburger" aria-label="<?php esc_attr_e( 'Open menu', 'the-scouts-skills-for-life' ); ?>" aria-expanded="false" aria-controls="mobile-menu">
-                            <span></span><span></span><span></span>
-                        </button>
-                        <button type="button" class="block_icon search mobile" aria-label="<?php esc_attr_e( 'Toggle search', 'the-scouts-skills-for-life' ); ?>">
-                            <img src="<?php echo esc_url( get_template_directory_uri() . '/images/search_icon.png' ); ?>" alt="" aria-hidden="true" />
-                        </button>
-                    </div>
-                    <div class="block_icon search-form mobile">
-                        <form class="cf" action="<?php echo esc_url( home_url( '/' ) ); ?>" method="get" role="search" autocomplete="off">
-                            <label class="screen-reader-text" for="header-search-mobile"><?php esc_html_e( 'Search', 'the-scouts-skills-for-life' ); ?></label>
-                            <input type="search" id="header-search-mobile" class="text" placeholder="<?php esc_attr_e( 'Search', 'the-scouts-skills-for-life' ); ?>" name="s" value="<?php echo esc_attr( get_search_query() ); ?>">
-                            <button type="submit" class="submit" aria-label="<?php esc_attr_e( 'Submit search', 'the-scouts-skills-for-life' ); ?>"></button>
-                        </form>
-                    </div>
-                </div>
-            </div>
-
-        </div>
-    </div>
-
-    <nav class="main-menu main-menu-scouts" aria-label="<?php esc_attr_e( 'Primary', 'the-scouts-skills-for-life' ); ?>">
-        <div class="bottom wrapper">
+        <nav class="site-header__nav" aria-label="<?php esc_attr_e( 'Primary', 'the-scouts-skills-for-life' ); ?>">
             <?php wp_nav_menu( [
                 'theme_location' => 'primary',
-                'menu_class'     => 'menu main',
-                'menu_id'        => 'menu-main-menu',
+                'menu_class'     => 'site-header__menu',
+                'menu_id'        => 'primary-menu',
                 'fallback_cb'    => false,
                 'container'      => false,
+                'depth'          => 1,
             ] ); ?>
-        </div>
-    </nav>
+        </nav>
 
-    <div class="mobile_overlay cf" id="mobile-menu" aria-label="<?php esc_attr_e( 'Mobile menu', 'the-scouts-skills-for-life' ); ?>" aria-hidden="true">
-        <div class="wrapper">
-            <div class="wrap">
-                <span class="menu_title"><?php esc_html_e( 'Menu', 'the-scouts-skills-for-life' ); ?></span>
-                <button type="button" class="block_icon hamburger closed" aria-label="<?php esc_attr_e( 'Close menu', 'the-scouts-skills-for-life' ); ?>">
-                    <span></span><span></span><span></span>
-                </button>
-                <?php wp_nav_menu( [
-                    'theme_location' => 'primary',
-                    'menu_class'     => 'menu cf',
-                    'menu_id'        => 'menu-main-menu-mobile',
-                    'fallback_cb'    => false,
-                    'container'      => false,
-                ] ); ?>
-            </div>
+        <div class="site-header__actions">
+            <a class="site-header__cta" href="<?php echo esc_url( $dvh_join_url ); ?>"><?php echo esc_html( $dvh_join_text ); ?></a>
+            <button type="button" class="site-header__burger" aria-label="<?php esc_attr_e( 'Open menu', 'the-scouts-skills-for-life' ); ?>" aria-expanded="false" aria-controls="site-mobile-nav">
+                <span></span><span></span><span></span>
+            </button>
         </div>
     </div>
-</header><!-- header -->
+
+    <div class="site-header__mobile" id="site-mobile-nav" hidden>
+        <?php wp_nav_menu( [
+            'theme_location' => 'primary',
+            'menu_class'     => 'site-header__mobile-menu',
+            'menu_id'        => 'primary-menu-mobile',
+            'fallback_cb'    => false,
+            'container'      => false,
+            'depth'          => 1,
+        ] ); ?>
+        <a class="site-header__cta site-header__cta--block" href="<?php echo esc_url( $dvh_join_url ); ?>"><?php echo esc_html( $dvh_join_text ); ?></a>
+    </div>
+</header><!-- /site-header -->

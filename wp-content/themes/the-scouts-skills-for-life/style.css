@@ -4026,42 +4026,73 @@ html, body {
   }
 }
 
-/* ── 13b. HEADER — clean, sticky, single Join CTA (full redesign) ──────
-   Fixed-height sticky bar (no scroll-condense — that was causing jitter).
-   Semantic markup preserved so the mobile-menu JS keeps working. Critical
-   properties are forced (!important) to beat the theme's own header rules. */
+/* ── 13b. SITE HEADER — single-row, sticky, rebuilt from scratch ───────
+   Fresh .site-header markup replaces the legacy .new-header. New class names
+   mean none of the theme's old header CSS applies — a clean slate. One row:
+   logo · nav · Join CTA. Collapses to a burger below 1200px. */
 
-.new-header {
+.site-header {
   position: sticky;
   top: 0;
-  z-index: 200;
+  z-index: 300;
   background: var(--scout-white, #fff);
   border-bottom: 1px solid var(--scout-border, #CCCCCC);
 }
-.admin-bar .new-header { top: 32px; }
-@media (max-width: 782px) { .admin-bar .new-header { top: 46px; } }
+.admin-bar .site-header { top: 32px; }
+@media (max-width: 782px) { .admin-bar .site-header { top: 46px; } }
 
-/* Main bar: logo left, action right */
-.new-header .header-main-content { padding: 0 !important; background: var(--scout-white, #fff); }
-.new-header .logo-cta-container {
+.site-header__inner {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 24px;
-  padding: 14px 0;
+  gap: 28px;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 12px 32px;
 }
-.new-header .logo { display: inline-flex; align-items: center; }
-.new-header .logo img { height: 50px !important; width: auto; display: block; }
 
-/* Right actions — just the CTA on desktop. Search + hamburger are mobile-only. */
-.new-header .icon_wrap { display: flex; align-items: center; gap: 14px; }
-.new-header .search-form.desktop { display: none; }
-.new-header .icon_wrap-small { display: none; }
+/* Logo */
+.site-header__logo { flex: 0 0 auto; display: inline-flex; align-items: center; }
+.site-header__logo img { height: 48px; width: auto; display: block; }
 
-/* Single primary CTA (Join) — filled blue, forced over the theme link colour. */
-.new-header .header-cta {
+/* Nav fills the middle; items sit left, next to the logo (Stripe-style). */
+.site-header__nav { flex: 1 1 auto; min-width: 0; }
+.site-header__menu {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 22px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.site-header__menu li { margin: 0; padding: 0; }
+.site-header__menu a {
+  display: inline-block;
+  padding: 8px 0;
+  color: var(--scout-text-dark, #333333);
+  font-size: 15px;
+  font-weight: 700;
+  text-decoration: none;
+  white-space: nowrap;
+  border-bottom: 2px solid transparent;
+  transition: color 0.15s ease, border-color 0.15s ease;
+}
+.site-header__menu a:hover,
+.site-header__menu .current-menu-item > a,
+.site-header__menu .current-menu-parent > a,
+.site-header__menu .current-menu-ancestor > a {
+  color: var(--scout-purple, #590FA9);
+  border-bottom-color: var(--scout-purple, #590FA9);
+}
+
+/* Actions */
+.site-header__actions { flex: 0 0 auto; display: flex; align-items: center; gap: 12px; }
+
+.site-header__cta {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   white-space: nowrap;
   height: 46px;
   padding: 0 26px;
@@ -4075,51 +4106,70 @@ html, body {
   border-radius: var(--scout-radius-button, 0);
   transition: background 0.15s ease, border-color 0.15s ease;
 }
-.new-header .header-cta:hover,
-.new-header .header-cta:focus {
+.site-header__cta:hover,
+.site-header__cta:focus {
   background: var(--scout-navy, #003982) !important;
   border-color: var(--scout-navy, #003982) !important;
   color: var(--scout-white, #fff) !important;
 }
 
-/* Primary nav bar */
-.new-header .main-menu {
-  border-top: 1px solid var(--scout-border, #CCCCCC);
-  background: var(--scout-white, #fff);
-}
-.new-header .main-menu .menu {
-  display: flex;
-  flex-wrap: wrap;
+/* Burger — desktop hidden */
+.site-header__burger {
+  display: none;
+  flex-direction: column;
   justify-content: center;
-  gap: 2px 26px;
-  margin: 0;
-  padding: 12px 0;
-  list-style: none;
+  gap: 5px;
+  width: 46px;
+  height: 46px;
+  padding: 0 11px;
+  background: transparent;
+  border: 1px solid var(--scout-border, #CCCCCC);
+  border-radius: var(--scout-radius-input, 5px);
+  cursor: pointer;
 }
-.new-header .main-menu .menu > li { margin: 0; }
-.new-header .main-menu .menu > li > a {
-  display: inline-block;
-  padding: 6px 2px;
-  color: var(--scout-text-dark, #333333);
-  font-weight: 700;
-  font-size: 15px;
-  text-decoration: none;
-  border-bottom: 2px solid transparent;
-  transition: color 0.15s ease, border-color 0.15s ease;
-}
-.new-header .main-menu .menu > li > a:hover,
-.new-header .main-menu .menu > li.current-menu-item > a,
-.new-header .main-menu .menu > li.current-menu-parent > a,
-.new-header .main-menu .menu > li.current-menu-ancestor > a {
-  color: var(--scout-purple, #590FA9);
-  border-bottom-color: var(--scout-purple, #590FA9);
+.site-header__burger span {
+  display: block;
+  height: 2px;
+  width: 100%;
+  background: var(--scout-text-dark, #333333);
 }
 
-/* ── Mobile: logo left + hamburger right; desktop nav/CTA hidden, nav via overlay ── */
-@media (max-width: 992px) {
-  .new-header .icon_wrap,
-  .new-header .main-menu { display: none; }
-  .new-header .icon_wrap-small { display: flex !important; align-items: center; gap: 14px; margin-left: auto; }
-  .new-header .logo-cta-container { padding: 12px 0; }
-  .new-header .logo img { height: 42px !important; }
+/* Mobile dropdown panel */
+.site-header__mobile {
+  border-top: 1px solid var(--scout-border, #CCCCCC);
+  padding: 12px 32px 20px;
+  background: var(--scout-white, #fff);
+}
+.site-header__mobile[hidden] { display: none; }
+.site-header__mobile-menu {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  margin: 0 0 14px;
+  padding: 0;
+  list-style: none;
+}
+.site-header__mobile-menu li { margin: 0; }
+.site-header__mobile-menu a {
+  display: block;
+  padding: 13px 4px;
+  color: var(--scout-text-dark, #333333);
+  font-size: 16px;
+  font-weight: 700;
+  text-decoration: none;
+  border-bottom: 1px solid var(--scout-bg, #F1F1F1);
+}
+.site-header__mobile-menu a:hover { color: var(--scout-purple, #590FA9); }
+.site-header__cta--block { width: 100%; }
+
+/* ── Collapse to burger where the single row would get tight ── */
+@media (max-width: 1199px) {
+  .site-header__nav,
+  .site-header__cta:not(.site-header__cta--block) { display: none; }
+  .site-header__burger { display: inline-flex; }
+  .site-header__actions { margin-left: auto; }
+  .site-header__inner { padding-left: 20px; padding-right: 20px; }
+}
+@media (min-width: 1200px) {
+  .site-header__mobile { display: none; }
 }

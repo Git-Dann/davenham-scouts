@@ -189,6 +189,33 @@ function scouts_render_site_chrome(): void {
 }
 add_action( 'wp_footer', 'scouts_render_site_chrome', 25 );
 
+// Mobile nav toggle for the rebuilt .site-header.
+function scouts_site_header_nav_toggle() {
+    ?>
+    <script>
+    (function () {
+        var burger = document.querySelector('.site-header__burger');
+        var panel = document.getElementById('site-mobile-nav');
+        if (!burger || !panel) { return; }
+        function setOpen(open) {
+            if (open) { panel.removeAttribute('hidden'); } else { panel.setAttribute('hidden', ''); }
+            burger.setAttribute('aria-expanded', open ? 'true' : 'false');
+        }
+        burger.addEventListener('click', function () {
+            setOpen(panel.hasAttribute('hidden'));
+        });
+        panel.addEventListener('click', function (e) {
+            if (e.target.closest('a')) { setOpen(false); }
+        });
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape' && !panel.hasAttribute('hidden')) { setOpen(false); burger.focus(); }
+        });
+    }());
+    </script>
+    <?php
+}
+add_action( 'wp_footer', 'scouts_site_header_nav_toggle', 26 );
+
 function scouts_enqueue_assets() {
     wp_enqueue_style(
         'nunito-sans',
