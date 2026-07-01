@@ -4280,3 +4280,23 @@ html, body {
 @media (min-width: 1200px) {
   .site-header__mobile { display: none; }
 }
+
+/* ── 13c. Cookie banner: float it (was position:relative in the flow, sitting
+   above the header and pushing the whole page down — the "white gap"). ── */
+.cc-window.cc-floating {
+  position: fixed !important;
+  left: 20px;
+  right: auto;
+  bottom: 20px;
+  top: auto;
+  max-width: 360px;
+  z-index: 500;
+}
+@media (max-width: 560px) {
+  .cc-window.cc-floating {
+    left: 12px;
+    right: 12px;
+    bottom: 12px;
+    max-width: none;
+  }
+}
