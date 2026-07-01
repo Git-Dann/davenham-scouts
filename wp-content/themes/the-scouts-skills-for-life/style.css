@@ -4181,6 +4181,7 @@ html, body {
   background: transparent;
   border: 1px solid var(--scout-border, #CCCCCC);
   border-radius: var(--scout-radius-input, 5px);
+  box-shadow: none; /* kill the theme's global button shadow */
   cursor: pointer;
 }
 .site-header__burger span {
@@ -4190,11 +4191,20 @@ html, body {
   background: var(--scout-text-dark, #333333);
 }
 
-/* Mobile dropdown panel */
+/* Mobile dropdown panel — absolute overlay so it drops over the page instead
+   of pushing content down (the .site-header sticky context positions it). */
 .site-header__mobile {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  z-index: 290;
+  max-height: calc(100vh - 90px);
+  overflow-y: auto;
   border-top: 1px solid var(--scout-border, #CCCCCC);
-  padding: 12px 32px 20px;
+  padding: 12px 20px 20px;
   background: var(--scout-white, #fff);
+  box-shadow: var(--scout-shadow-card-hover, 0 8px 28px rgba(15, 23, 42, 0.12));
 }
 .site-header__mobile[hidden] { display: none; }
 .site-header__mobile-menu {
@@ -4240,6 +4250,7 @@ html, body {
   height: 48px;
   background: transparent;
   border: 0;
+  box-shadow: none; /* kill the theme's global button shadow */
   cursor: pointer;
 }
 .site-header__submenu-toggle::before {
