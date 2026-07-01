@@ -31,12 +31,14 @@
 
                 <div class="icon_wrap">
                     <div class="block-icon cta-btn">
-                        <?php if ( ! empty( $scouts_site_settings['header_primary_cta_text'] ) && ! empty( $scouts_site_settings['header_primary_cta_url'] ) ) : ?>
-                            <a href="<?php echo esc_url( $scouts_site_settings['header_primary_cta_url'] ); ?>"><?php echo esc_html( $scouts_site_settings['header_primary_cta_text'] ); ?></a>
-                        <?php endif; ?>
-                        <?php if ( ! empty( $scouts_site_settings['header_secondary_cta_text'] ) && ! empty( $scouts_site_settings['header_secondary_cta_url'] ) ) : ?>
-                            <a href="<?php echo esc_url( $scouts_site_settings['header_secondary_cta_url'] ); ?>"><?php echo esc_html( $scouts_site_settings['header_secondary_cta_text'] ); ?></a>
-                        <?php endif; ?>
+                        <?php
+                        // Single primary CTA (Join) — de-duplicated: Volunteer/Join were
+                        // redundant and Join is already in the nav. Uses the secondary
+                        // CTA setting, falling back to a sensible default.
+                        $join_url  = ! empty( $scouts_site_settings['header_secondary_cta_url'] ) ? $scouts_site_settings['header_secondary_cta_url'] : home_url( '/join/' );
+                        $join_text = ! empty( $scouts_site_settings['header_secondary_cta_text'] ) ? $scouts_site_settings['header_secondary_cta_text'] : __( 'Join Us', 'the-scouts-skills-for-life' );
+                        ?>
+                        <a class="header-cta" href="<?php echo esc_url( $join_url ); ?>"><?php echo esc_html( $join_text ); ?></a>
                     </div>
 
                     <div class="block_icon search-form desktop">

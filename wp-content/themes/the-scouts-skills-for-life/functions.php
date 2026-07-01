@@ -189,6 +189,29 @@ function scouts_render_site_chrome(): void {
 }
 add_action( 'wp_footer', 'scouts_render_site_chrome', 25 );
 
+// Condense the sticky header on scroll (adds .is-scrolled to .new-header).
+function scouts_header_condense_script() {
+    ?>
+    <script>
+    (function () {
+        var header = document.querySelector('.new-header');
+        if (!header) { return; }
+        var condensed = false;
+        function onScroll() {
+            var past = window.scrollY > 24;
+            if (past !== condensed) {
+                condensed = past;
+                header.classList.toggle('is-scrolled', past);
+            }
+        }
+        window.addEventListener('scroll', onScroll, { passive: true });
+        onScroll();
+    }());
+    </script>
+    <?php
+}
+add_action( 'wp_footer', 'scouts_header_condense_script', 26 );
+
 function scouts_enqueue_assets() {
     wp_enqueue_style(
         'nunito-sans',
