@@ -136,6 +136,55 @@ Decorative 3px top-stripes on builder canvas cards — never used in frontend ou
 
 ---
 
+## 2.7 Implemented Token Layer (source of truth)
+
+Every value in §2–§7 and §13 is implemented as CSS custom properties in
+`wp-content/themes/the-scouts-skills-for-life/tokens.css`, namespace `--scout-*`,
+enqueued **before all other CSS** on the front end and across wp-admin.
+
+> **This token file is the single source of truth. All new or edited CSS MUST
+> consume values via `var(--scout-…)` — never hardcode a value that has a token.**
+> Plugins use `var(--scout-…, <fallback>)` so they degrade safely if the theme
+> is inactive.
+
+Representative tokens:
+
+| Token | Value | | Token | Value |
+|---|---|---|---|---|
+| `--scout-purple` | `#590FA9` | | `--scout-text` | `#404040` |
+| `--scout-blue` | `#006DDF` | | `--scout-text-2` | `#6E6E6E` |
+| `--scout-teal` | `#088486` | | `--scout-text-muted` | `#999999` |
+| `--scout-navy` | `#003982` | | `--scout-border` | `#CCCCCC` |
+| `--scout-green` | `#008A1C` | | `--scout-card-border` | `#E5E7EB` |
+| `--scout-red` | `#ED3F23` | | `--scout-bg` | `#F1F1F1` |
+| `--scout-radius-card` | `10px` | | `--scout-radius-button` | `0` |
+| `--scout-shadow-card` | see §7 | | `--scout-focus` | see §7 |
+| `--scout-space-xl` | `24px` | | `--scout-container` | `1180px` |
+
+## 2.8 UI State Tints & File-Type Badges
+
+These close the two gaps that previously drove off-palette colour. No new solid
+hexes — state tints are low-alpha of the brand semantic colours.
+
+**Message / state blocks:**
+
+| State | Border + text | Background tint |
+|---|---|---|
+| Success | `--scout-success` (`#008A1C`) | `--scout-success-tint` (`rgba(0,138,28,0.08)`) |
+| Error | `--scout-danger` (`#ED3F23`) | `--scout-danger-tint` (`rgba(237,63,35,0.08)`) |
+
+**File-type badges (documents library)** — mapped to brand palette, not vendor colours:
+
+| Type | Token | Value |
+|---|---|---|
+| PDF | `--scout-file-pdf` | `#ED3F23` (red) |
+| Word | `--scout-file-doc` | `#003982` (navy) |
+| Excel | `--scout-file-xls` | `#008A1C` (green) |
+| PowerPoint | `--scout-file-ppt` | `#FF912A` (orange) |
+| Image | `--scout-file-img` | `#590FA9` (purple) |
+
+---
+
 ## 3. Gradients
 
 Always use 135° angle. Never invent new gradients.

@@ -196,10 +196,17 @@ function scouts_enqueue_assets() {
         [],
         null
     );
+    // Design tokens (single source of truth) — must load before all other CSS.
+    wp_enqueue_style(
+        'scouts-tokens',
+        SCOUTS_THEME_URI . '/tokens.css',
+        [],
+        scouts_asset_version( 'tokens.css' )
+    );
     wp_enqueue_style(
         'scouts-production',
         SCOUTS_THEME_URI . '/production/production.css',
-        [ 'nunito-sans' ],
+        [ 'nunito-sans', 'scouts-tokens' ],
         scouts_asset_version( 'production/production.css' )
     );
     wp_enqueue_style(
@@ -229,6 +236,17 @@ function scouts_admin_assets() {
     );
 }
 add_action( 'enqueue_block_editor_assets', 'scouts_admin_assets' );
+
+// Design tokens across all of wp-admin so plugin admin screens can consume them.
+function scouts_admin_tokens() {
+    wp_enqueue_style(
+        'scouts-tokens',
+        SCOUTS_THEME_URI . '/tokens.css',
+        [],
+        scouts_asset_version( 'tokens.css' )
+    );
+}
+add_action( 'admin_enqueue_scripts', 'scouts_admin_tokens' );
 
 function scouts_setup() {
     add_theme_support( 'title-tag' );

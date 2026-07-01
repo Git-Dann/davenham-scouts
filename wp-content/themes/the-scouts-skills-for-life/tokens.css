@@ -1,0 +1,88 @@
+/* =============================================================================
+   1st Davenham Scouts — Design Tokens (single source of truth)
+   Implements design.md as CSS custom properties. Enqueued site-wide (front end)
+   and across wp-admin. All new or edited CSS MUST consume these via
+   var(--scout-…); never hardcode a value that has a token here.
+   Values are the Scouts UK national brand palette — see design.md §2–§7, §13.
+   ============================================================================= */
+
+:root {
+	/* ---- Brand colours (design.md §2.1/§2.2) ---- */
+	--scout-purple:       #590FA9;
+	--scout-blue:         #006DDF;
+	--scout-pink:         #FFB4E5;
+	--scout-orange:       #FF912A;
+	--scout-teal:         #088486;
+	--scout-yellow:       #FFE627;
+	--scout-green:        #008A1C;
+	--scout-light-green:  #25B755;
+	--scout-dark-green:   #205B41;
+	--scout-navy:         #003982;
+	--scout-dark-grape:   #490499;
+	--scout-red:          #ED3F23;
+
+	/* ---- Text / neutrals (design.md §2.3) ---- */
+	--scout-text:         #404040;  /* primary body */
+	--scout-text-dark:    #333333;  /* headings on white */
+	--scout-text-2:       #6E6E6E;  /* secondary / muted */
+	--scout-text-muted:   #999999;  /* placeholder / disabled */
+	--scout-border:       #CCCCCC;  /* borders, dividers */
+	--scout-card-border:  #E5E7EB;  /* card edge (§11) */
+	--scout-bg:           #F1F1F1;  /* light section bg, inputs */
+	--scout-bg-off-white: #F6F6F6;  /* news card content bg */
+	--scout-white:        #FFFFFF;
+
+	/* ---- Semantic + state tints (design.md §2.8) ---- */
+	--scout-success:      #008A1C;
+	--scout-success-tint: rgba(0, 138, 28, 0.08);
+	--scout-danger:       #ED3F23;
+	--scout-danger-tint:  rgba(237, 63, 35, 0.08);
+	--scout-warning:      #FFE627;
+	--scout-info:         #006DDF;
+
+	/* ---- File-type badge colours (documents; design.md §2.8) ---- */
+	--scout-file-pdf:   #ED3F23;
+	--scout-file-doc:   #003982;
+	--scout-file-xls:   #008A1C;
+	--scout-file-ppt:   #FF912A;
+	--scout-file-img:   #590FA9;
+
+	/* ---- Gradients (design.md §3, always 135deg) ---- */
+	--scout-grad-brand:  linear-gradient(135deg, #003982 0%, #590FA9 100%);
+	--scout-grad-purple: linear-gradient(135deg, #590FA9 0%, #490499 100%);
+	--scout-grad-dark:   linear-gradient(135deg, #0F172A 0%, #1F2F55 100%);
+
+	/* ---- Typography (design.md §4) ---- */
+	--scout-font: "Nunito Sans", -apple-system, system-ui, "Segoe UI", Roboto,
+		Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+
+	/* ---- Spacing scale (design.md §5, 4px base) ---- */
+	--scout-space-2xs: 3px;
+	--scout-space-xs:  6px;
+	--scout-space-s:   10px;
+	--scout-space-m:   14px;
+	--scout-space-l:   20px;
+	--scout-space-xl:  24px;
+	--scout-space-2xl: 32px;
+	--scout-space-3xl: 44px;
+	--scout-space-4xl: 64px;
+	--scout-container: 1180px;
+
+	/* ---- Border radius (design.md §6.1 — frontend) ---- */
+	--scout-radius-button: 0;      /* national brand: sharp buttons */
+	--scout-radius-input:  5px;
+	--scout-radius-card:   10px;
+
+	/* ---- Shadows (design.md §7) ---- */
+	--scout-shadow-national:   rgba(0, 0, 0, 0.1) 0px 0px 9px 2px;
+	--scout-shadow-card:       0 4px 16px rgba(15, 23, 42, 0.06);
+	--scout-shadow-card-hover: 0 8px 28px rgba(15, 23, 42, 0.12);
+	--scout-shadow-purple:     0 8px 24px rgba(89, 15, 169, 0.12);
+
+	/* ---- Focus ring (design.md §11 rule 11) ---- */
+	--scout-focus: 0 0 0 3px rgba(89, 15, 169, 0.15);
+
+	/* ---- Motion (design.md §13) ---- */
+	--scout-motion-fast:    0.15s ease;
+	--scout-motion-gallery: 0.3s ease;
+}
