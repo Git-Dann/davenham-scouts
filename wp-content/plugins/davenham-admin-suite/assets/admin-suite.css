@@ -822,7 +822,22 @@ body.davenham-admin-shell {
   --das-rail-width: 236px;
   --das-rail-collapsed-width: 72px;
   --das-topbar-height: 64px;
+  --das-content-max: 1440px;
   background: #F1F1F1;
+}
+
+/* Cap content width on wide monitors so admin screens read as a contained,
+   intentional column rather than stretching edge-to-edge. Left-aligned under
+   the topbar. The block editor (#editor), the media grid and WooCommerce's
+   React layouts run full-bleed and are deliberately excluded. */
+body.davenham-admin-shell #wpbody-content > .wrap {
+  max-width: var(--das-content-max);
+}
+body.davenham-admin-shell.block-editor-page #wpbody-content > .wrap,
+body.davenham-admin-shell .woocommerce-layout,
+body.davenham-admin-shell #wpbody-content > .wrap.edit-php,
+body.davenham-admin-shell #wpbody-content > .upload-php {
+  max-width: none;
 }
 
 body.davenham-admin-shell #wpadminbar,

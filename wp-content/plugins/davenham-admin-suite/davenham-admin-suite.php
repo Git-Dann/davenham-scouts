@@ -3,14 +3,14 @@
  * Plugin Name: Davenham Admin Suite
  * Plugin URI:  https://davenhamscouts.org.uk
  * Description: White-label admin customisation, menu cleanup, and editorial polish for Davenham Scouts.
- * Version:     1.6.2
+ * Version:     1.6.3
  * Author:      Davenham Scout Group
  * Text Domain: davenham-admin-suite
  */
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'DAS_VERSION', '1.6.2' );
+define( 'DAS_VERSION', '1.6.3' );
 define( 'DAS_FILE', __FILE__ );
 define( 'DAS_DIR', plugin_dir_path( __FILE__ ) );
 define( 'DAS_URL', plugin_dir_url( __FILE__ ) );
