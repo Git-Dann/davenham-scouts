@@ -29,7 +29,7 @@ $dvh_logo_url  = function_exists( 'scouts_get_site_logo_url' ) ? scouts_get_site
                 'menu_id'        => 'primary-menu',
                 'fallback_cb'    => false,
                 'container'      => false,
-                'depth'          => 1,
+                'depth'          => 2,
             ] ); ?>
         </nav>
 
@@ -48,7 +48,7 @@ $dvh_logo_url  = function_exists( 'scouts_get_site_logo_url' ) ? scouts_get_site
             'menu_id'        => 'primary-menu-mobile',
             'fallback_cb'    => false,
             'container'      => false,
-            'depth'          => 1,
+            'depth'          => 2,
         ] ); ?>
         <a class="site-header__cta site-header__cta--block" href="<?php echo esc_url( $dvh_join_url ); ?>"><?php echo esc_html( $dvh_join_text ); ?></a>
     </div>

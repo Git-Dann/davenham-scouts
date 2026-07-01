@@ -216,6 +216,31 @@ function scouts_site_header_nav_toggle() {
 }
 add_action( 'wp_footer', 'scouts_site_header_nav_toggle', 26 );
 
+// Drop "Home" (the logo links home) and "Join" (the header button covers it)
+// from the primary nav — rendered-only, no change to the saved menu.
+function scouts_prune_primary_nav( $items, $args ) {
+    if ( empty( $args->theme_location ) || 'primary' !== $args->theme_location ) {
+        return $items;
+    }
+    $remove = array( 'home', 'join' );
+    $removed_ids = array();
+    foreach ( $items as $key => $item ) {
+        if ( '0' === (string) $item->menu_item_parent && in_array( strtolower( trim( wp_strip_all_tags( $item->title ) ) ), $remove, true ) ) {
+            $removed_ids[] = (int) $item->ID;
+            unset( $items[ $key ] );
+        }
+    }
+    if ( ! empty( $removed_ids ) ) {
+        foreach ( $items as $key => $item ) {
+            if ( in_array( (int) $item->menu_item_parent, $removed_ids, true ) ) {
+                unset( $items[ $key ] );
+            }
+        }
+    }
+    return $items;
+}
+add_filter( 'wp_nav_menu_objects', 'scouts_prune_primary_nav', 10, 2 );
+
 function scouts_enqueue_assets() {
     wp_enqueue_style(
         'nunito-sans',
