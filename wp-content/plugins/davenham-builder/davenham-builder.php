@@ -131,7 +131,13 @@ function db_register_admin_menu() {
 		__( 'Page Migration', 'davenham-builder' ),
 		'manage_options',
 		'davenham-builder-migrate',
-		'db_render_migration_page'
+		function () {
+			if ( function_exists( 'db_render_migration_page' ) ) {
+				db_render_migration_page();
+			} else {
+				echo '<div class="wrap"><h1>' . esc_html__( 'Page Migration', 'davenham-builder' ) . '</h1><p>' . esc_html__( 'The migration module could not be loaded.', 'davenham-builder' ) . '</p></div>';
+			}
+		}
 	);
 
 	add_submenu_page(
@@ -140,7 +146,13 @@ function db_register_admin_menu() {
 		__( 'Sample Shop Products', 'davenham-builder' ),
 		'manage_options',
 		'davenham-builder-shop-seed',
-		'db_render_shop_seed_page'
+		function () {
+			if ( function_exists( 'db_render_shop_seed_page' ) ) {
+				db_render_shop_seed_page();
+			} else {
+				echo '<div class="wrap"><h1>' . esc_html__( 'Sample Shop Products', 'davenham-builder' ) . '</h1><p>' . esc_html__( 'The shop-seed module could not be loaded.', 'davenham-builder' ) . '</p></div>';
+			}
+		}
 	);
 }
 

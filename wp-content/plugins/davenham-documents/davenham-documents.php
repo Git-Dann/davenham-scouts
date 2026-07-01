@@ -425,7 +425,7 @@ final class Davenham_Documents {
 			return;
 		}
 		$name = get_post_meta( $post_id, '_davenham_doc_name', true );
-		echo $name ? esc_html( $name ) : '<span style="color:#a00;">' . esc_html__( 'No file', 'davenham-documents' ) . '</span>';
+		echo $name ? esc_html( $name ) : '<span style="color:var(--scout-danger,#ED3F23);">' . esc_html__( 'No file', 'davenham-documents' ) . '</span>';
 	}
 
 	public static function enqueue_admin_assets() {
