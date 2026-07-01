@@ -7,6 +7,13 @@
  */
 $heading = $attributes['heading'] ?? 'Our Leaders';
 $leaders = is_array( $attributes['leaders'] ?? null ) ? $attributes['leaders'] : [];
+
+// Cards get a wider layout when any entry carries a bio, so the copy has
+// room to breathe (a photo roster with no bios stays compact).
+$has_bio = false;
+foreach ( $leaders as $l ) {
+	if ( ! empty( $l['bio'] ) ) { $has_bio = true; break; }
+}
 ?>
 <section class="leaders_section cf">
 	<div class="wrapper">
@@ -15,12 +22,13 @@ $leaders = is_array( $attributes['leaders'] ?? null ) ? $attributes['leaders'] :
 		</div><!-- .title_bar -->
 
 		<?php if ( ! empty( $leaders ) ) : ?>
-		<div class="leaders_grid">
+		<div class="leaders_grid<?php echo $has_bio ? ' leaders_grid--bio' : ''; ?>">
 			<?php foreach ( $leaders as $leader ) :
 				$img     = isset( $leader['imageUrl'] ) ? esc_url( $leader['imageUrl'] ) : '';
 				$name    = isset( $leader['name']     ) ? esc_html( $leader['name'] )    : '';
 				$role    = isset( $leader['role']     ) ? esc_html( $leader['role'] )    : '';
 				$section = isset( $leader['section']  ) ? esc_html( $leader['section'] ) : '';
+				$bio     = isset( $leader['bio']      ) ? esc_html( $leader['bio'] )     : '';
 				if ( ! $name ) continue;
 			?>
 			<div class="leader_card">
@@ -40,6 +48,9 @@ $leaders = is_array( $attributes['leaders'] ?? null ) ? $attributes['leaders'] :
 					<?php endif; ?>
 					<?php if ( $section ) : ?>
 					<span class="leader_card__section"><?php echo $section; ?></span>
+					<?php endif; ?>
+					<?php if ( $bio ) : ?>
+					<p class="leader_card__bio"><?php echo $bio; ?></p>
 					<?php endif; ?>
 				</div>
 			</div><!-- .leader_card -->

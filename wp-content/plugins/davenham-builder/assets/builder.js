@@ -254,6 +254,7 @@
 						{ key: 'name',     type: 'text',     label: 'Name',        default: '' },
 						{ key: 'role',     type: 'text',     label: 'Role / Title',default: '' },
 						{ key: 'section',  type: 'text',     label: 'Section',     default: '', help: 'e.g. Cubs, Scouts, Explorers' },
+						{ key: 'bio',      type: 'textarea', label: 'Short bio',   default: '', help: 'Optional — a sentence or two about this person.' },
 					],
 				},
 			],

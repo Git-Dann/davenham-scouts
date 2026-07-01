@@ -5,13 +5,6 @@
     $hero_img         = get_the_post_thumbnail_url( get_the_ID(), 'full' );
     $current_id       = get_the_ID();
     $ancestors        = get_post_ancestors( $current_id );
-    $section_root_id  = $ancestors ? end( $ancestors ) : $current_id;
-    $section_root_page = get_post( $section_root_id );
-    $section_children = get_pages( array(
-        'parent'      => $section_root_id,
-        'sort_column' => 'menu_order,post_title',
-    ) );
-    $has_section_nav  = ! empty( $section_children );
 
     // Detect whether the page content uses Davenham Builder blocks.
     // When it does we render the page content full-width since each
@@ -69,25 +62,8 @@
     </div>
 </section>
 
-<?php if ( $has_section_nav ) : ?>
-<nav class="section_nav" aria-label="<?php esc_attr_e( 'Section navigation', 'the-scouts-skills-for-life' ); ?>">
-    <div class="wrapper">
-        <ul class="section_nav__list">
-            <li class="section_nav__item <?php echo $section_root_id === $current_id ? 'is-active' : ''; ?>">
-                <a href="<?php echo esc_url( get_permalink( $section_root_id ) ); ?>"><?php echo esc_html( get_the_title( $section_root_id ) ); ?></a>
-            </li>
-            <?php foreach ( $section_children as $child ) : ?>
-                <li class="section_nav__item <?php echo (int) $child->ID === $current_id ? 'is-active' : ''; ?>">
-                    <a href="<?php echo esc_url( get_permalink( $child->ID ) ); ?>"
-                       <?php echo (int) $child->ID === $current_id ? 'aria-current="page"' : ''; ?>>
-                        <?php echo esc_html( $child->post_title ); ?>
-                    </a>
-                </li>
-            <?php endforeach; ?>
-        </ul>
-    </div>
-</nav>
-<?php endif; ?>
+<?php // Secondary/section navigation removed — the main header nav (with
+      // dropdowns) is the single source of site navigation. ?>
 
 <?php if ( $has_builder_blocks ) : ?>
 <div class="page_content page_content--blocks">
