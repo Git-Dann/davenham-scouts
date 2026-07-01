@@ -4,6 +4,11 @@ $heading    = $attributes['heading'] ?? '';
 $text       = $attributes['text'] ?? '';
 $button_txt = $attributes['buttonText'] ?? '';
 $button_url = $attributes['buttonUrl'] ?? '';
+
+// Nothing to show — don't render an empty coloured banner.
+if ( '' === trim( $eyebrow ) && '' === trim( $heading ) && '' === trim( (string) $text ) && '' === trim( $button_txt ) ) {
+	return;
+}
 ?>
 <section class="promo_banner_section cf">
 	<div class="wrapper">

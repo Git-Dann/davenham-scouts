@@ -1286,6 +1286,12 @@
   color: rgba(255, 255, 255, 0.92);
 }
 
+/* Force legible light text — beats the theme's element-level p colour. */
+.featured_product__card .featured_product__desc,
+.featured_product__card .featured_product__desc p {
+  color: rgba(255, 255, 255, 0.92);
+}
+
 .featured_product__desc p {
   margin: 0 0 10px;
 }
@@ -1297,21 +1303,23 @@
   margin-top: 6px;
 }
 
-.featured_product__btn {
+/* Scoped selector so the theme's link colour can't turn the label white-on-white. */
+.featured_product__card .featured_product__btn {
   align-self: flex-start;
   padding: 12px 24px;
-  background: #fff;
-  color: #590FA9;
-  border-radius: 0;
+  background: var(--scout-white, #fff);
+  color: var(--scout-purple, #590FA9);
+  border-radius: var(--scout-radius-button, 0);
   font-weight: 700;
   text-decoration: none;
   margin-top: 8px;
   transition: background 0.15s ease, color 0.15s ease;
 }
 
-.featured_product__btn:hover {
-  background: #FFB4E5;
-  color: #590FA9;
+.featured_product__card .featured_product__btn:hover,
+.featured_product__card .featured_product__btn:focus {
+  background: var(--scout-pink, #FFB4E5);
+  color: var(--scout-purple, #590FA9);
 }
 
 /* ── Event Ticket Card block ─────────────────────────────── */
@@ -1765,16 +1773,17 @@
 }
 
 .category_showcase__tile-meta {
-  margin-top: auto;
+  margin-top: 0;
 }
 
-.category_showcase__tile-name {
+/* Higher specificity so the theme's element-level h3 colour can't override it. */
+.category_showcase__tile .category_showcase__tile-name {
   margin: 0 0 6px;
   font-size: 24px;
   font-weight: 900;
   line-height: 1.15;
   letter-spacing: -0.01em;
-  color: #fff;
+  color: var(--scout-white, #fff);
 }
 
 .category_showcase__tile-blurb {
@@ -1789,6 +1798,7 @@
   align-items: center;
   justify-content: space-between;
   gap: 10px;
+  margin-top: auto; /* pin footer to the bottom so titles align across tiles */
   padding-top: 14px;
   border-top: 1px solid rgba(255,255,255,0.25);
 }
@@ -1807,12 +1817,14 @@
 }
 
 .category_showcase__tile-count {
+  flex: 0 0 auto;
   font-size: 11px;
   font-weight: 700;
-  color: #fff;
+  color: var(--scout-white, #fff);
   background: rgba(0,0,0,0.25);
   padding: 3px 10px;
   border-radius: 999px;
+  white-space: nowrap;
 }
 
 /* ── Shop by Section — 6 coloured tiles with section logos ── */

@@ -27,7 +27,6 @@
             <div class="logo-cta-container">
                 <a href="<?php echo esc_url( home_url( '/' ) ); ?>" class="logo">
                     <img src="<?php echo esc_url( function_exists( 'scouts_get_site_logo_url' ) ? scouts_get_site_logo_url() : get_template_directory_uri() . '/images/scouts-logo-standard.svg' ); ?>" alt="<?php bloginfo( 'name' ); ?>" />
-                    <span class="logo__text logo__text--england logo__text--medium"><?php bloginfo( 'name' ); ?></span>
                 </a>
 
                 <div class="icon_wrap">

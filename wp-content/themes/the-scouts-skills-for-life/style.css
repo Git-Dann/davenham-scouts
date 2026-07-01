@@ -4004,3 +4004,35 @@ html, body {
     height: 200px;
   }
 }
+
+/* ── 13. Inner-page hero + header refinements ──────────────────
+   The no-image page hero (.hero.standard) was falling back to a black
+   background and had a 170px top padding — a huge black void. Give it the
+   brand gradient and a sensible height. Also stop the header CTA buttons
+   from wrapping ("Volunteer with Scouts" / "Join Scouts"). */
+.hero.standard {
+  background: var(--scout-grad-brand, linear-gradient(135deg, #003982 0%, #590FA9 100%));
+}
+
+.hero.standard .inner {
+  padding-top: 72px;
+  padding-bottom: 64px;
+}
+
+@media (max-width: 700px) {
+  .hero.standard .inner {
+    padding-top: 56px;
+    padding-bottom: 48px;
+  }
+}
+
+/* Header CTA buttons: single row, never wrap the label. */
+.header-main-content .icon_wrap .cta-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.header-main-content .icon_wrap .cta-btn a {
+  white-space: nowrap;
+}

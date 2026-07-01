@@ -3,7 +3,7 @@
  * Plugin Name: Davenham Builder
  * Plugin URI:  https://davenhamscouts.org.uk
  * Description: Visual page builder + all custom Gutenberg blocks for Davenham Scout Group. One plugin, no faff.
- * Version:     1.4.2
+ * Version:     1.4.3
  * Author:      Davenham Scout Group
  * Text Domain: davenham-builder
  * Requires at least: 6.0
@@ -12,7 +12,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'DB_VERSION', '1.4.2' );
+define( 'DB_VERSION', '1.4.3' );
 define( 'DB_DIR',     plugin_dir_path( __FILE__ ) );
 define( 'DB_URL',     plugin_dir_url( __FILE__ ) );
 
