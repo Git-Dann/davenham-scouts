@@ -185,7 +185,9 @@ Text Domain: the-scouts-skills-for-life
 
 /* ---- Brand column ---- */
 .site-footer__logo { display: inline-block; margin: 0 0 20px; }
-.site-footer__logo img { height: 64px; width: auto; display: block; }
+/* The brand lockup is a purple-on-transparent PNG; reverse it to solid white
+   for legibility on the dark footer (standard logo-reversal filter). */
+.site-footer__logo img { height: 64px; width: auto; display: block; filter: brightness(0) invert(1); }
 
 .site-footer__tagline {
   margin: 0 0 24px;

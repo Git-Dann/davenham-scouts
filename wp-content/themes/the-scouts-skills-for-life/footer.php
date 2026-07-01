@@ -18,7 +18,6 @@ $dvh_x        = $scouts_site_settings['footer_social_x'] ?? '';
             <p class="site-footer__tagline"><?php echo esc_html( $dvh_tagline ); ?></p>
             <div class="site-footer__cta-row">
                 <a class="site-footer__cta" href="<?php echo esc_url( home_url( '/join/' ) ); ?>">Join Scouts</a>
-                <a class="site-footer__cta site-footer__cta--ghost" href="<?php echo esc_url( home_url( '/volunteer/' ) ); ?>">Volunteer</a>
             </div>
         </div>
 
