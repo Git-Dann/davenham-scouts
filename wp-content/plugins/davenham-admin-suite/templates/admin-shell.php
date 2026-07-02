@@ -236,6 +236,10 @@ $render_flyout = function ( $item ) use ( $admin_groups ) {
 			<strong><?php echo esc_html( $page_title ); ?></strong>
 			<span>Scout group operations</span>
 		</div>
+		<a class="das-app-viewsite" href="<?php echo esc_url( home_url( '/' ) ); ?>" target="_blank" rel="noopener">
+			<span class="dashicons dashicons-external" aria-hidden="true"></span>
+			<span class="das-app-viewsite__label">View site</span>
+		</a>
 		<span class="das-app-user"><?php echo esc_html( $current_user ); ?></span>
 	</header>
 

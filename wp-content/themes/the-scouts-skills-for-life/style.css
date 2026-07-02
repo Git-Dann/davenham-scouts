@@ -167,7 +167,17 @@ Text Domain: the-scouts-skills-for-life
    Site footer — modern rebuild (namespaced .site-footer; escapes production.css
    .footer baggage, same approach as .site-header). Tokenised per design.md.
    ============================================================================ */
+/* Sticky footer — pin the footer to the bottom of the viewport on short
+   pages (e.g. 404, thin content) instead of letting it float mid-screen.
+   All theme sections are direct children of <body>, so a flex column with
+   the footer pushed down by margin-top:auto does it cleanly. */
+body {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
 .site-footer {
+  margin-top: auto;
   background: var(--scout-purple-deep, #2C0A54);
   color: rgba(255, 255, 255, 0.72);
   font-family: "Nunito Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;

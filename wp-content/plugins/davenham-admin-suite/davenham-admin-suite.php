@@ -3,14 +3,14 @@
  * Plugin Name: Davenham Admin Suite
  * Plugin URI:  https://davenhamscouts.org.uk
  * Description: White-label admin customisation, menu cleanup, and editorial polish for Davenham Scouts.
- * Version:     1.6.4
+ * Version:     1.6.5
  * Author:      Davenham Scout Group
  * Text Domain: davenham-admin-suite
  */
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'DAS_VERSION', '1.6.4' );
+define( 'DAS_VERSION', '1.6.5' );
 define( 'DAS_FILE', __FILE__ );
 define( 'DAS_DIR', plugin_dir_path( __FILE__ ) );
 define( 'DAS_URL', plugin_dir_url( __FILE__ ) );
@@ -1649,6 +1649,15 @@ html.das-app-shell-active body.davenham-admin-shell .das-app-flyout.is-open {
 		);
 		if ( isset( $known_remaps[ $slug ] ) ) {
 			return admin_url( $known_remaps[ $slug ] );
+		}
+
+		// A page slug carrying extra query args but no base file — e.g.
+		// WooPayments registers "wc-admin&path=/payments/overview". The `/`
+		// inside that query must NOT be treated as a file path, or we build
+		// /wp-admin/wc-admin&path=… which 404s to the front end. Prefix with
+		// admin.php?page= so it resolves to the real screen.
+		if ( false === strpos( $slug, '.php' ) && false === strpos( $slug, '?' ) && false !== strpos( $slug, '&' ) ) {
+			return admin_url( 'admin.php?page=' . $slug );
 		}
 
 		if ( false !== strpos( $slug, '.php' ) || false !== strpos( $slug, '?' ) || false !== strpos( $slug, '/' ) ) {

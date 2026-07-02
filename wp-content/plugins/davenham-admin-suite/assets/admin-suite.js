@@ -302,6 +302,18 @@ jQuery(function ($) {
       }
     }
 
+    var flyoutCloseTimer = null;
+    function scheduleFlyoutClose() {
+      if (window.matchMedia('(max-width: 782px)').matches) {
+        return; // touch: rely on click / click-outside, not hover
+      }
+      clearTimeout(flyoutCloseTimer);
+      flyoutCloseTimer = setTimeout(closeFlyouts, 260);
+    }
+    function cancelFlyoutClose() {
+      clearTimeout(flyoutCloseTimer);
+    }
+
     flyoutButtons.forEach(function (button) {
       button.addEventListener('click', function (event) {
         event.preventDefault();
@@ -310,9 +322,19 @@ jQuery(function ($) {
 
       button.addEventListener('mouseenter', function () {
         if (!window.matchMedia('(max-width: 782px)').matches) {
+          cancelFlyoutClose();
           openFlyout(button);
         }
       });
+
+      // Auto-close when the pointer leaves the trigger — cancelled if it
+      // moves onto the panel (below), so the menu no longer stays stuck open.
+      button.addEventListener('mouseleave', scheduleFlyoutClose);
+    });
+
+    shell.querySelectorAll('.das-app-flyout').forEach(function (panel) {
+      panel.addEventListener('mouseenter', cancelFlyoutClose);
+      panel.addEventListener('mouseleave', scheduleFlyoutClose);
     });
 
     if (collapse) {
