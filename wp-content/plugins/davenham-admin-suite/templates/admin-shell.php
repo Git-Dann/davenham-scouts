@@ -68,7 +68,17 @@ if ( ! function_exists( 'das_shell_is_active' ) ) {
 		if ( false !== strpos( $tar_path, '/admin.php' ) ) {
 			$cur_page = isset( $cur_query['page'] ) ? (string) $cur_query['page'] : '';
 			$tar_page = isset( $tar_query['page'] ) ? (string) $tar_query['page'] : '';
-			return $cur_page === $tar_page;
+			if ( $cur_page !== $tar_page ) {
+				return false;
+			}
+			// WooCommerce Admin (Shop, Payments, Analytics…) all share
+			// page=wc-admin and distinguish screens by the `path` param.
+			// Without comparing it, they all match each other and light up
+			// together. Compare the route too (empty === empty for plain
+			// pages, so this is safe for non-React screens).
+			$cur_route = isset( $cur_query['path'] ) ? trim( (string) $cur_query['path'], '/' ) : '';
+			$tar_route = isset( $tar_query['path'] ) ? trim( (string) $tar_query['path'], '/' ) : '';
+			return $cur_route === $tar_route;
 		}
 
 		// edit.php?post_type=X — same logic applies (post_type is the key).
