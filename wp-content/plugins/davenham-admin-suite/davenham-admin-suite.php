@@ -3,14 +3,14 @@
  * Plugin Name: Davenham Admin Suite
  * Plugin URI:  https://davenhamscouts.org.uk
  * Description: White-label admin customisation, menu cleanup, and editorial polish for Davenham Scouts.
- * Version:     1.6.11
+ * Version:     1.6.12
  * Author:      Davenham Scout Group
  * Text Domain: davenham-admin-suite
  */
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'DAS_VERSION', '1.6.11' );
+define( 'DAS_VERSION', '1.6.12' );
 define( 'DAS_FILE', __FILE__ );
 define( 'DAS_DIR', plugin_dir_path( __FILE__ ) );
 define( 'DAS_URL', plugin_dir_url( __FILE__ ) );
@@ -1712,6 +1712,7 @@ html.das-app-shell-active body.davenham-admin-shell .das-app-flyout.is-open {
 		// contains the substring "post" and would otherwise all grab the
 		// Posts icon.
 		$rules = array(
+			'inventory' => array( 'inventory', 'dvh_asset', 'asset', 'stock', 'equipment', 'kit' ),
 			'tickets'   => array( 'event', 'ticket' ),
 			'products'  => array( 'post_type=product', 'product' ),
 			'payments'  => array( 'payment', 'gateway', 'wc-settings', 'checkout' ),
@@ -1753,6 +1754,7 @@ html.das-app-shell-active body.davenham-admin-shell .das-app-flyout.is-open {
 	private static function icon_choices() {
 		return [
 			'dashboard' => 'Dashboard',
+			'inventory' => 'Inventory',
 			'tickets'   => 'Tickets',
 			'calendar'  => 'Calendar',
 			'pages'     => 'Pages',
@@ -1797,6 +1799,7 @@ html.das-app-shell-active body.davenham-admin-shell .das-app-flyout.is-open {
 	public static function icon_dashicon( $icon ) {
 		$map = [
 			'dashboard'  => 'dashicons-dashboard',
+			'inventory'  => 'dashicons-archive',
 			'tickets'    => 'dashicons-tickets-alt',
 			'calendar'   => 'dashicons-calendar-alt',
 			'pages'      => 'dashicons-admin-page',

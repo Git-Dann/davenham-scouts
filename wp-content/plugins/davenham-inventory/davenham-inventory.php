@@ -488,12 +488,14 @@ final class Davenham_Inventory {
 			.dvh-inv-stat .dvh-inv-fig{display:block;font-size:2rem;font-weight:800;color:#003982;line-height:1;}
 			.dvh-inv-stat span:last-child{color:#55565A;font-size:.9rem;}
 			.dvh-inv-stat--out .dvh-inv-fig{color:#C0490B;}
-			.dvh-inv-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px;margin-top:12px;}
-			.dvh-inv-card{display:flex;flex-direction:column;gap:4px;background:#fff;border:1px solid #e7e9ee;border-top:4px solid #590FA9;border-radius:12px;padding:18px;text-decoration:none;box-shadow:0 6px 18px rgba(15,23,42,.05);transition:transform .18s ease,box-shadow .18s ease;}
-			.dvh-inv-card:hover{transform:translateY(-4px);box-shadow:0 16px 34px rgba(89,15,169,.15);}
-			.dvh-inv-card__name{font-size:1.1rem;font-weight:800;color:#003982;}
-			.dvh-inv-card__count{color:#55565A;}
-			.dvh-inv-card__out{align-self:flex-start;margin-top:4px;background:#FCE9DC;color:#C0490B;font-weight:700;font-size:.78rem;padding:2px 10px;border-radius:999px;}
+			.dvh-inv-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));grid-auto-rows:1fr;gap:16px;margin-top:14px;}
+			.dvh-inv-card{display:flex;flex-direction:column;gap:6px;height:100%;background:#fff;border:1px solid #e7e9ee;border-top:4px solid #590FA9;border-radius:14px;padding:20px;text-decoration:none;box-shadow:0 8px 22px rgba(15,23,42,.06);transition:transform .2s cubic-bezier(.2,.7,.3,1),box-shadow .2s ease;}
+			.dvh-inv-card:hover{transform:translateY(-5px);box-shadow:0 20px 40px rgba(89,15,169,.16);}
+			.dvh-inv-wrap .dvh-inv-card:focus{outline:none;box-shadow:0 0 0 3px rgba(89,15,169,.4),0 8px 22px rgba(15,23,42,.06);}
+			.dvh-inv-wrap .dvh-inv-card:focus:not(:focus-visible){box-shadow:0 8px 22px rgba(15,23,42,.06);}
+			.dvh-inv-card__name{font-size:1.15rem;font-weight:800;color:#003982;line-height:1.2;}
+			.dvh-inv-card__count{color:#55565A;font-size:.95rem;}
+			.dvh-inv-card__out{align-self:flex-start;margin-top:auto;background:#FCE9DC;color:#C0490B;font-weight:700;font-size:.72rem;letter-spacing:.04em;text-transform:uppercase;padding:3px 12px;border-radius:999px;}
 			.dvh-badge{display:inline-block;padding:2px 10px;border-radius:999px;font-weight:700;font-size:.78rem;}
 			.dvh-badge--in{background:#DEF3E4;color:#1D6F42;}
 			.dvh-badge--out{background:#FCE9DC;color:#C0490B;}

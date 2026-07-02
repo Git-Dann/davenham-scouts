@@ -142,6 +142,7 @@ jQuery(function ($) {
     function iconClass(icon) {
       var map = {
         dashboard: 'dashicons-dashboard',
+        inventory: 'dashicons-archive',
         tickets: 'dashicons-tickets-alt',
         calendar: 'dashicons-calendar-alt',
         pages: 'dashicons-admin-page',
