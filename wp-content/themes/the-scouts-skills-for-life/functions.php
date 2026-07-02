@@ -542,11 +542,53 @@ function scouts_dash_news() {
     scouts_dash_stat( $total, 'News posts published on the site.', admin_url( 'edit.php' ), 'Manage news' );
 }
 
+function scouts_dash_quickadd() {
+    $links = array(
+        array( admin_url( 'post-new.php?post_type=page' ), 'New page' ),
+        array( admin_url( 'post-new.php' ), 'New news post' ),
+    );
+    if ( post_type_exists( 'event' ) ) {
+        $links[] = array( admin_url( 'post-new.php?post_type=event' ), 'New event' );
+    }
+    if ( post_type_exists( 'davenham_document' ) ) {
+        $links[] = array( admin_url( 'post-new.php?post_type=davenham_document' ), 'New document' );
+    }
+    $links[] = array( admin_url( 'media-new.php' ), 'Upload media' );
+    echo '<p style="margin:0 0 12px;color:#55565A;">Jump straight into creating something new.</p>';
+    echo '<div style="display:flex;flex-wrap:wrap;gap:8px;">';
+    foreach ( $links as $l ) {
+        echo '<a class="button" href="' . esc_url( $l[0] ) . '">' . esc_html( $l[1] ) . '</a>';
+    }
+    echo '</div>';
+}
+
+function scouts_dash_orders() {
+    if ( ! function_exists( 'wc_get_orders' ) ) {
+        echo '<p>The shop is not active yet.</p>';
+        return;
+    }
+    $orders = wc_get_orders( array( 'limit' => 5, 'orderby' => 'date', 'order' => 'DESC' ) );
+    if ( empty( $orders ) ) {
+        scouts_dash_stat( '0', 'No orders yet.', admin_url( 'edit.php?post_type=shop_order' ), 'View orders' );
+        return;
+    }
+    echo '<ul style="margin:0;padding:0;list-style:none;">';
+    foreach ( $orders as $o ) {
+        $name = trim( $o->get_formatted_billing_full_name() );
+        echo '<li style="display:flex;justify-content:space-between;gap:10px;padding:7px 0;border-bottom:1px solid #eee;">'
+            . '<a href="' . esc_url( $o->get_edit_order_url() ) . '">#' . esc_html( $o->get_order_number() ) . ' &middot; ' . esc_html( $name ? $name : 'Guest' ) . '</a>'
+            . '<strong>' . wp_kses_post( wc_price( $o->get_total() ) ) . '</strong></li>';
+    }
+    echo '</ul><p style="margin:10px 0 0;"><a href="' . esc_url( admin_url( 'edit.php?post_type=shop_order' ) ) . '" style="font-weight:700;">View all orders &rarr;</a></p>';
+}
+
 function scouts_register_stat_widgets() {
     if ( ! current_user_can( 'edit_posts' ) ) {
         return;
     }
+    wp_add_dashboard_widget( 'scouts_dash_quickadd', 'Quick add', 'scouts_dash_quickadd' );
     wp_add_dashboard_widget( 'scouts_dash_shop', 'Shop takings', 'scouts_dash_shop' );
+    wp_add_dashboard_widget( 'scouts_dash_orders', 'Recent orders', 'scouts_dash_orders' );
     wp_add_dashboard_widget( 'scouts_dash_fundraising', 'Fundraising', 'scouts_dash_fundraising' );
     wp_add_dashboard_widget( 'scouts_dash_events', 'Upcoming events', 'scouts_dash_events' );
     wp_add_dashboard_widget( 'scouts_dash_applications', 'Parent applications', 'scouts_dash_applications' );
@@ -555,6 +597,30 @@ function scouts_register_stat_widgets() {
     wp_add_dashboard_widget( 'scouts_dash_news', 'News posts', 'scouts_dash_news' );
 }
 add_action( 'wp_dashboard_setup', 'scouts_register_stat_widgets' );
+
+/**
+ * Give the dashboard a balanced 4-column starting layout so widgets don't all
+ * pile into the first column. One-time per user (respects any later manual
+ * drag-and-drop, which WordPress saves over this).
+ */
+function scouts_dashboard_default_layout() {
+    $uid = get_current_user_id();
+    if ( ! $uid || ! current_user_can( 'edit_posts' ) ) {
+        return;
+    }
+    if ( '2' === (string) get_user_meta( $uid, 'scouts_dash_layout_v', true ) ) {
+        return;
+    }
+    update_user_meta( $uid, 'meta-box-order_dashboard', array(
+        'normal'  => 'davenham_admin_welcome,scouts_dash_quickadd,scouts_editing_guide',
+        'side'    => 'osm_manager_members_widget,osm_manager_sections_widget,scouts_dash_events',
+        'column3' => 'scouts_dash_fundraising,scouts_dash_shop,scouts_dash_orders',
+        'column4' => 'scouts_dash_applications,scouts_dash_consents,scouts_dash_documents,scouts_dash_news,dashboard_right_now',
+    ) );
+    update_user_option( $uid, 'screen_layout_dashboard', 4 );
+    update_user_meta( $uid, 'scouts_dash_layout_v', '2' );
+}
+add_action( 'wp_dashboard_setup', 'scouts_dashboard_default_layout', 5 );
 
 function scouts_cleanup_dashboard() {
     // Core WordPress noise
