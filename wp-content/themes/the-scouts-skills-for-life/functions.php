@@ -627,6 +627,141 @@ function scouts_favicon() {
 }
 add_action( 'wp_head', 'scouts_favicon' );
 
+/**
+ * Rich social share previews — Open Graph + Twitter Card meta on every page.
+ * Per-page title/description/URL, with a smart image fallback:
+ *   featured image → first image in the content → the site's default share
+ *   image (Site Settings) → the logo. No SEO plugin required.
+ */
+function scouts_social_meta() {
+    if ( is_admin() || is_feed() ) {
+        return;
+    }
+
+    $site_name = get_bloginfo( 'name' );
+    $type      = 'website';
+    $title     = $site_name;
+    $desc      = '';
+    $url       = home_url( '/' );
+    $image     = '';
+    $image_w   = 0;
+    $image_h   = 0;
+
+    if ( is_front_page() ) {
+        $title = $site_name;
+        $desc  = get_bloginfo( 'description' );
+        $url   = home_url( '/' );
+    } elseif ( is_singular() ) {
+        $post_id = get_queried_object_id();
+        $title   = get_the_title( $post_id );
+        $url     = get_permalink( $post_id );
+        $type    = is_singular( 'post' ) ? 'article' : 'website';
+
+        if ( has_excerpt( $post_id ) ) {
+            $desc = get_the_excerpt( $post_id );
+        } else {
+            $raw  = strip_shortcodes( get_post_field( 'post_content', $post_id ) );
+            $desc = wp_trim_words( wp_strip_all_tags( str_replace( '<', ' <', $raw ) ), 34, '…' );
+        }
+
+        if ( has_post_thumbnail( $post_id ) ) {
+            $src = wp_get_attachment_image_src( get_post_thumbnail_id( $post_id ), 'large' );
+            if ( $src ) {
+                $image   = $src[0];
+                $image_w = (int) $src[1];
+                $image_h = (int) $src[2];
+            }
+        } elseif ( preg_match( '/<img[^>]+src=["\']([^"\']+)["\']/', (string) get_post_field( 'post_content', $post_id ), $m ) ) {
+            $image = $m[1];
+        }
+    } elseif ( is_home() ) {
+        $blog_id = (int) get_option( 'page_for_posts' );
+        $title   = $blog_id ? get_the_title( $blog_id ) : __( 'News', 'the-scouts-skills-for-life' );
+        $url     = $blog_id ? get_permalink( $blog_id ) : home_url( '/' );
+        $desc    = get_bloginfo( 'description' );
+    } elseif ( is_archive() ) {
+        $title = wp_strip_all_tags( get_the_archive_title() );
+        $desc  = wp_strip_all_tags( get_the_archive_description() );
+        $obj   = get_queried_object();
+        if ( $obj instanceof WP_Term ) {
+            $link = get_term_link( $obj );
+            if ( ! is_wp_error( $link ) ) {
+                $url = $link;
+            }
+        } elseif ( $obj instanceof WP_Post_Type ) {
+            $url = get_post_type_archive_link( $obj->name );
+        }
+    } elseif ( is_search() ) {
+        $title = sprintf( __( 'Search results for “%s”', 'the-scouts-skills-for-life' ), get_search_query() );
+        $url   = home_url( '/?s=' . rawurlencode( get_search_query() ) );
+    }
+
+    if ( ! $desc ) {
+        $desc = get_bloginfo( 'description' );
+    }
+
+    // Image fallback: Site-Settings default → theme's branded card → logo.
+    if ( ! $image ) {
+        $settings = get_option( 'davenham_builder_site_settings', array() );
+        if ( ! empty( $settings['og_default_image_url'] ) ) {
+            $image = $settings['og_default_image_url'];
+        } elseif ( file_exists( get_stylesheet_directory() . '/images/og-default.jpg' ) ) {
+            $image   = get_stylesheet_directory_uri() . '/images/og-default.jpg';
+            $image_w = 1200;
+            $image_h = 630;
+        } elseif ( ! empty( $settings['logo_url'] ) ) {
+            $image = $settings['logo_url'];
+        }
+    }
+    $image = apply_filters( 'scouts_social_image', $image );
+
+    $title = trim( wp_strip_all_tags( html_entity_decode( $title, ENT_QUOTES ) ) );
+    $desc  = trim( wp_strip_all_tags( html_entity_decode( $desc, ENT_QUOTES ) ) );
+
+    echo "\n<!-- Social share preview -->\n";
+    printf( "<link rel=\"canonical\" href=\"%s\" />\n", esc_url( $url ) );
+    printf( "<meta property=\"og:site_name\" content=\"%s\" />\n", esc_attr( $site_name ) );
+    printf( "<meta property=\"og:title\" content=\"%s\" />\n", esc_attr( $title ) );
+    if ( $desc ) {
+        printf( "<meta property=\"og:description\" content=\"%s\" />\n", esc_attr( $desc ) );
+    }
+    printf( "<meta property=\"og:type\" content=\"%s\" />\n", esc_attr( $type ) );
+    printf( "<meta property=\"og:url\" content=\"%s\" />\n", esc_url( $url ) );
+    printf( "<meta property=\"og:locale\" content=\"%s\" />\n", esc_attr( get_locale() ) );
+    if ( $image ) {
+        printf( "<meta property=\"og:image\" content=\"%s\" />\n", esc_url( $image ) );
+        printf( "<meta property=\"og:image:alt\" content=\"%s\" />\n", esc_attr( $title ) );
+        if ( $image_w && $image_h ) {
+            printf( "<meta property=\"og:image:width\" content=\"%d\" />\n", $image_w );
+            printf( "<meta property=\"og:image:height\" content=\"%d\" />\n", $image_h );
+        }
+    }
+    printf( "<meta name=\"twitter:card\" content=\"%s\" />\n", $image ? 'summary_large_image' : 'summary' );
+    printf( "<meta name=\"twitter:title\" content=\"%s\" />\n", esc_attr( $title ) );
+    if ( $desc ) {
+        printf( "<meta name=\"twitter:description\" content=\"%s\" />\n", esc_attr( $desc ) );
+    }
+    if ( $image ) {
+        printf( "<meta name=\"twitter:image\" content=\"%s\" />\n", esc_url( $image ) );
+    }
+}
+add_action( 'wp_head', 'scouts_social_meta', 5 );
+
+// Make our tags the single source of truth for share cards. Jetpack and
+// SiteSEO both emit their own Open Graph/Twitter tags (image-less, "summary"),
+// which would duplicate ours — turn both off. SiteSEO's titles, meta
+// descriptions, sitemaps and schema are untouched; only its social meta goes.
+add_filter( 'jetpack_enable_open_graph', '__return_false' );
+add_action( 'wp', 'scouts_dedupe_social_meta' );
+function scouts_dedupe_social_meta() {
+    if ( is_admin() ) {
+        return;
+    }
+    remove_action( 'wp_head', '\SiteSEO\SocialMetas::add_social_graph', 1 );
+    remove_action( 'wp_head', '\SiteSEO\SocialMetas::fb_graph', 1 );
+    remove_action( 'wp_head', '\SiteSEO\SocialMetas::twitter_card', 1 );
+}
+
 add_filter( 'body_class', function( $classes ) {
     $classes[] = 'no-js';
     // Flag single products with no real image so CSS can drop the big empty

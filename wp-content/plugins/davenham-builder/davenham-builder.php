@@ -3,7 +3,7 @@
  * Plugin Name: Davenham Builder
  * Plugin URI:  https://davenhamscouts.org.uk
  * Description: Visual page builder + all custom Gutenberg blocks for Davenham Scout Group. One plugin, no faff.
- * Version:     1.5.4
+ * Version:     1.5.5
  * Author:      Davenham Scout Group
  * Text Domain: davenham-builder
  * Requires at least: 6.0
@@ -12,7 +12,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'DB_VERSION', '1.5.4' );
+define( 'DB_VERSION', '1.5.5' );
 define( 'DB_DIR',     plugin_dir_path( __FILE__ ) );
 define( 'DB_URL',     plugin_dir_url( __FILE__ ) );
 
@@ -164,6 +164,8 @@ function db_site_settings_defaults() {
 	return array(
 		'logo_id'                  => 0,
 		'logo_url'                 => '',
+		'og_default_image_id'      => 0,
+		'og_default_image_url'     => '',
 		'header_primary_cta_text'  => 'Volunteer with Scouts',
 		'header_primary_cta_url'   => home_url( '/volunteer/' ),
 		'header_secondary_cta_text'=> 'Join Scouts',
@@ -207,6 +209,8 @@ function db_sanitize_site_settings( $input ) {
 	$clean   = array();
 	$clean['logo_id']                   = absint( $input['logo_id'] ?? $current['logo_id'] );
 	$clean['logo_url']                  = esc_url_raw( $input['logo_url'] ?? $current['logo_url'] );
+	$clean['og_default_image_id']       = absint( $input['og_default_image_id'] ?? $current['og_default_image_id'] );
+	$clean['og_default_image_url']      = esc_url_raw( $input['og_default_image_url'] ?? $current['og_default_image_url'] );
 	$clean['header_primary_cta_text']   = sanitize_text_field( $input['header_primary_cta_text'] ?? $current['header_primary_cta_text'] );
 	$clean['header_primary_cta_url']    = esc_url_raw( $input['header_primary_cta_url'] ?? $current['header_primary_cta_url'] );
 	$clean['header_secondary_cta_text'] = sanitize_text_field( $input['header_secondary_cta_text'] ?? $current['header_secondary_cta_text'] );
@@ -245,6 +249,13 @@ function db_sanitize_site_settings( $input ) {
 		$logo_url = wp_get_attachment_image_url( $clean['logo_id'], 'full' );
 		if ( $logo_url ) {
 			$clean['logo_url'] = $logo_url;
+		}
+	}
+
+	if ( $clean['og_default_image_id'] > 0 ) {
+		$og_url = wp_get_attachment_image_url( $clean['og_default_image_id'], 'large' );
+		if ( $og_url ) {
+			$clean['og_default_image_url'] = $og_url;
 		}
 	}
 
@@ -292,6 +303,16 @@ function db_render_site_settings_page() {
 							<button type="button" class="button db-media-open" data-target="#db_logo_url" data-id-target="#db_logo_id"><?php esc_html_e( 'Choose image', 'davenham-builder' ); ?></button>
 							<button type="button" class="button db-media-clear" data-target="#db_logo_url" data-id-target="#db_logo_id"><?php esc_html_e( 'Remove', 'davenham-builder' ); ?></button>
 							<p class="description"><?php esc_html_e( 'Upload your group logo (SVG or PNG, ideally white-on-transparent for the header).', 'davenham-builder' ); ?></p>
+						</td>
+					</tr>
+					<tr>
+						<th scope="row"><label for="db_og_default_image_url"><?php esc_html_e( 'Default share image', 'davenham-builder' ); ?></label></th>
+						<td>
+							<input type="hidden" id="db_og_default_image_id" name="davenham_builder_site_settings[og_default_image_id]" value="<?php echo esc_attr( (string) $settings['og_default_image_id'] ); ?>" />
+							<input type="url" class="regular-text" id="db_og_default_image_url" name="davenham_builder_site_settings[og_default_image_url]" value="<?php echo esc_attr( $settings['og_default_image_url'] ); ?>" />
+							<button type="button" class="button db-media-open" data-target="#db_og_default_image_url" data-id-target="#db_og_default_image_id"><?php esc_html_e( 'Choose image', 'davenham-builder' ); ?></button>
+							<button type="button" class="button db-media-clear" data-target="#db_og_default_image_url" data-id-target="#db_og_default_image_id"><?php esc_html_e( 'Remove', 'davenham-builder' ); ?></button>
+							<p class="description"><?php esc_html_e( 'Used for social share previews (Facebook, WhatsApp, X) on pages without their own image. Use a landscape JPG/PNG, ideally 1200×630px.', 'davenham-builder' ); ?></p>
 						</td>
 					</tr>
 					<tr>
