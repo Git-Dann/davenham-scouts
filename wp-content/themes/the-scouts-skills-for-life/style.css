@@ -5266,3 +5266,19 @@ main > .db-block-shell:last-child,
 .page-id-34 .split_cta__card:not(.split_cta__card--alt),
 .page-id-36 .split_cta__card:not(.split_cta__card--alt) { background: linear-gradient(135deg, #008A1C 0%, #026314 100%); } /* Cubs */
 .page-id-38 .split_cta__card:not(.split_cta__card--alt) { background: linear-gradient(135deg, #205B41 0%, #143D2B 100%); } /* Scouts */
+
+/* ── Centenary band fixes ────────────────────────────────────────────────── */
+/* The band sets white text; reset it to dark INSIDE the white cards so the
+   timeline copy and stats labels aren't white-on-white (invisible). */
+.page-id-14 .db-block-shell--stats-grid .stats_card { color: #333333; }
+.page-id-14 .db-block-shell--timeline .timeline_item__content,
+.page-id-14 .db-block-shell--timeline .timeline_item__content h3,
+.page-id-14 .db-block-shell--timeline .timeline_item__content div { color: #404040; }
+/* Stats cards: keep copy top-aligned and tidy (no stretched gaps) */
+.page-id-14 .stats_card { justify-content: flex-start; }
+/* Close the hairline seam between the two stacked bands */
+.page-id-14 .db-block-shell--timeline { margin-top: -1px; }
+
+/* FAQ — more breathing room above the section + list */
+.page_content--blocks .db-block-shell--faq { padding-top: 62px; }
+.faq_section .faq_list { margin-top: 26px; }
