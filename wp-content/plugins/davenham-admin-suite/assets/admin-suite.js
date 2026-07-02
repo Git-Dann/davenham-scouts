@@ -223,9 +223,14 @@ jQuery(function ($) {
       }
 
       var childLinks = Array.isArray(item.children) ? item.children : [];
-      return '<div class="das-app-flyout-heading"><strong>' + escapeHtml(item.label) + '</strong><a href="' + escapeHtml(item.url || '#') + '">Open main page</a></div>' +
+      // First child is the section's main page — use it as the heading link
+      // (named after itself) and drop it from the list so it isn't shown twice.
+      var mainUrl = (childLinks[0] && childLinks[0].url) ? childLinks[0].url : (item.url || '#');
+      var mainLabel = (childLinks[0] && childLinks[0].label) ? childLinks[0].label : (item.label || 'Open');
+      var rest = childLinks.slice(1);
+      return '<div class="das-app-flyout-heading"><strong>' + escapeHtml(item.label) + '</strong><a href="' + escapeHtml(mainUrl) + '">' + escapeHtml(mainLabel) + '</a></div>' +
         '<div class="das-app-flyout-list">' +
-        childLinks.map(function (link) {
+        rest.map(function (link) {
           return '<a href="' + escapeHtml(link.url) + '">' + escapeHtml(link.label) + '</a>';
         }).join('') +
         '</div>';
