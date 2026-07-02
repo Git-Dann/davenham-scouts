@@ -3,14 +3,14 @@
  * Plugin Name: Davenham Admin Suite
  * Plugin URI:  https://davenhamscouts.org.uk
  * Description: White-label admin customisation, menu cleanup, and editorial polish for Davenham Scouts.
- * Version:     1.6.9
+ * Version:     1.6.10
  * Author:      Davenham Scout Group
  * Text Domain: davenham-admin-suite
  */
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'DAS_VERSION', '1.6.9' );
+define( 'DAS_VERSION', '1.6.10' );
 define( 'DAS_FILE', __FILE__ );
 define( 'DAS_DIR', plugin_dir_path( __FILE__ ) );
 define( 'DAS_URL', plugin_dir_url( __FILE__ ) );
@@ -88,7 +88,7 @@ final class Davenham_Admin_Suite {
 			'menu_groups'          => self::default_groups(),
 			'menu_items'           => self::default_menu_items(),
 			'custom_links'         => [],
-			'menu_layout_version'  => 4,
+			'menu_layout_version'  => 5,
 		];
 	}
 
@@ -215,20 +215,10 @@ final class Davenham_Admin_Suite {
 				'icon'      => 'media',
 				'order'     => 60,
 			],
-			'edit.php?post_type=dpp_application' => [
-				'label'     => 'Parent Applications',
-				'group'     => 'communications',
-				'placement' => 'keep',
-				'icon'      => 'pages',
-				'order'     => 62,
-			],
-			'dpp-consents' => [
-				'label'     => 'Event Consents',
-				'group'     => 'communications',
-				'placement' => 'keep',
-				'icon'      => 'tickets',
-				'order'     => 64,
-			],
+			// Parent Applications + Event Consents are NOT listed here — they're
+			// nested under the "Documents & Forms" parent (see the theme's
+			// scouts_bundle_records_* functions) and appear in its flyout via the
+			// captured submenu. Listing them here would duplicate them on the rail.
 			'davenham-admin-suite' => [
 				'label'     => 'Admin',
 				'group'     => 'technical',
@@ -310,6 +300,16 @@ final class Davenham_Admin_Suite {
 				$saved['menu_items']['edit.php?post_type=davenham_document']['label'] = 'Documents & Forms';
 			}
 			$saved['menu_layout_version'] = 4;
+			update_option( self::OPTION_NAME, $saved, false );
+		}
+
+		// v5: drop the standalone Parent Applications + Event Consents rail
+		// entries — they're nested inside the "Documents & Forms" parent now, so
+		// listing them separately duplicated them on the sidebar.
+		if ( $layout_version < 5 ) {
+			unset( $saved['menu_items']['edit.php?post_type=dpp_application'] );
+			unset( $saved['menu_items']['dpp-consents'] );
+			$saved['menu_layout_version'] = 5;
 			update_option( self::OPTION_NAME, $saved, false );
 		}
 
