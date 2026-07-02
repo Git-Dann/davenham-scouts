@@ -3,14 +3,14 @@
  * Plugin Name: Davenham Admin Suite
  * Plugin URI:  https://davenhamscouts.org.uk
  * Description: White-label admin customisation, menu cleanup, and editorial polish for Davenham Scouts.
- * Version:     1.6.7
+ * Version:     1.6.9
  * Author:      Davenham Scout Group
  * Text Domain: davenham-admin-suite
  */
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'DAS_VERSION', '1.6.7' );
+define( 'DAS_VERSION', '1.6.9' );
 define( 'DAS_FILE', __FILE__ );
 define( 'DAS_DIR', plugin_dir_path( __FILE__ ) );
 define( 'DAS_URL', plugin_dir_url( __FILE__ ) );
@@ -88,7 +88,7 @@ final class Davenham_Admin_Suite {
 			'menu_groups'          => self::default_groups(),
 			'menu_items'           => self::default_menu_items(),
 			'custom_links'         => [],
-			'menu_layout_version'  => 2,
+			'menu_layout_version'  => 4,
 		];
 	}
 
@@ -209,23 +209,23 @@ final class Davenham_Admin_Suite {
 				'order'     => 30,
 			],
 			'edit.php?post_type=davenham_document' => [
-				'label'     => 'Documents',
+				'label'     => 'Documents & Forms',
 				'group'     => 'communications',
-				'placement' => 'admin',
+				'placement' => 'keep',
 				'icon'      => 'media',
 				'order'     => 60,
 			],
 			'edit.php?post_type=dpp_application' => [
 				'label'     => 'Parent Applications',
 				'group'     => 'communications',
-				'placement' => 'admin',
+				'placement' => 'keep',
 				'icon'      => 'pages',
 				'order'     => 62,
 			],
 			'dpp-consents' => [
 				'label'     => 'Event Consents',
 				'group'     => 'communications',
-				'placement' => 'admin',
+				'placement' => 'keep',
 				'icon'      => 'tickets',
 				'order'     => 64,
 			],
@@ -294,15 +294,22 @@ final class Davenham_Admin_Suite {
 		// v2: tuck the group-admin CPTs (Documents, Event Consents, Parent
 		// Applications) into the Admin flyout to shorten the top-level rail.
 		// One-time only — respects any later manual change in Menu Builder.
+		// v3: keep the group-admin CPTs (Documents, Parent Applications, Event
+		// Consents) on the main sidebar — they're bundled under the "Documents
+		// & Forms" parent by the theme, not tucked into the Admin flyout.
+		// (v2 briefly moved them to the flyout; this reverses that.)
 		$layout_version = isset( $saved['menu_layout_version'] ) ? (int) $saved['menu_layout_version'] : 1;
-		if ( $layout_version < 2 ) {
-			$to_tuck = [ 'edit.php?post_type=davenham_document', 'edit.php?post_type=dpp_application', 'dpp-consents' ];
-			foreach ( $to_tuck as $mk ) {
-				if ( isset( $saved['menu_items'][ $mk ] ) && 'keep' === ( $saved['menu_items'][ $mk ]['placement'] ?? '' ) ) {
-					$saved['menu_items'][ $mk ]['placement'] = 'admin';
+		if ( $layout_version < 4 ) {
+			$sidebar_bundle = [ 'edit.php?post_type=davenham_document', 'edit.php?post_type=dpp_application', 'dpp-consents' ];
+			foreach ( $sidebar_bundle as $mk ) {
+				if ( isset( $saved['menu_items'][ $mk ] ) ) {
+					$saved['menu_items'][ $mk ]['placement'] = 'keep';
 				}
 			}
-			$saved['menu_layout_version'] = 2;
+			if ( isset( $saved['menu_items']['edit.php?post_type=davenham_document'] ) ) {
+				$saved['menu_items']['edit.php?post_type=davenham_document']['label'] = 'Documents & Forms';
+			}
+			$saved['menu_layout_version'] = 4;
 			update_option( self::OPTION_NAME, $saved, false );
 		}
 

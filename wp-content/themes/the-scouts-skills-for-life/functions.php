@@ -444,6 +444,44 @@ function scouts_remove_plugin_clutter_for_editors() {
 }
 add_action( 'admin_menu', 'scouts_remove_plugin_clutter_for_editors', 999 );
 
+/**
+ * Bundle the group's paperwork under one sidebar parent, "Documents & Forms":
+ * Documents (the parent), Parent Applications and Event Consents. Kept on the
+ * main sidebar — not the technical "Admin" flyout — so finance, trustees and
+ * section leaders find them easily. Uses native show_in_menu nesting so the
+ * menu highlighting stays correct.
+ */
+add_filter( 'register_post_type_args', 'scouts_bundle_records_cpts', 20, 2 );
+function scouts_bundle_records_cpts( $args, $slug ) {
+    if ( 'davenham_document' === $slug ) {
+        // Documents CPT is the bundle parent. Its top-level menu label is set
+        // to "Documents & Forms" by the admin-suite relabeller; we only set
+        // the icon + position here and leave the CPT's own labels natural.
+        $args['menu_icon']     = 'dashicons-portfolio';
+        $args['menu_position'] = 24;
+    } elseif ( 'dpp_application' === $slug ) {
+        $args['show_in_menu'] = 'edit.php?post_type=davenham_document';
+    }
+    return $args;
+}
+
+add_action( 'admin_menu', 'scouts_bundle_records_consents', 100 );
+function scouts_bundle_records_consents() {
+    if ( ! class_exists( 'Davenham_Parent_Portal' ) ) {
+        return;
+    }
+    // Move Event Consents out of its own top-level slot into the bundle.
+    remove_menu_page( 'dpp-consents' );
+    add_submenu_page(
+        'edit.php?post_type=davenham_document',
+        __( 'Event Consents', 'the-scouts-skills-for-life' ),
+        __( 'Event Consents', 'the-scouts-skills-for-life' ),
+        Davenham_Parent_Portal::VIEW_CAP,
+        'dpp-consents',
+        array( 'Davenham_Parent_Portal', 'render_consents_page' )
+    );
+}
+
 function scouts_register_block_patterns() {
     if ( ! function_exists( 'register_block_pattern' ) ) {
         return;
