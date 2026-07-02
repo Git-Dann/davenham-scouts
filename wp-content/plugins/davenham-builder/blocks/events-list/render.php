@@ -66,6 +66,14 @@ if ( post_type_exists( 'tribe_events' ) ) {
 	] );
 	$cpt = 'post';
 }
+
+// No upcoming events → render nothing at all (the empty block wrapper is
+// dropped too), so the page simply omits the section instead of showing an
+// empty "No upcoming events found" box.
+if ( ! $query->have_posts() ) {
+	wp_reset_postdata();
+	return;
+}
 ?>
 <section class="events_section cf">
 	<div class="wrapper">

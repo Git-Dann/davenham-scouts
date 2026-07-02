@@ -4748,3 +4748,79 @@ main > .db-block-shell:last-child,
 .scouts-home .db-block-shell { scroll-margin-top: 90px; }
 .scouts-home .db-block-shell--stats-grid,
 .scouts-home .db-block-shell--card-grid { background: var(--scout-bg-off-white, #F6F6F6); }
+
+/* ── Homepage revamp: section polish (cards, quote, CTAs, news) ─────────── */
+
+/* Section headings — consistent, not oversized */
+.scouts-home .db-section-heading,
+.scouts-home .card_grid_section > .wrapper > h2 {
+  font-size: clamp(1.6rem, 3vw, 2.1rem);
+  font-weight: 800;
+  color: var(--scout-text-dark, #333333);
+  margin: 0 0 26px;
+}
+
+/* Our-sections cards — tidy, equal-height, real buttons pinned to the base */
+.scouts-home .card_grid__item { display: flex; flex-direction: column; }
+.scouts-home .card_grid__item > p:last-child { margin-top: auto; margin-bottom: 0; }
+.scouts-home .card_grid__item .btn,
+.scouts-home .card_grid__item .btn.outline {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 46px;
+  padding: 11px 22px;
+  background: #fff;
+  color: var(--scout-purple, #590FA9);
+  border: 2px solid var(--scout-purple, #590FA9);
+  border-radius: 0;
+  font-weight: 800;
+  text-decoration: none;
+}
+.scouts-home .card_grid__item .btn:hover { background: var(--scout-purple, #590FA9); color: #fff; }
+.scouts-home .card_grid__item .btn:before { display: none; }
+
+/* Quote banner — smaller, calmer headline */
+.scouts-home .quote_banner { padding: 34px 40px; border-radius: 18px; }
+.scouts-home .quote_banner__text {
+  font-size: clamp(1.25rem, 2.3vw, 1.8rem);
+  line-height: 1.3;
+  font-weight: 800;
+}
+
+/* Split CTA — unified, substantial buttons on both cards */
+.scouts-home .split_cta__card .btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 50px;
+  margin-top: 8px;
+  padding: 13px 28px;
+  background: #fff;
+  color: var(--scout-dark-grape, #490499);
+  border: 2px solid #fff;
+  border-radius: 0;
+  font-weight: 800;
+  text-decoration: none;
+}
+.scouts-home .split_cta__card .btn:hover { background: transparent; color: #fff; }
+.scouts-home .split_cta__card .btn:before { display: none; }
+
+/* News feed — kill the white gap to the footer; teal runs flush. Modern btn. */
+.scouts-home .db-block-shell--news-feed { padding: 0 !important; background: #088486; }
+.scouts-home .news_section { padding: 72px 0; }
+.scouts-home .news_section__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+  padding: 13px 30px;
+  background: #fff;
+  color: #088486;
+  border: 2px solid #fff;
+  border-radius: 0;
+  font-weight: 800;
+  text-decoration: none;
+}
+.scouts-home .news_section__btn:hover { background: transparent; color: #fff; }
+.scouts-home .news_section__btn:before { display: none; }

@@ -656,9 +656,13 @@
 .card_grid,
 .donation_cards,
 .key_facts_grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 20px;
+  /* !important defeats a stale `.card_grid { display:flex }` in the theme's
+     production.css that loads after this file and collapses the cards into a
+     single full-width column. */
+  display: grid !important;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 22px;
+  align-items: start;
 }
 
 .stats_card,
