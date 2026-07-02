@@ -412,6 +412,150 @@ function scouts_register_dashboard_widget() {
 }
 add_action( 'wp_dashboard_setup', 'scouts_register_dashboard_widget' );
 
+/* ── Dashboard stat widgets — quick, digestible figures that lead into their
+ *    subsequent admin pages. Guarded (features may be inactive) and cached
+ *    where the query is heavy. ─────────────────────────────────────────────── */
+
+function scouts_dash_stat( $figure, $desc = '', $url = '', $link_text = '' ) {
+    echo '<p style="font-size:2.2rem;line-height:1;font-weight:800;color:#003982;margin:0 0 8px;">' . wp_kses_post( $figure ) . '</p>';
+    if ( $desc ) {
+        echo '<p style="margin:0 0 12px;color:#55565A;">' . wp_kses_post( $desc ) . '</p>';
+    }
+    if ( $url && $link_text ) {
+        echo '<a href="' . esc_url( $url ) . '" style="font-weight:700;">' . esc_html( $link_text ) . ' &rarr;</a>';
+    }
+}
+
+function scouts_dash_shop() {
+    if ( ! function_exists( 'wc_get_orders' ) ) {
+        scouts_dash_stat( '—', 'The shop is not active yet.' );
+        return;
+    }
+    $data = get_transient( 'scouts_dash_shop' );
+    if ( false === $data ) {
+        $ids   = wc_get_orders( array( 'limit' => -1, 'status' => array( 'processing', 'completed' ), 'date_created' => '>' . ( time() - 30 * DAY_IN_SECONDS ), 'return' => 'ids' ) );
+        $total = 0;
+        foreach ( (array) $ids as $oid ) {
+            $o = wc_get_order( $oid );
+            if ( $o ) {
+                $total += (float) $o->get_total();
+            }
+        }
+        $data = array( 'count' => count( (array) $ids ), 'total' => $total );
+        set_transient( 'scouts_dash_shop', $data, 15 * MINUTE_IN_SECONDS );
+    }
+    $money = function_exists( 'wc_price' ) ? wc_price( $data['total'] ) : ( '&pound;' . number_format( (float) $data['total'], 2 ) );
+    scouts_dash_stat(
+        $money,
+        sprintf( 'Taken across %d order%s in the last 30 days.', (int) $data['count'], 1 === (int) $data['count'] ? '' : 's' ),
+        admin_url( 'edit.php?post_type=shop_order' ),
+        'View orders'
+    );
+}
+
+function scouts_dash_fundraising() {
+    if ( ! is_callable( array( 'Davenham_Events_Fundraising', 'fundraising_totals' ) ) ) {
+        scouts_dash_stat( '—', 'Fundraising tracking is not set up yet.' );
+        return;
+    }
+    $t       = Davenham_Events_Fundraising::fundraising_totals();
+    $raised  = isset( $t['raised'] ) ? (float) $t['raised'] : 0;
+    $target  = isset( $t['target'] ) ? (float) $t['target'] : 0;
+    if ( $target <= 0 ) {
+        scouts_dash_stat( '&pound;' . number_format( $raised, 0 ), 'Raised so far. Set a target in Events &amp; Funds to show progress.', admin_url( 'admin.php?page=davenham-events-fundraising-settings' ), 'Fundraising settings' );
+        return;
+    }
+    $pct = min( 100, round( ( $raised / $target ) * 100 ) );
+    scouts_dash_stat(
+        $pct . '%',
+        sprintf( '&pound;%s raised of &pound;%s goal.', number_format( $raised, 0 ), number_format( $target, 0 ) ),
+        admin_url( 'admin.php?page=davenham-events-fundraising-settings' ),
+        'Fundraising settings'
+    );
+}
+
+function scouts_dash_events() {
+    if ( ! post_type_exists( 'event' ) ) {
+        scouts_dash_stat( '—', 'Events are not active yet.' );
+        return;
+    }
+    $q = new WP_Query( array(
+        'post_type'      => 'event',
+        'post_status'    => 'publish',
+        'posts_per_page' => 1,
+        'orderby'        => 'meta_value',
+        'meta_key'       => 'event_date',
+        'order'          => 'ASC',
+        'meta_query'     => array( array( 'key' => 'event_date', 'value' => current_time( 'Y-m-d' ), 'compare' => '>=', 'type' => 'DATE' ) ),
+    ) );
+    $count = (int) $q->found_posts;
+    $next  = '';
+    if ( $q->have_posts() ) {
+        $q->the_post();
+        $d    = get_post_meta( get_the_ID(), 'event_date', true );
+        $next = 'Next: ' . esc_html( get_the_title() ) . ( $d ? ' on ' . esc_html( date_i18n( 'j M', strtotime( $d ) ) ) : '' );
+        wp_reset_postdata();
+    } else {
+        $next = 'No upcoming events scheduled.';
+    }
+    scouts_dash_stat( $count, $next, admin_url( 'edit.php?post_type=event' ), 'Manage events' );
+}
+
+function scouts_dash_applications() {
+    if ( ! post_type_exists( 'dpp_application' ) ) {
+        scouts_dash_stat( '—', 'Parent applications are not active yet.' );
+        return;
+    }
+    $counts = wp_count_posts( 'dpp_application' );
+    $total  = 0;
+    foreach ( array( 'publish', 'pending', 'draft', 'private' ) as $st ) {
+        if ( isset( $counts->$st ) ) {
+            $total += (int) $counts->$st;
+        }
+    }
+    scouts_dash_stat( $total, 'Join requests received from families.', admin_url( 'edit.php?post_type=dpp_application' ), 'Review applications' );
+}
+
+function scouts_dash_consents() {
+    if ( ! post_type_exists( 'dpp_consent' ) ) {
+        scouts_dash_stat( '—', 'Event consents are not active yet.' );
+        return;
+    }
+    $counts = wp_count_posts( 'dpp_consent' );
+    $total  = ( isset( $counts->publish ) ? (int) $counts->publish : 0 ) + ( isset( $counts->private ) ? (int) $counts->private : 0 );
+    scouts_dash_stat( $total, 'Consent forms collected from parents.', admin_url( 'admin.php?page=dpp-consents' ), 'View consents' );
+}
+
+function scouts_dash_documents() {
+    if ( ! post_type_exists( 'davenham_document' ) ) {
+        scouts_dash_stat( '—', 'Documents are not active yet.' );
+        return;
+    }
+    $counts = wp_count_posts( 'davenham_document' );
+    $total  = isset( $counts->publish ) ? (int) $counts->publish : 0;
+    scouts_dash_stat( $total, 'Documents published for members and the public.', admin_url( 'edit.php?post_type=davenham_document' ), 'Manage documents' );
+}
+
+function scouts_dash_news() {
+    $counts = wp_count_posts( 'post' );
+    $total  = isset( $counts->publish ) ? (int) $counts->publish : 0;
+    scouts_dash_stat( $total, 'News posts published on the site.', admin_url( 'edit.php' ), 'Manage news' );
+}
+
+function scouts_register_stat_widgets() {
+    if ( ! current_user_can( 'edit_posts' ) ) {
+        return;
+    }
+    wp_add_dashboard_widget( 'scouts_dash_shop', 'Shop takings', 'scouts_dash_shop' );
+    wp_add_dashboard_widget( 'scouts_dash_fundraising', 'Fundraising', 'scouts_dash_fundraising' );
+    wp_add_dashboard_widget( 'scouts_dash_events', 'Upcoming events', 'scouts_dash_events' );
+    wp_add_dashboard_widget( 'scouts_dash_applications', 'Parent applications', 'scouts_dash_applications' );
+    wp_add_dashboard_widget( 'scouts_dash_consents', 'Event consents', 'scouts_dash_consents' );
+    wp_add_dashboard_widget( 'scouts_dash_documents', 'Documents', 'scouts_dash_documents' );
+    wp_add_dashboard_widget( 'scouts_dash_news', 'News posts', 'scouts_dash_news' );
+}
+add_action( 'wp_dashboard_setup', 'scouts_register_stat_widgets' );
+
 function scouts_cleanup_dashboard() {
     // Core WordPress noise
     remove_meta_box( 'dashboard_site_health', 'dashboard', 'normal' );
