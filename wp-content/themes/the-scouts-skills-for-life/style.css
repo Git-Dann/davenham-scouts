@@ -5336,3 +5336,10 @@ main > .db-block-shell:last-child,
 @media (max-width: 760px) {
   .section-lead { grid-template-columns: 1fr; gap: 24px; }
 }
+
+/* Stats + key-fact cards: pin the sub-copy to the bottom so it aligns
+   across cards of differing heights (only bites when cards are equal-height) */
+.stats_card,
+.key_fact { display: flex; flex-direction: column; }
+.stats_card__detail { margin-top: auto; padding-top: 10px; }
+.key_fact__value { margin-top: auto; padding-top: 10px; }
