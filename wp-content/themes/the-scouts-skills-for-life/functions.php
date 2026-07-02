@@ -413,10 +413,17 @@ function scouts_register_dashboard_widget() {
 add_action( 'wp_dashboard_setup', 'scouts_register_dashboard_widget' );
 
 function scouts_cleanup_dashboard() {
+    // Core WordPress noise
     remove_meta_box( 'dashboard_site_health', 'dashboard', 'normal' );
     remove_meta_box( 'dashboard_quick_press', 'dashboard', 'side' );
     remove_meta_box( 'dashboard_primary', 'dashboard', 'side' );
     remove_meta_box( 'dashboard_activity', 'dashboard', 'normal' );
+    // Plugin noise — leave the group's own widgets + At a Glance + OSM stats.
+    remove_meta_box( 'wc_admin_dashboard_setup', 'dashboard', 'normal' );        // WooCommerce Setup
+    remove_meta_box( 'woocommerce_dashboard_status', 'dashboard', 'normal' );
+    remove_meta_box( 'woocommerce_dashboard_recent_reviews', 'dashboard', 'normal' );
+    remove_meta_box( 'jetpack_summary_widget', 'dashboard', 'normal' );          // Jetpack Stats
+    remove_meta_box( 'dashboard_stats', 'dashboard', 'normal' );                 // Jetpack (legacy) Stats
 }
 add_action( 'wp_dashboard_setup', 'scouts_cleanup_dashboard', 20 );
 
