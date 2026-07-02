@@ -5550,3 +5550,6 @@ main > .db-block-shell:last-child,
   /* No hover on touch — always show the description */
   .gallery-card__body p { max-height: 120px; opacity: 1; margin-top: 8px !important; }
 }
+
+/* Kill the article-image margin leaking onto gallery tiles (white strip at top) */
+.gallery-card img { margin: 0 !important; }
