@@ -88,6 +88,7 @@ final class Davenham_Admin_Suite {
 			'menu_groups'          => self::default_groups(),
 			'menu_items'           => self::default_menu_items(),
 			'custom_links'         => [],
+			'menu_layout_version'  => 2,
 		];
 	}
 
@@ -210,21 +211,21 @@ final class Davenham_Admin_Suite {
 			'edit.php?post_type=davenham_document' => [
 				'label'     => 'Documents',
 				'group'     => 'communications',
-				'placement' => 'keep',
+				'placement' => 'admin',
 				'icon'      => 'media',
 				'order'     => 60,
 			],
 			'edit.php?post_type=dpp_application' => [
 				'label'     => 'Parent Applications',
 				'group'     => 'communications',
-				'placement' => 'keep',
+				'placement' => 'admin',
 				'icon'      => 'pages',
 				'order'     => 62,
 			],
 			'dpp-consents' => [
 				'label'     => 'Event Consents',
 				'group'     => 'communications',
-				'placement' => 'keep',
+				'placement' => 'admin',
 				'icon'      => 'tickets',
 				'order'     => 64,
 			],
@@ -288,6 +289,21 @@ final class Davenham_Admin_Suite {
 		if ( isset( $saved['menu_items']['site-seo-dashboard'] ) && ! isset( $saved['menu_items']['siteseo'] ) ) {
 			$saved['menu_items']['siteseo'] = $saved['menu_items']['site-seo-dashboard'];
 			unset( $saved['menu_items']['site-seo-dashboard'] );
+		}
+
+		// v2: tuck the group-admin CPTs (Documents, Event Consents, Parent
+		// Applications) into the Admin flyout to shorten the top-level rail.
+		// One-time only — respects any later manual change in Menu Builder.
+		$layout_version = isset( $saved['menu_layout_version'] ) ? (int) $saved['menu_layout_version'] : 1;
+		if ( $layout_version < 2 ) {
+			$to_tuck = [ 'edit.php?post_type=davenham_document', 'edit.php?post_type=dpp_application', 'dpp-consents' ];
+			foreach ( $to_tuck as $mk ) {
+				if ( isset( $saved['menu_items'][ $mk ] ) && 'keep' === ( $saved['menu_items'][ $mk ]['placement'] ?? '' ) ) {
+					$saved['menu_items'][ $mk ]['placement'] = 'admin';
+				}
+			}
+			$saved['menu_layout_version'] = 2;
+			update_option( self::OPTION_NAME, $saved, false );
 		}
 
 		$merged = wp_parse_args( $saved, self::defaults() );

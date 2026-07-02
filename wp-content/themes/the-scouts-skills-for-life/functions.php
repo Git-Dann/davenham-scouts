@@ -436,6 +436,11 @@ function scouts_remove_plugin_clutter_for_editors() {
     remove_menu_page( 'loginizer' );
     remove_menu_page( 'site-seo-dashboard' );
     remove_menu_page( 'tools.php?page=site-seo-dashboard' );
+    // Jetpack + its Stats aren't something section leaders need — hide for them.
+    remove_menu_page( 'jetpack' );
+    remove_menu_page( 'stats-dashboard' );
+    remove_menu_page( 'stats' );
+    remove_menu_page( 'jetpack#/stats' );
 }
 add_action( 'admin_menu', 'scouts_remove_plugin_clutter_for_editors', 999 );
 
