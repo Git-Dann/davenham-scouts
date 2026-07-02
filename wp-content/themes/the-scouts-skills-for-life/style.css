@@ -4843,3 +4843,209 @@ main > .db-block-shell:last-child,
   display: block;
   margin: 0;
 }
+
+/* ── Branded section tiles (homepage) ───────────────────────────────────── */
+.scouts-home .card_grid_section .db-section-heading { text-align: center; }
+.scouts-home .card_grid {
+  display: grid !important;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  grid-auto-rows: 1fr;
+  gap: 28px;
+}
+
+.scouts-home .card_grid__item {
+  --sec: #590FA9;
+  --sec-dark: #3a0a6d;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  height: 100%;
+  padding: 0 30px 32px;
+  border: 1px solid var(--scout-card-border, #E7E9EE);
+  border-radius: 20px;
+  background: #fff;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
+  transition: transform 0.28s cubic-bezier(.2,.7,.3,1), box-shadow 0.28s ease;
+}
+.scouts-home .card_grid__item:nth-child(1) { --sec: #088486; --sec-dark: #045c5d; } /* Beavers */
+.scouts-home .card_grid__item:nth-child(2) { --sec: #008A1C; --sec-dark: #026314; } /* Cubs */
+.scouts-home .card_grid__item:nth-child(3) { --sec: #205B41; --sec-dark: #143d2b; } /* Scouts */
+
+/* Coloured gradient header band */
+.scouts-home .card_grid__item::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 118px;
+  background: linear-gradient(135deg, var(--sec) 0%, var(--sec-dark) 100%);
+  transition: filter 0.28s ease;
+}
+/* Soft light sweep on the band for depth */
+.scouts-home .card_grid__item::after {
+  content: "";
+  position: absolute;
+  top: -40px; right: -30px;
+  width: 180px; height: 180px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255,255,255,0.22), rgba(255,255,255,0) 70%);
+  pointer-events: none;
+}
+
+/* Floating white logo badge overlapping the band */
+.scouts-home .card_grid__item .card_grid__image {
+  position: relative;
+  z-index: 1;
+  margin: 66px 0 20px;
+  width: 116px; height: 116px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #fff;
+  border-radius: 24px;
+  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.16);
+  transition: transform 0.28s cubic-bezier(.2,.7,.3,1);
+}
+.scouts-home .card_grid__item .card_grid__image img {
+  width: auto; height: auto;
+  max-width: 78px; max-height: 52px;
+  object-fit: contain;
+}
+
+/* Logo-only: title kept in the DOM for the img alt, hidden visually */
+.scouts-home .card_grid__title { display: none; }
+
+.scouts-home .card_grid__text {
+  color: var(--scout-text-2, #55565A);
+  font-size: 1rem;
+  line-height: 1.55;
+  margin: 0 0 22px;
+}
+.scouts-home .card_grid__item > p { margin: auto 0 0; width: 100%; }
+.scouts-home .card_grid__item .btn,
+.scouts-home .card_grid__item .btn.outline {
+  display: inline-block;
+  color: #fff;
+  background: var(--sec);
+  border: 2px solid var(--sec);
+}
+.scouts-home .card_grid__item .btn:hover {
+  background: var(--sec-dark);
+  border-color: var(--sec-dark);
+  color: #fff;
+}
+
+/* Hover: lift, deepen shadow in the section colour, brighten band, pop the badge */
+.scouts-home .card_grid__item:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 28px 56px color-mix(in srgb, var(--sec) 32%, transparent),
+              0 10px 24px rgba(15, 23, 42, 0.10);
+}
+.scouts-home .card_grid__item:hover::before { filter: brightness(1.1) saturate(1.05); }
+.scouts-home .card_grid__item:hover .card_grid__image { transform: scale(1.06) translateY(-2px); }
+
+@media (prefers-reduced-motion: reduce) {
+  .scouts-home .card_grid__item,
+  .scouts-home .card_grid__item .card_grid__image { transition: none; }
+  .scouts-home .card_grid__item:hover { transform: none; }
+  .scouts-home .card_grid__item:hover .card_grid__image { transform: none; }
+}
+
+/* Stats — equal-height cards, brand top accent, gradient number, hover lift */
+.scouts-home .stats_grid {
+  grid-auto-rows: 1fr;
+  align-items: stretch;
+}
+.scouts-home .stats_card {
+  height: 100%;
+  border-top: 4px solid var(--scout-purple, #590FA9);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.scouts-home .stats_card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 18px 40px rgba(89, 15, 169, 0.16);
+}
+.scouts-home .stats_card__value {
+  background: linear-gradient(120deg, #590FA9 0%, #088486 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Steps — eye-catching, editorial: tinted band, big numbers, unified baseline */
+.scouts-home .db-block-shell--steps { background: #F5F2FB; }
+.scouts-home .steps_grid {
+  grid-auto-rows: 1fr;
+  gap: 24px;
+}
+.scouts-home .step_card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: 30px 28px 32px;
+  border: 1px solid #ECE7F6;
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: 0 10px 28px rgba(89, 15, 169, 0.06);
+  overflow: hidden;
+  transition: transform 0.24s cubic-bezier(.2,.7,.3,1), box-shadow 0.24s ease;
+}
+/* Unified coloured baseline across all cards */
+.scouts-home .step_card::after {
+  content: "";
+  position: absolute;
+  left: 0; right: 0; bottom: 0;
+  height: 5px;
+  background: linear-gradient(90deg, #590FA9, #088486);
+  opacity: 0.85;
+}
+.scouts-home .step_card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 22px 46px rgba(89, 15, 169, 0.16);
+}
+.scouts-home .step_card__number {
+  width: 56px !important;
+  height: 56px !important;
+  font-size: 1.5rem !important;
+  background: linear-gradient(135deg, #590FA9 0%, #490499 100%) !important;
+  color: #fff !important;
+  box-shadow: 0 8px 18px rgba(89, 15, 169, 0.28);
+  margin-bottom: 18px !important;
+}
+.scouts-home .step_card h3 { margin: 0 0 8px; font-size: 1.2rem; }
+.scouts-home .step_card > div { color: var(--scout-text-2, #55565A); line-height: 1.55; }
+
+/* Get involved — equal-height cards, CTAs pinned to a unified bottom line */
+.scouts-home .split_cta {
+  grid-auto-rows: 1fr;
+  align-items: stretch;
+  gap: 26px;
+}
+.scouts-home .split_cta__card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  height: 100%;
+  padding: 36px 38px;
+  transition: transform 0.24s ease, box-shadow 0.24s ease;
+}
+.scouts-home .split_cta__card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 26px 52px rgba(15, 23, 42, 0.24);
+}
+.scouts-home .split_cta__card h3 { margin: 0 0 10px; font-size: 1.5rem; }
+.scouts-home .split_cta__card > div { margin: 0; }
+.scouts-home .split_cta__card > p {
+  margin: auto 0 0;   /* pins the CTA to the bottom line of every card */
+  padding-top: 22px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scouts-home .step_card,
+  .scouts-home .split_cta__card { transition: none; }
+  .scouts-home .step_card:hover,
+  .scouts-home .split_cta__card:hover { transform: none; }
+}

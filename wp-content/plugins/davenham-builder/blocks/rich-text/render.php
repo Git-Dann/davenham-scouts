@@ -19,7 +19,7 @@ $inline_style = $bg_styles[ $background ] ?? $bg_styles['white'];
 <section class="richtext_section cf" style="<?php echo esc_attr( $inline_style ); ?>">
 	<div class="wrapper">
 		<div class="richtext_content">
-			<?php echo wp_kses_post( $content ); ?>
+			<?php echo do_shortcode( wp_kses_post( $content ) ); ?>
 		</div>
 	</div><!-- .wrapper -->
 </section><!-- .richtext_section -->

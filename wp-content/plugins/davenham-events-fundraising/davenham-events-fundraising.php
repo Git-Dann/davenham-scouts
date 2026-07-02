@@ -3,7 +3,7 @@
  * Plugin Name: Davenham Events & Fundraising
  * Plugin URI:  https://davenhamscouts.org.uk
  * Description: Event pages, WooCommerce ticket reporting, event profit tracking, media grouping, and a site-wide fundraising progress banner.
- * Version:     1.2.0
+ * Version:     1.2.1
  * Author:      Davenham Scout Group
  * Text Domain: davenham-events-fundraising
  * Requires at least: 6.0
@@ -12,7 +12,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'DEF_VERSION', '1.2.0' );
+define( 'DEF_VERSION', '1.2.1' );
 define( 'DEF_FILE', __FILE__ );
 define( 'DEF_DIR', plugin_dir_path( __FILE__ ) );
 define( 'DEF_URL', plugin_dir_url( __FILE__ ) );
@@ -1409,8 +1409,14 @@ final class Davenham_Events_Fundraising {
 		return $queried_id > 0 && in_array( $queried_id, $page_ids, true );
 	}
 
-	public static function fundraising_banner_shortcode() {
-		return self::render_fundraising_banner( false );
+	public static function fundraising_banner_shortcode( $atts = array() ) {
+		$atts = shortcode_atts(
+			array( 'variant' => 'bar' ),
+			is_array( $atts ) ? $atts : array(),
+			'davenham_fundraising_banner'
+		);
+		$variant = ( 'feature' === $atts['variant'] ) ? 'feature' : 'bar';
+		return self::render_fundraising_banner( false, $variant );
 	}
 
 	public static function event_products_shortcode( $atts ) {
@@ -1442,7 +1448,7 @@ final class Davenham_Events_Fundraising {
 		return self::render_public_product_grid( __( 'Book tickets', 'davenham-events-fundraising' ), $meta['ticket_product_ids'], __( 'Online tickets are not available for this event yet.', 'davenham-events-fundraising' ), false );
 	}
 
-	public static function render_fundraising_banner( $echo = true ) {
+	public static function render_fundraising_banner( $echo = true, $variant = 'bar' ) {
 		$settings = self::settings();
 		if ( '1' !== $settings['enabled'] || (float) $settings['target_amount'] <= 0 ) {
 			return '';
@@ -1452,33 +1458,69 @@ final class Davenham_Events_Fundraising {
 		$raised = max( 0, (float) $totals['raised'] );
 		$target = max( 0, (float) $totals['target'] );
 		$percent = $target > 0 ? min( 100, ( $raised / $target ) * 100 ) : 0;
-		$complete_class = $target > 0 && $raised >= $target ? ' def-fundraising-banner--complete' : '';
+		$is_complete = $target > 0 && $raised >= $target;
+		$complete_class = $is_complete ? ' def-fundraising-banner--complete' : '';
 		$button_url = trim( (string) $settings['button_url'] );
 		$button_text = trim( (string) $settings['button_text'] );
+		$data_attrs = sprintf(
+			' data-def-countup data-raised="%s" data-target="%s" data-symbol="%s" style="--def-progress: %s%%;"',
+			esc_attr( (string) $raised ),
+			esc_attr( (string) $target ),
+			esc_attr( self::currency_symbol() ),
+			esc_attr( number_format( $percent, 2, '.', '' ) )
+		);
 
 		ob_start();
-		?>
-		<section class="def-fundraising-banner<?php echo esc_attr( $complete_class ); ?>" data-def-countup data-raised="<?php echo esc_attr( (string) $raised ); ?>" data-target="<?php echo esc_attr( (string) $target ); ?>" data-symbol="<?php echo esc_attr( self::currency_symbol() ); ?>" style="--def-progress: <?php echo esc_attr( number_format( $percent, 2, '.', '' ) ); ?>%;">
-			<div class="def-fundraising-banner__fill" aria-hidden="true"></div>
-			<div class="wrapper def-fundraising-banner__inner">
-				<div class="def-fundraising-banner__copy">
-					<?php if ( ! empty( $settings['title'] ) ) : ?>
-						<strong><?php echo esc_html( $settings['title'] ); ?></strong>
-					<?php endif; ?>
-					<?php if ( ! empty( $settings['message'] ) ) : ?>
-						<span><?php echo esc_html( $settings['message'] ); ?></span>
-					<?php endif; ?>
+
+		if ( 'feature' === $variant ) {
+			// Alternate "feature" design — a self-contained progress card built
+			// for embedding inside a page (e.g. the Centenary Scout Hall appeal).
+			// Reuses the same countup logic: the shared JS sets --def-progress on
+			// this element, so the fill bar and raised figure animate as before.
+			?>
+			<section class="def-fundraising-banner def-fundraising-banner--feature<?php echo esc_attr( $complete_class ); ?>"<?php echo $data_attrs; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>>
+				<div class="def-ff__head">
+					<span class="def-ff__eyebrow"><?php echo esc_html( ! empty( $settings['title'] ) ? $settings['title'] : __( 'Our fundraising appeal', 'davenham-events-fundraising' ) ); ?></span>
+					<span class="def-ff__pct"><?php echo esc_html( round( $percent ) . '%' ); ?></span>
 				</div>
-				<div class="def-fundraising-banner__numbers">
-					<span class="def-fundraising-banner__raised" data-def-raised-label><?php echo esc_html( self::money_plain( $raised ) ); ?></span>
-					<span class="def-fundraising-banner__target"><?php echo esc_html( sprintf( __( 'of %s', 'davenham-events-fundraising' ), self::money_plain( $target ) ) ); ?></span>
+				<div class="def-ff__track"><span class="def-ff__fill" aria-hidden="true"></span></div>
+				<div class="def-ff__numbers">
+					<span class="def-ff__raised" data-def-raised-label><?php echo esc_html( self::money_plain( $raised ) ); ?></span>
+					<span class="def-ff__target"><?php echo esc_html( sprintf( __( 'raised of %s goal', 'davenham-events-fundraising' ), self::money_plain( $target ) ) ); ?></span>
 				</div>
-				<?php if ( $button_url && $button_text ) : ?>
-					<a class="def-fundraising-banner__button" href="<?php echo esc_url( $button_url ); ?>"><?php echo esc_html( $button_text ); ?></a>
+				<?php if ( ! empty( $settings['message'] ) ) : ?>
+					<p class="def-ff__message"><?php echo esc_html( $settings['message'] ); ?></p>
 				<?php endif; ?>
-			</div>
-		</section>
-		<?php
+				<?php if ( $button_url && $button_text ) : ?>
+					<a class="def-ff__button" href="<?php echo esc_url( $button_url ); ?>"><?php echo esc_html( $button_text ); ?></a>
+				<?php endif; ?>
+			</section>
+			<?php
+		} else {
+			?>
+			<section class="def-fundraising-banner<?php echo esc_attr( $complete_class ); ?>"<?php echo $data_attrs; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>>
+				<div class="def-fundraising-banner__fill" aria-hidden="true"></div>
+				<div class="wrapper def-fundraising-banner__inner">
+					<div class="def-fundraising-banner__copy">
+						<?php if ( ! empty( $settings['title'] ) ) : ?>
+							<strong><?php echo esc_html( $settings['title'] ); ?></strong>
+						<?php endif; ?>
+						<?php if ( ! empty( $settings['message'] ) ) : ?>
+							<span><?php echo esc_html( $settings['message'] ); ?></span>
+						<?php endif; ?>
+					</div>
+					<div class="def-fundraising-banner__numbers">
+						<span class="def-fundraising-banner__raised" data-def-raised-label><?php echo esc_html( self::money_plain( $raised ) ); ?></span>
+						<span class="def-fundraising-banner__target"><?php echo esc_html( sprintf( __( 'of %s', 'davenham-events-fundraising' ), self::money_plain( $target ) ) ); ?></span>
+					</div>
+					<?php if ( $button_url && $button_text ) : ?>
+						<a class="def-fundraising-banner__button" href="<?php echo esc_url( $button_url ); ?>"><?php echo esc_html( $button_text ); ?></a>
+					<?php endif; ?>
+				</div>
+			</section>
+			<?php
+		}
+
 		$output = ob_get_clean();
 
 		if ( $echo ) {
