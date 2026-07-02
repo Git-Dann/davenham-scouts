@@ -207,3 +207,213 @@
 .davenham-doc-file-box input[type="file"] {
 	margin: 4px 0;
 }
+
+/* =====================================================================
+   Public Charity Documents ([davenham_public_documents]) — shop-styled
+   cards so published charity docs / risk assessments read like the shop.
+   ===================================================================== */
+.dpub-docs { margin: 0; }
+
+.dpub-docs__section { margin: 0 0 44px; }
+.dpub-docs__section:last-of-type { margin-bottom: 24px; }
+
+.dpub-docs__section-title {
+	margin: 0 0 6px;
+	font-size: 24px;
+	font-weight: 800;
+	color: var(--scout-text-dark, #333333);
+}
+.dpub-docs__section-desc {
+	margin: 0 0 20px;
+	color: var(--scout-text-2, #6E6E6E);
+	font-size: 16px;
+	max-width: 70ch;
+}
+.dpub-docs__section-title + .dpub-docs__grid { margin-top: 18px; }
+
+.dpub-docs__grid {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+	gap: 22px;
+}
+
+.dpub-card {
+	display: flex;
+	flex-direction: column;
+	background: #fff;
+	border: 1px solid var(--scout-card-border, #E5E7EB);
+	border-radius: var(--scout-radius-card, 10px);
+	box-shadow: var(--scout-shadow-card, 0 4px 16px rgba(15, 23, 42, 0.06));
+	padding: 20px;
+	transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+.dpub-card:hover {
+	transform: translateY(-3px);
+	box-shadow: var(--scout-shadow-card-hover, 0 8px 28px rgba(15, 23, 42, 0.12));
+}
+
+.dpub-card__top {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	margin-bottom: 14px;
+}
+.dpub-card__badge {
+	display: inline-flex;
+	align-items: center;
+	padding: 4px 10px;
+	border-radius: 4px;
+	color: #fff;
+	font-size: 12px;
+	font-weight: 800;
+	letter-spacing: 0.04em;
+}
+.dpub-card__size {
+	font-size: 12px;
+	font-weight: 700;
+	color: var(--scout-text-muted, #999999);
+}
+
+.dpub-card__title {
+	margin: 0 0 18px;
+	font-size: 17px;
+	font-weight: 700;
+	line-height: 1.35;
+	color: var(--scout-text-dark, #333333);
+}
+
+.dpub-card__actions {
+	display: flex;
+	gap: 10px;
+	margin-top: auto;
+}
+.dpub-card__btn {
+	flex: 1;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	min-height: 42px;
+	padding: 9px 14px;
+	border-radius: 0;
+	font-weight: 700;
+	font-size: 14px;
+	text-decoration: none;
+	text-align: center;
+	transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+.dpub-card__btn--view {
+	background: #fff;
+	color: var(--scout-purple, #590FA9);
+	border: 1px solid var(--scout-border, #CCCCCC);
+}
+.dpub-card__btn--view:hover { border-color: var(--scout-purple, #590FA9); background: rgba(89, 15, 169, 0.06); }
+.dpub-card__btn--download {
+	background: var(--scout-blue, #006DDF);
+	color: #fff;
+	border: 1px solid var(--scout-blue, #006DDF);
+}
+.dpub-card__btn--download:hover { background: var(--scout-navy, #003982); border-color: var(--scout-navy, #003982); }
+
+.dpub-docs__empty {
+	padding: 28px;
+	border: 1px dashed var(--scout-border, #CCCCCC);
+	border-radius: var(--scout-radius-card, 10px);
+	background: var(--scout-bg, #F1F1F1);
+	color: var(--scout-text-2, #6E6E6E);
+}
+.dpub-docs__empty strong { display: block; margin-bottom: 4px; color: var(--scout-text-dark, #333333); font-size: 18px; }
+.dpub-docs__empty p { margin: 0; }
+
+/* Request-a-risk-assessment CTA */
+.dpub-docs__request {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	gap: 18px;
+	margin: 8px 0 0;
+	padding: 26px 28px;
+	border-radius: var(--scout-radius-card, 10px);
+	background: var(--scout-grad-brand, linear-gradient(135deg, #003982 0%, #590FA9 100%));
+	color: #fff;
+}
+.dpub-docs__request-body { flex: 1 1 320px; }
+.dpub-docs__request h3 { margin: 0 0 6px; color: #fff; font-size: 20px; font-weight: 800; }
+.dpub-docs__request p { margin: 0; color: rgba(255, 255, 255, 0.85); max-width: 70ch; }
+.dpub-docs__request-btn {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	min-height: 48px;
+	padding: 12px 26px;
+	border-radius: 0;
+	background: #fff;
+	color: var(--scout-purple, #590FA9);
+	font-weight: 800;
+	text-decoration: none;
+	border: 2px solid #fff;
+	transition: background 0.15s ease, color 0.15s ease;
+}
+.dpub-docs__request-btn:hover { background: transparent; color: #fff; }
+
+@media (max-width: 560px) {
+	.dpub-card__actions { flex-direction: column; }
+	.dpub-docs__request { flex-direction: column; align-items: flex-start; }
+}
+
+/* =====================================================================
+   Admin: Add/Edit Document — keep it simple & clear for non-tech users.
+   ===================================================================== */
+.davenham-doc-intro {
+	margin: 12px 0 4px;
+	padding: 12px 16px;
+	border: 1px solid var(--scout-card-border, #E5E7EB);
+	border-left: 4px solid var(--scout-blue, #006DDF);
+	border-radius: 8px;
+	background: #fff;
+	color: var(--scout-text, #404040);
+	font-size: 14px;
+	line-height: 1.6;
+}
+.davenham-doc-current {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	margin: 0 0 12px;
+	color: var(--scout-text-dark, #333333);
+}
+.davenham-doc-current .dashicons { color: var(--scout-text-2, #6E6E6E); }
+.davenham-doc-size { color: var(--scout-text-muted, #999999); font-weight: 400; }
+
+.davenham-doc-upload {
+	padding: 20px;
+	border: 2px dashed var(--scout-border, #CCCCCC);
+	border-radius: 10px;
+	background: var(--scout-bg-off-white, #F6F6F6);
+	text-align: center;
+}
+.davenham-doc-upload__label {
+	display: block;
+	margin-bottom: 12px;
+	font-size: 16px;
+	font-weight: 800;
+	color: var(--scout-text-dark, #333333);
+}
+.davenham-doc-upload__input { display: inline-block; }
+.davenham-doc-upload__hint {
+	margin: 12px 0 0;
+	color: var(--scout-text-2, #6E6E6E);
+	font-size: 13px;
+}
+.davenham-doc-visnote {
+	margin: 16px 0 0;
+	padding: 12px 14px;
+	border-radius: 8px;
+	background: rgba(0, 109, 223, 0.06);
+	color: var(--scout-text, #404040);
+	font-size: 13px;
+	line-height: 1.6;
+}

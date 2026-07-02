@@ -3,7 +3,7 @@
  * Plugin Name: Davenham Documents
  * Plugin URI:  https://davenhamscouts.org.uk
  * Description: Gated document library — leaders and trustees log in to share and download key documents (risk assessments, policies, minutes). Files are stored outside the public media library and served only to authorised users.
- * Version:     1.0.2
+ * Version:     1.0.4
  * Author:      Davenham Scout Group
  * Text Domain: davenham-documents
  * Requires at least: 6.0
@@ -12,7 +12,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'DDOC_VERSION', '1.0.2' );
+define( 'DDOC_VERSION', '1.0.4' );
 define( 'DDOC_FILE', __FILE__ );
 define( 'DDOC_DIR', plugin_dir_path( __FILE__ ) );
 define( 'DDOC_URL', plugin_dir_url( __FILE__ ) );
@@ -26,6 +26,7 @@ final class Davenham_Documents {
 	const SAVE_NONCE    = 'davenham_doc_save';
 	const DOWNLOAD_NONCE = 'davenham_doc_download';
 	const VERSION_OPTION = 'davenham_documents_version';
+	const PUBLIC_META    = 'davenham_doc_public'; // term meta: '1' = public category
 
 	/**
 	 * Roles that can use the library (view + manage), beyond administrator.
@@ -39,9 +40,20 @@ final class Davenham_Documents {
 
 	/**
 	 * Default document categories seeded on activation.
+	 * name => is_public (public categories appear on the public Charity
+	 * Documents page; private ones stay trustee/leader only).
 	 */
 	private static function default_categories() {
-		return array( 'Risk Assessments', 'Policies', 'Minutes', 'Forms', 'Other' );
+		return array(
+			'Annual Reports'   => true,
+			'Accounts'         => true,
+			'Policies'         => true,
+			'Risk Assessments' => true,
+			'Governance'       => true,
+			'Minutes'          => false,
+			'Forms'            => false,
+			'Other'            => false,
+		);
 	}
 
 	/**
@@ -71,9 +83,17 @@ final class Davenham_Documents {
 		// make sure roles, storage dir and categories exist.
 		add_action( 'admin_init', array( __CLASS__, 'maybe_upgrade' ) );
 
+		// Category "public" flag — categories ticked as public are shown on
+		// the public Charity Documents page and are downloadable by anyone.
+		add_action( self::TAXONOMY . '_add_form_fields', array( __CLASS__, 'category_add_field' ) );
+		add_action( self::TAXONOMY . '_edit_form_fields', array( __CLASS__, 'category_edit_field' ) );
+		add_action( 'created_' . self::TAXONOMY, array( __CLASS__, 'save_category_public' ) );
+		add_action( 'edited_' . self::TAXONOMY, array( __CLASS__, 'save_category_public' ) );
+
 		// Admin: upload meta box + multipart form + save handler.
 		add_action( 'add_meta_boxes', array( __CLASS__, 'register_meta_boxes' ) );
 		add_action( 'post_edit_form_tag', array( __CLASS__, 'add_form_enctype' ) );
+		add_action( 'edit_form_top', array( __CLASS__, 'render_uploader_intro' ) );
 		add_action( 'save_post_' . self::POST_TYPE, array( __CLASS__, 'save_document' ), 10, 2 );
 		add_action( 'admin_notices', array( __CLASS__, 'render_admin_notices' ) );
 		add_action( 'admin_enqueue_scripts', array( __CLASS__, 'enqueue_admin_assets' ) );
@@ -84,8 +104,10 @@ final class Davenham_Documents {
 		add_action( 'wp_enqueue_scripts', array( __CLASS__, 'register_public_assets' ) );
 
 		// Gated download handler (admin-ajax — no custom REST routes on Krystal).
+		// Both logged-in and logged-out go through one handler; it serves
+		// public-category documents to anyone and gates the rest to trustees.
 		add_action( 'wp_ajax_davenham_download_document', array( __CLASS__, 'handle_download' ) );
-		add_action( 'wp_ajax_nopriv_davenham_download_document', array( __CLASS__, 'handle_download_nopriv' ) );
+		add_action( 'wp_ajax_nopriv_davenham_download_document', array( __CLASS__, 'handle_download' ) );
 	}
 
 	/* ---------------------------------------------------------------------
@@ -186,9 +208,20 @@ final class Davenham_Documents {
 		if ( ! taxonomy_exists( self::TAXONOMY ) ) {
 			return;
 		}
-		foreach ( self::default_categories() as $name ) {
-			if ( ! term_exists( $name, self::TAXONOMY ) ) {
-				wp_insert_term( $name, self::TAXONOMY );
+		foreach ( self::default_categories() as $name => $is_public ) {
+			$existing = term_exists( $name, self::TAXONOMY );
+			if ( ! $existing ) {
+				$created = wp_insert_term( $name, self::TAXONOMY );
+				if ( ! is_wp_error( $created ) && isset( $created['term_id'] ) ) {
+					update_term_meta( (int) $created['term_id'], self::PUBLIC_META, $is_public ? '1' : '' );
+				}
+				continue;
+			}
+			// Existing category: only seed the public flag if it has never
+			// been set, so we never override a choice an admin has made.
+			$term_id = is_array( $existing ) ? (int) $existing['term_id'] : (int) $existing;
+			if ( ! metadata_exists( 'term', $term_id, self::PUBLIC_META ) ) {
+				update_term_meta( $term_id, self::PUBLIC_META, $is_public ? '1' : '' );
 			}
 		}
 	}
@@ -260,6 +293,64 @@ final class Davenham_Documents {
 
 	public static function register_shortcode() {
 		add_shortcode( 'davenham_documents', array( __CLASS__, 'render_library_shortcode' ) );
+		add_shortcode( 'davenham_public_documents', array( __CLASS__, 'render_public_shortcode' ) );
+	}
+
+	/* ---------------------------------------------------------------------
+	 * Category "public" flag (term meta) + helpers
+	 * ------------------------------------------------------------------- */
+
+	public static function is_public_category( $term_id ) {
+		return '1' === get_term_meta( (int) $term_id, self::PUBLIC_META, true );
+	}
+
+	public static function document_is_public( $doc_id ) {
+		$terms = get_the_terms( (int) $doc_id, self::TAXONOMY );
+		if ( $terms && ! is_wp_error( $terms ) ) {
+			foreach ( $terms as $term ) {
+				if ( self::is_public_category( $term->term_id ) ) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+
+	public static function category_add_field() {
+		?>
+		<div class="form-field">
+			<input type="hidden" name="davenham_doc_public_present" value="1" />
+			<label style="font-weight:600;"><input type="checkbox" name="davenham_doc_public" value="1" /> <?php esc_html_e( 'Show on the public Charity Documents page', 'davenham-documents' ); ?></label>
+			<p><?php esc_html_e( 'Tick for categories the public should see (Accounts, Annual Reports, Risk Assessments, Policies…). Leave unticked for internal-only categories (e.g. Minutes) — those stay downloadable by trustees and leaders only.', 'davenham-documents' ); ?></p>
+		</div>
+		<?php
+	}
+
+	public static function category_edit_field( $term ) {
+		$checked = self::is_public_category( $term->term_id ) ? ' checked' : '';
+		?>
+		<tr class="form-field">
+			<th scope="row"><?php esc_html_e( 'Visibility', 'davenham-documents' ); ?></th>
+			<td>
+				<input type="hidden" name="davenham_doc_public_present" value="1" />
+				<label style="font-weight:600;"><input type="checkbox" name="davenham_doc_public" value="1"<?php echo $checked; // phpcs:ignore ?> /> <?php esc_html_e( 'Show on the public Charity Documents page', 'davenham-documents' ); ?></label>
+				<p class="description"><?php esc_html_e( 'Public categories (Accounts, Annual Reports, Risk Assessments…) appear on the public page and are downloadable by anyone. Unticked categories stay trustee/leader only.', 'davenham-documents' ); ?></p>
+			</td>
+		</tr>
+		<?php
+	}
+
+	public static function save_category_public( $term_id ) {
+		// Only act on our own term-edit form (the hidden field distinguishes it
+		// from quick-edit / programmatic term saves, which would otherwise wipe
+		// the flag because an unticked checkbox posts nothing).
+		if ( ! isset( $_POST['davenham_doc_public_present'] ) ) {
+			return;
+		}
+		if ( ! current_user_can( 'manage_options' ) ) {
+			return;
+		}
+		update_term_meta( (int) $term_id, self::PUBLIC_META, ! empty( $_POST['davenham_doc_public'] ) ? '1' : '' );
 	}
 
 	/* ---------------------------------------------------------------------
@@ -297,6 +388,16 @@ final class Davenham_Documents {
 		}
 	}
 
+	public static function render_uploader_intro( $post ) {
+		if ( ! isset( $post->post_type ) || self::POST_TYPE !== $post->post_type ) {
+			return;
+		}
+		echo '<div class="davenham-doc-intro">';
+		echo '<strong>' . esc_html__( 'Adding a document is quick:', 'davenham-documents' ) . '</strong> ';
+		echo esc_html__( '1. Give it a clear name above.  2. Choose the file below.  3. Tick a category on the right.  4. Click Publish.', 'davenham-documents' );
+		echo '</div>';
+	}
+
 	public static function render_file_meta_box( $post ) {
 		wp_nonce_field( self::SAVE_NONCE, 'davenham_doc_nonce' );
 
@@ -306,18 +407,22 @@ final class Davenham_Documents {
 		echo '<div class="davenham-doc-file-box">';
 
 		if ( $name ) {
-			echo '<p class="davenham-doc-current"><strong>' . esc_html__( 'Current file:', 'davenham-documents' ) . '</strong> ';
+			echo '<p class="davenham-doc-current"><span class="dashicons dashicons-media-document" aria-hidden="true"></span> <strong>' . esc_html__( 'Current file:', 'davenham-documents' ) . '</strong> ';
 			echo esc_html( $name );
 			if ( $size ) {
 				echo ' <span class="davenham-doc-size">(' . esc_html( size_format( $size ) ) . ')</span>';
 			}
 			echo '</p>';
-			echo '<p class="description">' . esc_html__( 'Choosing a new file below replaces the current one.', 'davenham-documents' ) . '</p>';
 		}
 
-		echo '<p><label for="davenham_doc_file_input"><strong>' . esc_html__( 'Upload file', 'davenham-documents' ) . '</strong></label></p>';
-		echo '<input type="file" id="davenham_doc_file_input" name="davenham_doc_file" />';
-		echo '<p class="description">' . esc_html__( 'Allowed: PDF, Word, Excel, PowerPoint, PNG, JPG. The file is stored privately and is only downloadable by logged-in trustees and leaders.', 'davenham-documents' ) . '</p>';
+		echo '<div class="davenham-doc-upload">';
+		echo '<label class="davenham-doc-upload__label" for="davenham_doc_file_input">' . ( $name ? esc_html__( 'Replace the file', 'davenham-documents' ) : esc_html__( 'Choose the file to upload', 'davenham-documents' ) ) . '</label>';
+		echo '<input type="file" id="davenham_doc_file_input" name="davenham_doc_file" class="davenham-doc-upload__input" />';
+		echo '<p class="davenham-doc-upload__hint">' . esc_html__( 'PDF, Word, Excel, PowerPoint, or an image (PNG / JPG).', 'davenham-documents' ) . '</p>';
+		echo '</div>';
+
+		echo '<p class="davenham-doc-visnote">' . wp_kses_post( __( '<strong>Who can see this?</strong> It depends on the category you tick on the right. Categories marked <em>public</em> (e.g. Accounts, Annual Reports, Risk Assessments) appear on the website for anyone to view or download. Every other category stays private — only logged-in trustees and leaders can open it.', 'davenham-documents' ) ) . '</p>';
+
 		echo '</div>';
 	}
 
@@ -460,6 +565,22 @@ final class Davenham_Documents {
 		return $url;
 	}
 
+	/**
+	 * Public file URL — for documents in public categories. No nonce (the file
+	 * is public, and a nonce would just expire / break under page caching).
+	 * $inline = true serves it for in-browser viewing; false forces download.
+	 */
+	public static function public_file_url( $doc_id, $inline = false ) {
+		$args = array(
+			'action' => 'davenham_download_document',
+			'doc'    => (int) $doc_id,
+		);
+		if ( $inline ) {
+			$args['disposition'] = 'inline';
+		}
+		return add_query_arg( $args, admin_url( 'admin-ajax.php' ) );
+	}
+
 	public static function render_library_shortcode( $atts ) {
 		wp_enqueue_style( 'davenham-documents' );
 		wp_enqueue_script( 'davenham-documents' );
@@ -534,6 +655,126 @@ final class Davenham_Documents {
 	}
 
 	/* ---------------------------------------------------------------------
+	 * Public Charity Documents (front-facing, shop-styled)
+	 * ------------------------------------------------------------------- */
+
+	public static function render_public_shortcode( $atts ) {
+		$atts = shortcode_atts(
+			array(
+				'category'     => '',   // optional slug — limit to one public category
+				'request_url'  => '',   // optional CTA (e.g. contact form) link
+				'request_text' => 'Request a risk assessment',
+				'request_note' => '',   // small line under the CTA
+			),
+			$atts,
+			'davenham_public_documents'
+		);
+
+		wp_enqueue_style( 'davenham-documents' );
+
+		$groups       = self::get_public_grouped_documents( $atts['category'] );
+		$request_url  = $atts['request_url'] ? esc_url( $atts['request_url'] ) : '';
+		$request_text = $atts['request_text'];
+		$request_note = $atts['request_note'];
+
+		ob_start();
+		include DDOC_DIR . 'templates/public-documents.php';
+		return ob_get_clean();
+	}
+
+	/**
+	 * Grouped public documents: only categories flagged public, only documents
+	 * that actually have a stored file. Optionally limited to one category slug.
+	 */
+	private static function get_public_grouped_documents( $category_slug = '' ) {
+		$terms = get_terms(
+			array(
+				'taxonomy'   => self::TAXONOMY,
+				'hide_empty' => true,
+			)
+		);
+		if ( is_wp_error( $terms ) || empty( $terms ) ) {
+			return array();
+		}
+
+		$public_terms = array();
+		foreach ( $terms as $term ) {
+			if ( ! self::is_public_category( $term->term_id ) ) {
+				continue;
+			}
+			if ( $category_slug && $term->slug !== $category_slug ) {
+				continue;
+			}
+			$public_terms[] = $term;
+		}
+		if ( empty( $public_terms ) ) {
+			return array();
+		}
+
+		usort(
+			$public_terms,
+			function ( $a, $b ) {
+				return strcasecmp( $a->name, $b->name );
+			}
+		);
+
+		$result = array();
+		foreach ( $public_terms as $term ) {
+			$query = new WP_Query(
+				array(
+					'post_type'      => self::POST_TYPE,
+					'post_status'    => 'publish',
+					'posts_per_page' => 100,
+					'orderby'        => 'title',
+					'order'          => 'ASC',
+					'no_found_rows'  => true,
+					'tax_query'      => array(
+						array(
+							'taxonomy' => self::TAXONOMY,
+							'field'    => 'term_id',
+							'terms'    => $term->term_id,
+						),
+					),
+				)
+			);
+
+			$docs = array();
+			foreach ( $query->posts as $doc ) {
+				if ( ! get_post_meta( $doc->ID, '_davenham_doc_file', true ) ) {
+					continue;
+				}
+				$docs[] = $doc;
+			}
+			if ( ! empty( $docs ) ) {
+				$result[] = array( 'term' => $term, 'docs' => $docs );
+			}
+		}
+		return $result;
+	}
+
+	/**
+	 * File-type label + brand colour for a document (from its stored name/mime),
+	 * matching the design.md file-type badge palette.
+	 */
+	public static function file_type_badge( $doc_id ) {
+		$name = (string) get_post_meta( $doc_id, '_davenham_doc_name', true );
+		$ext  = strtolower( pathinfo( $name, PATHINFO_EXTENSION ) );
+		$map  = array(
+			'pdf'  => array( 'PDF', '#ED3F23' ),
+			'doc'  => array( 'DOC', '#003982' ),
+			'docx' => array( 'DOC', '#003982' ),
+			'xls'  => array( 'XLS', '#008A1C' ),
+			'xlsx' => array( 'XLS', '#008A1C' ),
+			'ppt'  => array( 'PPT', '#FF912A' ),
+			'pptx' => array( 'PPT', '#FF912A' ),
+			'png'  => array( 'IMG', '#590FA9' ),
+			'jpg'  => array( 'IMG', '#590FA9' ),
+			'jpeg' => array( 'IMG', '#590FA9' ),
+		);
+		return isset( $map[ $ext ] ) ? $map[ $ext ] : array( strtoupper( $ext ? $ext : 'FILE' ), '#6E6E6E' );
+	}
+
+	/* ---------------------------------------------------------------------
 	 * Gated download handler
 	 * ------------------------------------------------------------------- */
 
@@ -546,21 +787,31 @@ final class Davenham_Documents {
 	public static function handle_download() {
 		$doc_id = isset( $_GET['doc'] ) ? absint( $_GET['doc'] ) : 0;
 
-		if ( ! self::current_user_can_view() ) {
-			status_header( 403 );
-			wp_die( esc_html__( 'You do not have permission to download this document.', 'davenham-documents' ), '', array( 'response' => 403 ) );
-		}
-
-		$nonce = isset( $_GET['_wpnonce'] ) ? sanitize_text_field( wp_unslash( $_GET['_wpnonce'] ) ) : '';
-		if ( ! wp_verify_nonce( $nonce, self::DOWNLOAD_NONCE . '_' . $doc_id ) ) {
-			status_header( 403 );
-			wp_die( esc_html__( 'This download link has expired. Please reload the documents page and try again.', 'davenham-documents' ), '', array( 'response' => 403 ) );
-		}
-
 		$doc = get_post( $doc_id );
 		if ( ! $doc || self::POST_TYPE !== $doc->post_type || 'publish' !== $doc->post_status ) {
 			status_header( 404 );
 			wp_die( esc_html__( 'Document not found.', 'davenham-documents' ), '', array( 'response' => 404 ) );
+		}
+
+		// Public-category documents are downloadable by anyone (charity
+		// transparency). Everything else stays gated to logged-in trustees /
+		// leaders and requires a valid, per-document nonce.
+		if ( ! self::document_is_public( $doc_id ) ) {
+			if ( ! self::current_user_can_view() ) {
+				if ( ! is_user_logged_in() ) {
+					$target = isset( $_SERVER['HTTP_REFERER'] ) ? wp_validate_redirect( wp_unslash( $_SERVER['HTTP_REFERER'] ), home_url( '/' ) ) : home_url( '/' );
+					wp_safe_redirect( wp_login_url( $target ) );
+					exit;
+				}
+				status_header( 403 );
+				wp_die( esc_html__( 'You do not have permission to download this document.', 'davenham-documents' ), '', array( 'response' => 403 ) );
+			}
+
+			$nonce = isset( $_GET['_wpnonce'] ) ? sanitize_text_field( wp_unslash( $_GET['_wpnonce'] ) ) : '';
+			if ( ! wp_verify_nonce( $nonce, self::DOWNLOAD_NONCE . '_' . $doc_id ) ) {
+				status_header( 403 );
+				wp_die( esc_html__( 'This download link has expired. Please reload the documents page and try again.', 'davenham-documents' ), '', array( 'response' => 403 ) );
+			}
 		}
 
 		$rel  = get_post_meta( $doc_id, '_davenham_doc_file', true );
@@ -578,9 +829,13 @@ final class Davenham_Documents {
 
 		$ascii_name = str_replace( array( '"', "\r", "\n" ), '', $name );
 
+		// "View" links pass disposition=inline so the browser opens the file;
+		// otherwise force a download.
+		$disposition = ( isset( $_GET['disposition'] ) && 'inline' === $_GET['disposition'] ) ? 'inline' : 'attachment';
+
 		nocache_headers();
 		header( 'Content-Type: ' . $mime );
-		header( "Content-Disposition: attachment; filename=\"{$ascii_name}\"; filename*=UTF-8''" . rawurlencode( $name ) );
+		header( "Content-Disposition: {$disposition}; filename=\"{$ascii_name}\"; filename*=UTF-8''" . rawurlencode( $name ) );
 		header( 'Content-Length: ' . filesize( $path ) );
 		header( 'Content-Transfer-Encoding: binary' );
 		header( 'X-Content-Type-Options: nosniff' );
