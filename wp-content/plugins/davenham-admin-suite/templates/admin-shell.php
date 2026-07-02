@@ -202,10 +202,11 @@ $render_flyout = function ( $item ) use ( $admin_groups ) {
 	// The first child is the section's own main page (WordPress auto-duplicates
 	// the parent as the first submenu). Point the heading link at it and drop it
 	// from the list below so it isn't shown twice.
-	$main_url = ! empty( $children[0]['url'] ) ? $children[0]['url'] : ( $item['url'] ?? '#' );
-	$rest     = $children ? array_slice( $children, 1 ) : array();
+	$main_url   = ! empty( $children[0]['url'] ) ? $children[0]['url'] : ( $item['url'] ?? '#' );
+	$main_label = ! empty( $children[0]['label'] ) ? $children[0]['label'] : ( $item['label'] ?? 'Open' );
+	$rest       = $children ? array_slice( $children, 1 ) : array();
 	$out  = '<div class="das-app-flyout-heading"><strong>' . esc_html( $item['label'] ?? '' ) . '</strong>';
-	$out .= '<a href="' . esc_url( $main_url ) . '">Open main page</a></div>';
+	$out .= '<a href="' . esc_url( $main_url ) . '">' . esc_html( $main_label ) . '</a></div>';
 	$out .= '<div class="das-app-flyout-list">';
 	foreach ( $rest as $link ) {
 		$out .= '<a href="' . esc_url( $link['url'] ?? '#' ) . '">' . esc_html( $link['label'] ?? '' ) . '</a>';
