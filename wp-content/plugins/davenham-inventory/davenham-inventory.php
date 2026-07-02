@@ -512,8 +512,8 @@ final class Davenham_Inventory {
 			.dvh-inv-stat .dvh-inv-fig{display:block;font-size:2rem;font-weight:800;color:#003982;line-height:1;}
 			.dvh-inv-stat span:last-child{color:#55565A;font-size:.9rem;}
 			.dvh-inv-stat--out .dvh-inv-fig{color:#C0490B;}
-			.dvh-inv-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));grid-auto-rows:1fr;gap:16px;margin-top:14px;}
-			.dvh-inv-card{display:flex;flex-direction:column;gap:6px;height:100%;background:#fff;border:1px solid #e7e9ee;border-top:4px solid #590FA9;border-radius:14px;padding:20px;text-decoration:none;box-shadow:0 8px 22px rgba(15,23,42,.06);transition:transform .2s cubic-bezier(.2,.7,.3,1),box-shadow .2s ease;}
+			.dvh-inv-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));align-items:stretch;gap:16px;margin-top:14px;}
+			.dvh-inv-card{display:flex;flex-direction:column;gap:6px;min-height:120px;background:#fff;border:1px solid #e7e9ee;border-top:4px solid #590FA9;border-radius:14px;padding:20px;text-decoration:none;box-shadow:0 8px 22px rgba(15,23,42,.06);transition:transform .2s cubic-bezier(.2,.7,.3,1),box-shadow .2s ease;}
 			.dvh-inv-card:hover{transform:translateY(-5px);box-shadow:0 20px 40px rgba(89,15,169,.16);}
 			.dvh-inv-wrap .dvh-inv-card:focus{outline:none;box-shadow:0 0 0 3px rgba(89,15,169,.4),0 8px 22px rgba(15,23,42,.06);}
 			.dvh-inv-wrap .dvh-inv-card:focus:not(:focus-visible){box-shadow:0 8px 22px rgba(15,23,42,.06);}
