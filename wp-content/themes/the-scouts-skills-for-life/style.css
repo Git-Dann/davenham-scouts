@@ -5282,3 +5282,57 @@ main > .db-block-shell:last-child,
 /* FAQ — more breathing room above the section + list */
 .page_content--blocks .db-block-shell--faq { padding-top: 62px; }
 .faq_section .faq_list { margin-top: 26px; }
+
+/* ── Section pages — unified 2-column lead + Day/Time/Age info boxes ──────── */
+.section-lead {
+  display: grid;
+  grid-template-columns: 1.7fr 1fr;
+  gap: 40px;
+  align-items: start;
+}
+.section-lead--nofacts { display: block; max-width: 760px; }
+
+/* Unified intro typography (fixes Beavers-vs-Cubs size mismatch) */
+.section-lead .section-lead__text,
+.section-lead .section-lead__text p,
+.section-lead .section-lead__text li {
+  font-size: 1.08rem;
+  line-height: 1.7;
+  font-weight: 400;
+  color: #404040;
+}
+.section-lead .section-lead__text > *:first-child { margin-top: 0; }
+.section-lead .section-lead__text > *:last-child { margin-bottom: 0; }
+.section-lead .section-lead__text p { margin: 0 0 16px; }
+.section-lead .section-lead__text p:first-of-type { font-size: 1.2rem; color: #333333; }
+.section-lead .section-lead__text strong { font-weight: 700; }
+
+/* Info boxes */
+.section-lead__facts { display: flex; flex-direction: column; gap: 14px; }
+.section-fact {
+  background: #fff;
+  border: 1px solid #E7E9EE;
+  border-left: 4px solid #590FA9;
+  border-radius: 12px;
+  padding: 16px 20px;
+  box-shadow: 0 6px 18px rgba(15, 23, 42, 0.05);
+}
+.section-fact__label {
+  display: block;
+  font-size: 0.76rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #6E6E6E;
+  margin-bottom: 4px;
+}
+.section-fact__value { font-size: 1.2rem; font-weight: 800; color: #003982; }
+/* Fact accent in each section's colour */
+.page-id-32 .section-fact { border-left-color: #088486; }
+.page-id-34 .section-fact,
+.page-id-36 .section-fact { border-left-color: #008A1C; }
+.page-id-38 .section-fact { border-left-color: #205B41; }
+
+@media (max-width: 760px) {
+  .section-lead { grid-template-columns: 1fr; gap: 24px; }
+}
