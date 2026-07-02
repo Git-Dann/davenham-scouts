@@ -984,8 +984,9 @@ body {
 .page_hero .wrapper {
   position: relative;
   z-index: 2;
-  padding: 70px 0 56px;
+  padding: 70px 24px 56px;
   width: 100%;
+  box-sizing: border-box;
 }
 
 .page_hero__inner {
@@ -5343,3 +5344,13 @@ main > .db-block-shell:last-child,
 .key_fact { display: flex; flex-direction: column; }
 .stats_card__detail { margin-top: auto; padding-top: 10px; }
 .key_fact__value { margin-top: auto; padding-top: 10px; }
+
+/* FAQ answer — breathing room above the copy (was flush to the question) */
+.faq_section .faq_list .faq_answer { padding-top: 10px; }
+
+/* Mobile: guarantee side padding on page-hero headers + builder content */
+@media (max-width: 782px) {
+  .page_hero .wrapper { padding-left: 20px; padding-right: 20px; }
+  .page_content--blocks .richtext_section > .wrapper,
+  .page_content--blocks .db-block-shell > .wrapper { padding-left: 4px; padding-right: 4px; }
+}
