@@ -4824,3 +4824,22 @@ main > .db-block-shell:last-child,
 }
 .scouts-home .news_section__btn:hover { background: transparent; color: #fff; }
 .scouts-home .news_section__btn:before { display: none; }
+
+/* Our-sections cards: show the section logo as a contained badge (not a
+   cover-cropped photo) at the top of each card. */
+.scouts-home .card_grid__item .card_grid__image {
+  margin: 0 0 16px;
+  padding: 0;
+  background: transparent;
+  border-radius: 0;
+  overflow: visible;
+  height: auto;
+}
+.scouts-home .card_grid__item .card_grid__image img {
+  width: auto;
+  height: 68px;
+  max-height: 68px;
+  object-fit: contain;
+  display: block;
+  margin: 0;
+}
