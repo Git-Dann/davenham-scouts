@@ -231,9 +231,13 @@
 .def-dashboard-grid,
 .def-admin-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: 18px;
   margin: 20px 0;
+  /* Cards hug their own content instead of stretching to the tallest one —
+     otherwise the short "Event details" card gains a big empty gap matching
+     the tall "Products" card next to it. */
+  align-items: start;
 }
 
 .def-dashboard-grid--info {
@@ -454,7 +458,26 @@
 }
 
 .def-repeatable-row--income {
-  grid-template-columns: repeat(12, minmax(0, 1fr));
+  grid-template-columns: minmax(160px, 2fr) 130px minmax(180px, 2fr) 32px;
+  gap: 12px;
+}
+
+/* Single column header for the manual-income table so the per-row labels
+   don't repeat on every line. */
+.def-repeatable-head--income {
+  display: grid;
+  grid-template-columns: minmax(160px, 2fr) 130px minmax(180px, 2fr) 32px;
+  gap: 12px;
+  padding: 0 10px 8px;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: #6E6E6E;
+}
+.def-repeatable-row--income .def-icon-button,
+.def-repeatable-row--income .button-link-delete {
+  align-self: end;
 }
 
 .def-compact-table {

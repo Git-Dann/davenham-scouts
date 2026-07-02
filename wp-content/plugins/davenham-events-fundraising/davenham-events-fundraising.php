@@ -3,7 +3,7 @@
  * Plugin Name: Davenham Events & Fundraising
  * Plugin URI:  https://davenhamscouts.org.uk
  * Description: Event pages, WooCommerce ticket reporting, event profit tracking, media grouping, and a site-wide fundraising progress banner.
- * Version:     1.1.7
+ * Version:     1.1.9
  * Author:      Davenham Scout Group
  * Text Domain: davenham-events-fundraising
  * Requires at least: 6.0
@@ -12,7 +12,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'DEF_VERSION', '1.1.7' );
+define( 'DEF_VERSION', '1.1.9' );
 define( 'DEF_FILE', __FILE__ );
 define( 'DEF_DIR', plugin_dir_path( __FILE__ ) );
 define( 'DEF_URL', plugin_dir_url( __FILE__ ) );
@@ -911,6 +911,12 @@ final class Davenham_Events_Fundraising {
 					<h3><?php esc_html_e( 'Other money received', 'davenham-events-fundraising' ); ?></h3>
 					<p class="description"><?php esc_html_e( 'Use this for tickets on the door, food, cash payments, card-reader totals, or anything not yet connected to WooCommerce.', 'davenham-events-fundraising' ); ?></p>
 					<div class="def-repeatable" data-def-repeatable data-next-index="<?php echo esc_attr( (string) max( 1, count( $meta['manual_income'] ) ) ); ?>">
+						<div class="def-repeatable-head def-repeatable-head--income" aria-hidden="true">
+							<span><?php esc_html_e( 'Label', 'davenham-events-fundraising' ); ?></span>
+							<span><?php esc_html_e( 'Amount (£)', 'davenham-events-fundraising' ); ?></span>
+							<span><?php esc_html_e( 'Note', 'davenham-events-fundraising' ); ?></span>
+							<span></span>
+						</div>
 						<div class="def-repeatable__rows">
 							<?php
 							if ( empty( $meta['manual_income'] ) ) {
@@ -2379,18 +2385,18 @@ final class Davenham_Events_Fundraising {
 		?>
 		<div class="def-repeatable-row def-repeatable-row--income">
 			<label class="def-field-wide">
-				<span><?php esc_html_e( 'Label', 'davenham-events-fundraising' ); ?></span>
+				<span class="screen-reader-text"><?php esc_html_e( 'Label', 'davenham-events-fundraising' ); ?></span>
 				<input type="text" name="davenham_event_manual_income[<?php echo esc_attr( (string) $index ); ?>][label]" value="<?php echo esc_attr( $row['label'] ); ?>" placeholder="<?php esc_attr_e( 'Door tickets, food sales...', 'davenham-events-fundraising' ); ?>">
 			</label>
 			<label class="def-field-small">
-				<span><?php esc_html_e( 'Amount', 'davenham-events-fundraising' ); ?></span>
+				<span class="screen-reader-text"><?php esc_html_e( 'Amount', 'davenham-events-fundraising' ); ?></span>
 				<input type="number" step="0.01" name="davenham_event_manual_income[<?php echo esc_attr( (string) $index ); ?>][amount]" value="<?php echo esc_attr( (string) $row['amount'] ); ?>">
 			</label>
 			<label class="def-field-wide">
-				<span><?php esc_html_e( 'Note', 'davenham-events-fundraising' ); ?></span>
-				<input type="text" name="davenham_event_manual_income[<?php echo esc_attr( (string) $index ); ?>][note]" value="<?php echo esc_attr( $row['note'] ); ?>">
+				<span class="screen-reader-text"><?php esc_html_e( 'Note', 'davenham-events-fundraising' ); ?></span>
+				<input type="text" name="davenham_event_manual_income[<?php echo esc_attr( (string) $index ); ?>][note]" value="<?php echo esc_attr( $row['note'] ); ?>" placeholder="<?php esc_attr_e( 'Optional', 'davenham-events-fundraising' ); ?>">
 			</label>
-			<button type="button" class="button button-link-delete" data-def-remove-row><?php esc_html_e( 'Remove', 'davenham-events-fundraising' ); ?></button>
+			<button type="button" class="button button-link-delete def-icon-button" data-def-remove-row aria-label="<?php esc_attr_e( 'Remove this row', 'davenham-events-fundraising' ); ?>"><span class="dashicons dashicons-no-alt" aria-hidden="true"></span></button>
 		</div>
 		<?php
 	}
