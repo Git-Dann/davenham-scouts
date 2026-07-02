@@ -835,13 +835,17 @@ body.davenham-admin-shell #wpbody-content > .wrap {
 }
 /* Screens that are meant to run full-bleed: the block editor, the classic
    post-edit screen (its 2-column layout is built to use the full width — a
-   cap just shrinks the editor and strands an empty right column), WooCommerce
-   React, and the media grid. */
+   cap just shrinks the editor and strands an empty right column), list-table
+   screens (edit.php / users / plugins — wide tables can exceed the cap and
+   would otherwise overflow it), the media grid, and WooCommerce React. */
 body.davenham-admin-shell.block-editor-page #wpbody-content > .wrap,
 body.davenham-admin-shell.post-php #wpbody-content > .wrap,
 body.davenham-admin-shell.post-new-php #wpbody-content > .wrap,
-body.davenham-admin-shell .woocommerce-layout,
-body.davenham-admin-shell #wpbody-content > .upload-php {
+body.davenham-admin-shell.edit-php #wpbody-content > .wrap,
+body.davenham-admin-shell.users-php #wpbody-content > .wrap,
+body.davenham-admin-shell.plugins-php #wpbody-content > .wrap,
+body.davenham-admin-shell.upload-php #wpbody-content > .wrap,
+body.davenham-admin-shell .woocommerce-layout {
   max-width: none;
 }
 
