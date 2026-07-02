@@ -5245,3 +5245,12 @@ main > .db-block-shell:last-child,
   .page_content--blocks .split_cta__card { transition: none; }
   .page_content--blocks .split_cta__card:hover { transform: none; }
 }
+
+/* ── Builder hub pages — add colour, kill the flat white ─────────────────── */
+/* Brand accent on hub cards */
+.page_content--blocks .card_grid__item { border-top: 4px solid #590FA9; }
+.page_content--blocks .card_grid__title { color: #590FA9; }
+
+/* About Us (page 12) — soft brand-tinted bands so it isn't a wall of white */
+.page-id-12 .db-block-shell--card-grid { background: #F5F2FB; }
+.page-id-12 .db-block-shell--split-cta { background: #F5F2FB; }
