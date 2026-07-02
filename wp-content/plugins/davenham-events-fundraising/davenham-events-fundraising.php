@@ -3,7 +3,7 @@
  * Plugin Name: Davenham Events & Fundraising
  * Plugin URI:  https://davenhamscouts.org.uk
  * Description: Event pages, WooCommerce ticket reporting, event profit tracking, media grouping, and a site-wide fundraising progress banner.
- * Version:     1.1.6
+ * Version:     1.1.7
  * Author:      Davenham Scout Group
  * Text Domain: davenham-events-fundraising
  * Requires at least: 6.0
@@ -12,7 +12,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'DEF_VERSION', '1.1.6' );
+define( 'DEF_VERSION', '1.1.7' );
 define( 'DEF_FILE', __FILE__ );
 define( 'DEF_DIR', plugin_dir_path( __FILE__ ) );
 define( 'DEF_URL', plugin_dir_url( __FILE__ ) );

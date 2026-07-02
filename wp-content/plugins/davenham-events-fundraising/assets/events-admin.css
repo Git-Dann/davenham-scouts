@@ -9,11 +9,25 @@
   padding-top: 0;
 }
 
-.post-type-event #post-body.columns-2 {
+/* #poststuff prefix: WP core's `#poststuff #post-body.columns-2` (two IDs)
+   sets margin-right:300px to reserve the old float gutter. Without matching
+   that specificity our margin-right:0 loses, the grid stays 300px narrow and
+   leaves a void on the right. Match it (two IDs + the extra class) so the
+   grid spans the full width. */
+.post-type-event #poststuff #post-body.columns-2 {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(280px, 320px);
   gap: 22px;
   margin-right: 0;
+}
+
+/* Neutralise core's float + negative gutter on the editor column so it sits
+   cleanly as the grid's main cell (with the money metabox stacked beneath). */
+.post-type-event #poststuff #post-body.columns-2 #post-body-content {
+  float: none;
+  width: auto;
+  margin: 0;
+  grid-column: 1;
 }
 
 .post-type-event #post-body.columns-2 #postbox-container-1 {
