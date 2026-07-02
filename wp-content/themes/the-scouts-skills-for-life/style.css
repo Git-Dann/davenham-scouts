@@ -5136,3 +5136,112 @@ main > .db-block-shell:last-child,
   .page_content--blocks .card_grid__item:hover { transform: none; }
   .gallery-card:hover img { transform: none; }
 }
+
+/* ══ Builder content pages — tighten + polish (Centenary Hall, About Us…) ══ */
+
+/* Kill the huge white gaps — was 64+64=128px between every block */
+.page_content--blocks .db-block-shell { padding-top: 44px; padding-bottom: 44px; }
+
+/* CTA button row — centred, proper filled/outline buttons (was left-aligned + unstyled) */
+.page_content--blocks .davenham-cta-heading { text-align: center; }
+.page_content--blocks .btn_row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  justify-content: center;
+}
+.page_content--blocks .btn_row .btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 50px;
+  padding: 13px 30px;
+  border-radius: 0;
+  font-weight: 800;
+  text-decoration: none;
+  border: 2px solid #590FA9;
+}
+.page_content--blocks .btn_row .btn:before { display: none; }
+.page_content--blocks .btn_row .btn.primary { background: #590FA9; color: #fff; }
+.page_content--blocks .btn_row .btn.primary:hover { background: #3A0A6D; border-color: #3A0A6D; color: #fff; }
+.page_content--blocks .btn_row .btn.outline { background: transparent; color: #590FA9; }
+.page_content--blocks .btn_row .btn.outline:hover { background: #590FA9; color: #fff; }
+
+/* Key facts — equal-height cards */
+.key_facts_grid { grid-auto-rows: 1fr; align-items: stretch; }
+.key_fact { height: 100%; }
+
+/* FAQ — clear defined cards (fixes faint "can't see them" + weird shadow) */
+.faq_section .faq_list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 20px;
+}
+.faq_section .faq_list .faq_item {
+  border: 1px solid #E4E1EE;
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.06);
+  overflow: hidden;
+}
+.faq_section .faq_list .faq_question { padding: 18px 22px; font-size: 1.05rem; }
+.faq_section .faq_list .faq_answer { padding: 0 22px 20px; }
+
+/* Split CTA — same premium treatment as the homepage "Get involved" */
+.page_content--blocks .split_cta { grid-auto-rows: 1fr; align-items: stretch; gap: 26px; }
+.page_content--blocks .split_cta__card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  height: 100%;
+  padding: 34px 36px;
+  transition: transform 0.24s ease, box-shadow 0.24s ease;
+}
+.page_content--blocks .split_cta__card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 26px 52px rgba(15, 23, 42, 0.24);
+}
+.page_content--blocks .split_cta__card h3 { margin: 0 0 10px; font-size: 1.5rem; }
+.page_content--blocks .split_cta__card > p { margin: auto 0 0; padding-top: 22px; }
+.page_content--blocks .split_cta__card .btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 50px;
+  padding: 13px 28px;
+  background: #fff;
+  color: #490499;
+  border: 2px solid #fff;
+  border-radius: 0;
+  font-weight: 800;
+  text-decoration: none;
+}
+.page_content--blocks .split_cta__card .btn:before { display: none; }
+.page_content--blocks .split_cta__card .btn:hover { background: transparent; color: #fff; }
+
+/* ── Centenary Hall (page 14): merge Story + Journey into one bold band ──── */
+.page-id-14 .db-block-shell--stats-grid,
+.page-id-14 .db-block-shell--timeline {
+  background: linear-gradient(90deg, #003982 0%, #490499 55%, #590FA9 100%);
+  color: #fff;
+}
+.page-id-14 .db-block-shell--stats-grid { padding-top: 56px; padding-bottom: 22px; }
+.page-id-14 .db-block-shell--timeline { padding-top: 10px; padding-bottom: 60px; }
+.page-id-14 .db-block-shell--stats-grid .db-section-heading,
+.page-id-14 .db-block-shell--timeline .db-section-heading {
+  color: #fff;
+  text-align: center;
+  font-size: clamp(1.6rem, 3vw, 2.2rem);
+}
+/* Stats cards pop as white on the band; equal height */
+.page-id-14 .stats_grid { grid-auto-rows: 1fr; align-items: stretch; }
+.page-id-14 .stats_card { height: 100%; box-shadow: 0 16px 40px rgba(0, 0, 0, 0.22); }
+/* Timeline reads on the dark band */
+.page-id-14 .timeline_item__year { color: #E4D6FA; }
+.page-id-14 .timeline_item__content { box-shadow: 0 12px 30px rgba(0, 0, 0, 0.22); }
+
+@media (prefers-reduced-motion: reduce) {
+  .page_content--blocks .split_cta__card { transition: none; }
+  .page_content--blocks .split_cta__card:hover { transform: none; }
+}
