@@ -3,7 +3,7 @@
  * Plugin Name: Davenham Events & Fundraising
  * Plugin URI:  https://davenhamscouts.org.uk
  * Description: Event pages, WooCommerce ticket reporting, event profit tracking, media grouping, and a site-wide fundraising progress banner.
- * Version:     1.1.9
+ * Version:     1.2.0
  * Author:      Davenham Scout Group
  * Text Domain: davenham-events-fundraising
  * Requires at least: 6.0
@@ -12,7 +12,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'DEF_VERSION', '1.1.9' );
+define( 'DEF_VERSION', '1.2.0' );
 define( 'DEF_FILE', __FILE__ );
 define( 'DEF_DIR', plugin_dir_path( __FILE__ ) );
 define( 'DEF_URL', plugin_dir_url( __FILE__ ) );
@@ -38,6 +38,7 @@ final class Davenham_Events_Fundraising {
 		add_action( 'admin_menu', array( __CLASS__, 'register_admin_menu' ) );
 		add_action( 'admin_post_davenham_events_save_settings', array( __CLASS__, 'handle_save_settings' ) );
 		add_action( 'admin_post_davenham_events_seed_products', array( __CLASS__, 'handle_seed_products' ) );
+		add_action( 'admin_post_davenham_finance_export', array( __CLASS__, 'handle_finance_export' ) );
 		add_action( 'admin_enqueue_scripts', array( __CLASS__, 'enqueue_admin_assets' ) );
 		add_action( 'wp_enqueue_scripts', array( __CLASS__, 'enqueue_public_assets' ) );
 		add_action( 'wp_body_open', array( __CLASS__, 'maybe_render_auto_banner' ), 8 );
@@ -765,6 +766,15 @@ final class Davenham_Events_Fundraising {
 			'manage_options',
 			'davenham-events-fundraising-settings',
 			array( __CLASS__, 'render_settings_page' )
+		);
+
+		add_submenu_page(
+			'davenham-events-funds',
+			__( 'Finance export', 'davenham-events-fundraising' ),
+			__( 'Finance export', 'davenham-events-fundraising' ),
+			'manage_woocommerce',
+			'davenham-finance-export',
+			array( __CLASS__, 'render_finance_export_page' )
 		);
 
 		add_submenu_page(
@@ -1596,6 +1606,262 @@ final class Davenham_Events_Fundraising {
 			),
 			$event_id,
 			$meta
+		);
+	}
+
+	/* ---------------------------------------------------------------------
+	 * Finance export for the accountant — one screen, CSV / ZIP downloads
+	 * covering shop orders, event income & costs, Gift Aid and a per-event
+	 * profit summary.
+	 * ------------------------------------------------------------------- */
+
+	private static function finance_export_cap() {
+		return current_user_can( 'manage_woocommerce' ) || current_user_can( 'manage_options' );
+	}
+
+	public static function render_finance_export_page() {
+		if ( ! self::finance_export_cap() ) {
+			wp_die( esc_html__( 'You do not have permission to view this page.', 'davenham-events-fundraising' ) );
+		}
+		$zip_ok = class_exists( 'ZipArchive' );
+		?>
+		<div class="wrap def-dashboard">
+			<h1><?php esc_html_e( 'Finance export', 'davenham-events-fundraising' ); ?></h1>
+			<p class="description" style="max-width:70ch;"><?php esc_html_e( 'Download the group\'s financial records for your accountant. The date range applies to shop orders and Gift Aid; event records always export in full.', 'davenham-events-fundraising' ); ?></p>
+
+			<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" class="def-admin-card" style="max-width:720px;margin-top:16px;">
+				<?php wp_nonce_field( 'davenham_finance_export' ); ?>
+				<input type="hidden" name="action" value="davenham_finance_export" />
+
+				<h2 style="margin-top:0;"><?php esc_html_e( 'Date range (optional)', 'davenham-events-fundraising' ); ?></h2>
+				<p>
+					<label style="margin-right:16px;"><?php esc_html_e( 'From', 'davenham-events-fundraising' ); ?> <input type="date" name="from" /></label>
+					<label><?php esc_html_e( 'To', 'davenham-events-fundraising' ); ?> <input type="date" name="to" /></label>
+				</p>
+
+				<h2><?php esc_html_e( 'What to download', 'davenham-events-fundraising' ); ?></h2>
+				<?php if ( $zip_ok ) : ?>
+					<p><button type="submit" name="dataset" value="all" class="button button-primary button-hero"><?php esc_html_e( 'Download everything (ZIP)', 'davenham-events-fundraising' ); ?></button></p>
+					<p class="description" style="margin-bottom:14px;"><?php esc_html_e( 'One ZIP with all four CSV files. Or grab them individually:', 'davenham-events-fundraising' ); ?></p>
+				<?php endif; ?>
+				<p style="display:flex;flex-wrap:wrap;gap:10px;">
+					<button type="submit" name="dataset" value="orders" class="button"><?php esc_html_e( 'Shop orders', 'davenham-events-fundraising' ); ?></button>
+					<button type="submit" name="dataset" value="ledger" class="button"><?php esc_html_e( 'Event income &amp; costs', 'davenham-events-fundraising' ); ?></button>
+					<button type="submit" name="dataset" value="giftaid" class="button"><?php esc_html_e( 'Gift Aid declarations', 'davenham-events-fundraising' ); ?></button>
+					<button type="submit" name="dataset" value="summary" class="button"><?php esc_html_e( 'Event profit summary', 'davenham-events-fundraising' ); ?></button>
+				</p>
+			</form>
+		</div>
+		<?php
+	}
+
+	public static function handle_finance_export() {
+		if ( ! self::finance_export_cap() ) {
+			wp_die( esc_html__( 'You do not have permission to export financial data.', 'davenham-events-fundraising' ) );
+		}
+		check_admin_referer( 'davenham_finance_export' );
+
+		$from    = isset( $_POST['from'] ) ? preg_replace( '/[^0-9\-]/', '', wp_unslash( $_POST['from'] ) ) : '';
+		$to      = isset( $_POST['to'] ) ? preg_replace( '/[^0-9\-]/', '', wp_unslash( $_POST['to'] ) ) : '';
+		$dataset = isset( $_POST['dataset'] ) ? sanitize_key( wp_unslash( $_POST['dataset'] ) ) : 'all';
+		$stamp   = gmdate( 'Y-m-d' );
+
+		$files = array(
+			'orders'  => array( 'davenham-shop-orders-' . $stamp . '.csv', self::csv_orders( $from, $to ) ),
+			'ledger'  => array( 'davenham-event-income-costs-' . $stamp . '.csv', self::csv_event_ledger() ),
+			'giftaid' => array( 'davenham-gift-aid-' . $stamp . '.csv', self::csv_gift_aid( $from, $to ) ),
+			'summary' => array( 'davenham-event-profit-summary-' . $stamp . '.csv', self::csv_event_summary() ),
+		);
+
+		nocache_headers();
+
+		if ( 'all' === $dataset && class_exists( 'ZipArchive' ) ) {
+			$tmp = wp_tempnam( 'davenham-finance' );
+			$zip = new ZipArchive();
+			if ( true === $zip->open( $tmp, ZipArchive::CREATE | ZipArchive::OVERWRITE ) ) {
+				foreach ( $files as $f ) {
+					$zip->addFromString( $f[0], $f[1] );
+				}
+				$zip->close();
+				header( 'Content-Type: application/zip' );
+				header( 'Content-Disposition: attachment; filename="davenham-finance-' . $stamp . '.zip"' );
+				header( 'Content-Length: ' . filesize( $tmp ) );
+				readfile( $tmp ); // phpcs:ignore
+				@unlink( $tmp );
+				exit;
+			}
+			@unlink( $tmp );
+			$dataset = 'orders';
+		}
+
+		if ( ! isset( $files[ $dataset ] ) ) {
+			$dataset = 'orders';
+		}
+		header( 'Content-Type: text/csv; charset=utf-8' );
+		header( 'Content-Disposition: attachment; filename="' . $files[ $dataset ][0] . '"' );
+		echo $files[ $dataset ][1]; // phpcs:ignore WordPress.Security.EscapeOutput
+		exit;
+	}
+
+	private static function csv_from_rows( $header, $rows ) {
+		$out = fopen( 'php://temp', 'r+' );
+		fputcsv( $out, $header );
+		foreach ( $rows as $row ) {
+			fputcsv( $out, $row );
+		}
+		rewind( $out );
+		$csv = stream_get_contents( $out );
+		fclose( $out );
+		return $csv;
+	}
+
+	private static function all_event_ids() {
+		return get_posts(
+			array(
+				'post_type'      => self::POST_TYPE,
+				'post_status'    => array( 'publish', 'draft', 'private' ),
+				'posts_per_page' => -1,
+				'orderby'        => 'meta_value',
+				'meta_key'       => 'event_date',
+				'order'          => 'ASC',
+				'fields'         => 'ids',
+			)
+		);
+	}
+
+	private static function csv_orders( $from, $to ) {
+		if ( ! function_exists( 'wc_get_orders' ) ) {
+			return self::csv_from_rows( array( 'Order', 'Date', 'Status', 'Customer', 'Email', 'Items', 'Total (£)', 'Payment method', 'Gift Aid', 'Gift Aid amount (£)' ), array() );
+		}
+		$args = array(
+			'limit'   => -1,
+			'type'    => 'shop_order',
+			'orderby' => 'date',
+			'order'   => 'ASC',
+			'status'  => array( 'processing', 'completed', 'on-hold', 'refunded', 'cancelled', 'failed', 'pending' ),
+		);
+		if ( $from ) {
+			$args['date_created'] = $to ? ( $from . '...' . $to ) : ( '>=' . $from );
+		} elseif ( $to ) {
+			$args['date_created'] = '<=' . $to;
+		}
+
+		$rows = array();
+		foreach ( wc_get_orders( $args ) as $order ) {
+			if ( ! $order instanceof WC_Order ) {
+				continue;
+			}
+			$items = array();
+			foreach ( $order->get_items() as $item ) {
+				$items[] = $item->get_name() . ' x' . $item->get_quantity();
+			}
+			$date   = $order->get_date_created();
+			$rows[] = array(
+				$order->get_order_number(),
+				$date ? $date->date( 'Y-m-d H:i' ) : '',
+				wc_get_order_status_name( $order->get_status() ),
+				trim( $order->get_billing_first_name() . ' ' . $order->get_billing_last_name() ),
+				$order->get_billing_email(),
+				implode( '; ', $items ),
+				$order->get_total(),
+				$order->get_payment_method_title(),
+				( 'yes' === $order->get_meta( '_gift_aid' ) ) ? 'Yes' : '',
+				$order->get_meta( '_gift_aid_amount' ),
+			);
+		}
+		return self::csv_from_rows(
+			array( 'Order', 'Date', 'Status', 'Customer', 'Email', 'Items', 'Total (£)', 'Payment method', 'Gift Aid', 'Gift Aid amount (£)' ),
+			$rows
+		);
+	}
+
+	private static function csv_event_ledger() {
+		$rows = array();
+		foreach ( self::all_event_ids() as $eid ) {
+			$title = get_the_title( $eid );
+			$meta  = self::event_meta( $eid );
+			$edate = $meta['date'];
+			foreach ( $meta['manual_income'] as $r ) {
+				$rows[] = array( $title, $edate, 'Income', isset( $r['label'] ) ? $r['label'] : '', '', '', number_format( (float) ( isset( $r['amount'] ) ? $r['amount'] : 0 ), 2, '.', '' ), '', '', isset( $r['note'] ) ? $r['note'] : '' );
+			}
+			foreach ( $meta['inventory'] as $r ) {
+				$rows[] = array(
+					$title,
+					$edate,
+					'Cost',
+					isset( $r['item'] ) ? $r['item'] : '',
+					isset( $r['quantity'] ) ? $r['quantity'] : '',
+					isset( $r['unit_cost'] ) ? $r['unit_cost'] : '',
+					number_format( self::inventory_row_cost( $r ), 2, '.', '' ),
+					isset( $r['supplier'] ) ? $r['supplier'] : '',
+					isset( $r['status'] ) ? $r['status'] : '',
+					isset( $r['note'] ) ? $r['note'] : '',
+				);
+			}
+		}
+		return self::csv_from_rows(
+			array( 'Event', 'Event date', 'Type', 'Description', 'Quantity', 'Unit price (£)', 'Amount (£)', 'Supplier', 'Status', 'Note' ),
+			$rows
+		);
+	}
+
+	private static function csv_gift_aid( $from, $to ) {
+		if ( ! function_exists( 'wc_get_orders' ) ) {
+			return self::csv_from_rows( array( 'Order', 'Date', 'Donor', 'Postcode', 'Eligible amount (£)', 'Reclaimable at 25% (£)' ), array() );
+		}
+		$args = array(
+			'limit'   => -1,
+			'type'    => 'shop_order',
+			'orderby' => 'date',
+			'order'   => 'ASC',
+			'status'  => array( 'processing', 'completed', 'on-hold', 'refunded' ),
+		);
+		if ( $from ) {
+			$args['date_created'] = $to ? ( $from . '...' . $to ) : ( '>=' . $from );
+		} elseif ( $to ) {
+			$args['date_created'] = '<=' . $to;
+		}
+		$rows = array();
+		foreach ( wc_get_orders( $args ) as $order ) {
+			if ( ! $order instanceof WC_Order || 'yes' !== $order->get_meta( '_gift_aid' ) ) {
+				continue;
+			}
+			$amt    = (float) $order->get_meta( '_gift_aid_amount' );
+			$date   = $order->get_date_created();
+			$rows[] = array(
+				$order->get_order_number(),
+				$date ? $date->date( 'Y-m-d' ) : '',
+				trim( $order->get_billing_first_name() . ' ' . $order->get_billing_last_name() ),
+				$order->get_billing_postcode(),
+				number_format( $amt, 2, '.', '' ),
+				number_format( round( $amt * 0.25, 2 ), 2, '.', '' ),
+			);
+		}
+		return self::csv_from_rows(
+			array( 'Order', 'Date', 'Donor', 'Postcode', 'Eligible amount (£)', 'Reclaimable at 25% (£)' ),
+			$rows
+		);
+	}
+
+	private static function csv_event_summary() {
+		$rows = array();
+		foreach ( self::all_event_ids() as $eid ) {
+			$f    = self::event_financials( $eid );
+			$meta = self::event_meta( $eid );
+			$rows[] = array(
+				get_the_title( $eid ),
+				$meta['date'],
+				$f['tickets_sold'],
+				number_format( (float) $f['woocommerce_revenue'], 2, '.', '' ),
+				number_format( (float) $f['manual_income'], 2, '.', '' ),
+				number_format( (float) $f['gross_revenue'], 2, '.', '' ),
+				number_format( (float) $f['expenses'], 2, '.', '' ),
+				number_format( (float) $f['profit'], 2, '.', '' ),
+			);
+		}
+		return self::csv_from_rows(
+			array( 'Event', 'Date', 'Tickets/items sold', 'WooCommerce income (£)', 'Manual income (£)', 'Gross income (£)', 'Costs (£)', 'Profit (£)' ),
+			$rows
 		);
 	}
 
