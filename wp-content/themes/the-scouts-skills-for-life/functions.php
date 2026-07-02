@@ -294,6 +294,15 @@ function scouts_enqueue_assets() {
     );
     wp_localize_script( 'scouts-production', 'template_url', SCOUTS_THEME_URI );
     wp_localize_script( 'scouts-production', 'website_url', home_url() );
+
+    // Gallery lightbox — self-guards to pages that have a .gallery-grid.
+    wp_enqueue_script(
+        'scouts-gallery',
+        SCOUTS_THEME_URI . '/assets/gallery.js',
+        [],
+        scouts_asset_version( 'assets/gallery.js' ),
+        true
+    );
 }
 add_action( 'wp_enqueue_scripts', 'scouts_enqueue_assets' );
 
