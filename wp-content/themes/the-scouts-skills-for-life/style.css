@@ -5254,3 +5254,15 @@ main > .db-block-shell:last-child,
 /* About Us (page 12) — soft brand-tinted bands so it isn't a wall of white */
 .page-id-12 .db-block-shell--card-grid { background: #F5F2FB; }
 .page-id-12 .db-block-shell--split-cta { background: #F5F2FB; }
+
+/* ── Section pages (Beavers/Cubs/Scouts) — same treatment ────────────────── */
+/* Soft tint bands on builder pages so leaders + CTA don't float in white */
+.page_content--blocks .db-block-shell--split-cta { background: #F5F2FB; }
+.page_content--blocks .db-block-shell--leaders { background: #F8F7FC; }
+
+/* Brand the "Join" card in each section's own colour (ties to the homepage
+   section tiles); the Volunteer card stays purple. White buttons read on all. */
+.page-id-32 .split_cta__card:not(.split_cta__card--alt) { background: linear-gradient(135deg, #088486 0%, #045C5D 100%); } /* Beavers */
+.page-id-34 .split_cta__card:not(.split_cta__card--alt),
+.page-id-36 .split_cta__card:not(.split_cta__card--alt) { background: linear-gradient(135deg, #008A1C 0%, #026314 100%); } /* Cubs */
+.page-id-38 .split_cta__card:not(.split_cta__card--alt) { background: linear-gradient(135deg, #205B41 0%, #143D2B 100%); } /* Scouts */
