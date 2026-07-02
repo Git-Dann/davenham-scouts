@@ -4669,3 +4669,82 @@ main > .db-block-shell:last-child,
   line-height: 1.7;
   max-width: 72ch;
 }
+
+/* ============================================================================
+   HOMEPAGE REVAMP — modern builder-driven landing page (.scouts-home).
+   Full-bleed gradient hero, big type, generous rhythm. Scoped so other pages'
+   heroes/sections are untouched.
+   ============================================================================ */
+.scouts-home { overflow-x: clip; }
+
+/* Hero — full-bleed brand gradient (the builder Hero block, no bg image). */
+.scouts-home .db-block-shell--hero { padding: 0 !important; }
+.scouts-home .hero {
+  position: relative;
+  background: linear-gradient(135deg, #003982 0%, #490499 58%, #590FA9 100%);
+  color: #fff;
+  overflow: hidden;
+}
+.scouts-home .hero .bg { display: none; } /* homepage hero is gradient, not photo */
+.scouts-home .hero::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(62% 90% at 82% -10%, rgba(255, 255, 255, 0.16), transparent 60%);
+  pointer-events: none;
+}
+.scouts-home .hero .wrapper { position: relative; z-index: 1; }
+.scouts-home .hero .box {
+  background: transparent !important;
+  border-radius: 0 !important;
+  max-width: 860px;
+  margin: 0;
+  padding: clamp(88px, 14vh, 150px) 0 clamp(64px, 10vh, 120px);
+}
+.scouts-home .hero .wrap h1,
+.scouts-home .hero .wrap h2 {
+  color: #fff;
+  font-size: clamp(2.5rem, 5.6vw, 4.4rem);
+  line-height: 1.04;
+  letter-spacing: -0.02em;
+  font-weight: 800;
+  margin: 0 0 20px;
+}
+.scouts-home .hero .hero-subtext,
+.scouts-home .hero .hero-subtext p {
+  color: rgba(255, 255, 255, 0.86);
+  font-size: clamp(1.05rem, 1.6vw, 1.3rem);
+  line-height: 1.6;
+  max-width: 58ch;
+  margin: 0 0 8px;
+}
+.scouts-home .hero .btn_row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin-top: 34px;
+}
+.scouts-home .hero .btn_row .btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 54px;
+  padding: 15px 30px;
+  font-size: 16px;
+  font-weight: 800;
+  border-radius: 0;
+}
+.scouts-home .hero .btn_row .btn.white { background: #fff; color: #590FA9; }
+.scouts-home .hero .btn_row .btn.white:hover { background: #F1F1F1; color: #490499; }
+.scouts-home .hero .btn_row .btn.outline {
+  background: transparent;
+  border: 2px solid rgba(255, 255, 255, 0.5);
+  color: #fff;
+}
+.scouts-home .hero .btn_row .btn.outline:hover { border-color: #fff; background: rgba(255, 255, 255, 0.12); }
+.scouts-home .hero .btn_row .btn:before { display: none; } /* kill legacy slide fill */
+
+/* Alternating section backgrounds for rhythm (hero flush; others spaced). */
+.scouts-home .db-block-shell { scroll-margin-top: 90px; }
+.scouts-home .db-block-shell--stats-grid,
+.scouts-home .db-block-shell--card-grid { background: var(--scout-bg-off-white, #F6F6F6); }

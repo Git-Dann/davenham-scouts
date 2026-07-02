@@ -3,7 +3,7 @@
  * Plugin Name: Davenham Builder
  * Plugin URI:  https://davenhamscouts.org.uk
  * Description: Visual page builder + all custom Gutenberg blocks for Davenham Scout Group. One plugin, no faff.
- * Version:     1.4.5
+ * Version:     1.5.0
  * Author:      Davenham Scout Group
  * Text Domain: davenham-builder
  * Requires at least: 6.0
@@ -12,7 +12,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'DB_VERSION', '1.4.5' );
+define( 'DB_VERSION', '1.5.0' );
 define( 'DB_DIR',     plugin_dir_path( __FILE__ ) );
 define( 'DB_URL',     plugin_dir_url( __FILE__ ) );
 
@@ -432,6 +432,17 @@ function db_page_row_action( $actions, $post ) {
 	return $actions;
 }
 
+// ─── Scroll-reveal: set the <html> flag before paint (no flash), respecting
+// reduced-motion, with a failsafe that shows everything if the reveal script
+// never runs. The IntersectionObserver itself lives in assets/blocks.js. ─────
+add_action( 'wp_head', 'db_reveal_head_flag', 2 );
+function db_reveal_head_flag() {
+	if ( is_admin() ) {
+		return;
+	}
+	echo "<script>(function(){var d=document.documentElement;if(window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches){return;}d.classList.add('db-reveal');window.addEventListener('load',function(){setTimeout(function(){d.classList.add('db-reveal-failsafe');},2500);});})();</script>\n";
+}
+
 // ─── Enqueue frontend block styles on public pages ───────────────────────────
 add_action( 'wp_enqueue_scripts', 'db_enqueue_frontend_styles' );
 function db_enqueue_frontend_styles() {
@@ -518,7 +529,7 @@ if ( ! function_exists( 'db_wrap_davenham_block_output' ) ) {
 		$css_markup = db_scoped_custom_css_markup( $attrs['customCss'] ?? '', '.' . $scope );
 
 		return sprintf(
-			'<div%1$s class="%2$s"%3$s>%4$s</div>%5$s',
+			'<div%1$s class="%2$s"%3$s data-db-reveal>%4$s</div>%5$s',
 			$id_attr,
 			esc_attr( implode( ' ', array_unique( $classes ) ) ),
 			$style_attr,

@@ -75,9 +75,48 @@
 		} );
 	}
 
+	function initReveal( root ) {
+		// The <head> failsafe adds `db-reveal` to <html> before paint (unless
+		// reduced-motion). If it's not there, do nothing — content shows as-is.
+		if ( ! document.documentElement.classList.contains( 'db-reveal' ) ) {
+			return;
+		}
+
+		const items = Array.prototype.slice.call( root.querySelectorAll( '[data-db-reveal]' ) );
+		if ( ! items.length ) {
+			return;
+		}
+
+		// No IntersectionObserver (very old browsers) → just show everything.
+		if ( ! ( 'IntersectionObserver' in window ) ) {
+			items.forEach( function ( el ) { el.classList.add( 'is-revealed' ); } );
+			return;
+		}
+
+		const observer = new IntersectionObserver( function ( entries, obs ) {
+			entries.forEach( function ( entry ) {
+				if ( entry.isIntersecting ) {
+					entry.target.classList.add( 'is-revealed' );
+					obs.unobserve( entry.target );
+				}
+			} );
+		}, { rootMargin: '0px 0px -8% 0px', threshold: 0.08 } );
+
+		items.forEach( function ( el ) {
+			// Anything already in (or above) the viewport on load reveals
+			// immediately — no wait, no flash for above-the-fold content.
+			if ( el.getBoundingClientRect().top < window.innerHeight * 0.92 ) {
+				el.classList.add( 'is-revealed' );
+			} else {
+				observer.observe( el );
+			}
+		} );
+	}
+
 	function init() {
 		initTabs( document );
 		initPopups( document );
+		initReveal( document );
 	}
 
 	if ( document.readyState === 'loading' ) {
