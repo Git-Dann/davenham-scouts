@@ -26,9 +26,11 @@ final class Davenham_Inventory {
 		add_action( 'admin_init', array( __CLASS__, 'maybe_seed' ) );
 		add_action( 'admin_init', array( __CLASS__, 'handle_toggle' ) );
 
-		// Item edit screen meta box.
+		// Item edit screen meta box + layout.
 		add_action( 'add_meta_boxes', array( __CLASS__, 'meta_box' ) );
 		add_action( 'save_post_' . self::CPT, array( __CLASS__, 'save_meta' ) );
+		add_action( 'edit_form_after_title', array( __CLASS__, 'editor_label' ) );
+		add_filter( 'get_user_option_meta-box-order_' . self::CPT, array( __CLASS__, 'meta_box_order' ) );
 
 		// List table columns.
 		add_filter( 'manage_' . self::CPT . '_posts_columns', array( __CLASS__, 'columns' ) );
@@ -185,7 +187,29 @@ final class Davenham_Inventory {
 	/* ── Meta box ────────────────────────────────────────────────────────── */
 
 	public static function meta_box() {
-		add_meta_box( 'dvh_inv_details', __( 'Item details', 'davenham-inventory' ), array( __CLASS__, 'render_meta_box' ), self::CPT, 'side', 'high' );
+		add_meta_box( 'dvh_inv_details', __( 'Item details', 'davenham-inventory' ), array( __CLASS__, 'render_meta_box' ), self::CPT, 'side', 'default' );
+	}
+
+	// Heading + hint above the description editor (it otherwise has no label).
+	public static function editor_label( $post ) {
+		if ( ! $post || self::CPT !== $post->post_type ) {
+			return;
+		}
+		echo '<h2 class="dvh-editor-heading">' . esc_html__( 'Item description & notes', 'davenham-inventory' ) . '</h2>';
+		echo '<p class="dvh-editor-hint">' . esc_html__( "Optional — record anything useful: what's in the set, serial numbers, repair history or storage notes.", 'davenham-inventory' ) . '</p>';
+	}
+
+	// Default side-column order: Publish → Item details → Categories → Featured
+	// image. Respects any later manual drag (WordPress saves that over this).
+	public static function meta_box_order( $order ) {
+		if ( ! empty( $order ) ) {
+			return $order;
+		}
+		return array(
+			'side'     => 'submitdiv,dvh_inv_details,dvh_asset_catdiv,postimagediv',
+			'normal'   => '',
+			'advanced' => '',
+		);
 	}
 
 	public static function render_meta_box( $post ) {
@@ -499,6 +523,10 @@ final class Davenham_Inventory {
 			.dvh-badge{display:inline-block;padding:2px 10px;border-radius:999px;font-weight:700;font-size:.78rem;}
 			.dvh-badge--in{background:#DEF3E4;color:#1D6F42;}
 			.dvh-badge--out{background:#FCE9DC;color:#C0490B;}
+			.dvh-editor-heading{margin:18px 0 2px;font-size:1.15rem;font-weight:800;color:#003982;}
+			.dvh-editor-hint{margin:0 0 10px;color:#55565A;}
+			/* Give the item edit screen a touch more breathing room */
+			.post-type-dvh_asset #titlediv #title{font-size:1.4em;padding:12px 14px;}
 			@media (max-width:782px){ .dvh-inv-grid{grid-template-columns:repeat(auto-fill,minmax(45%,1fr));} }
 		</style>
 		<?php
