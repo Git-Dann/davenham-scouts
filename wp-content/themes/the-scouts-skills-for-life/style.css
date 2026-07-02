@@ -1015,7 +1015,7 @@ body {
   font-size: clamp(32px, 5vw, 56px);
   font-weight: 900;
   line-height: 1.05;
-  color: #FFB4E5;
+  color: #fff;
   letter-spacing: -0.02em;
 }
 
@@ -5048,4 +5048,91 @@ main > .db-block-shell:last-child,
   .scouts-home .split_cta__card { transition: none; }
   .scouts-home .step_card:hover,
   .scouts-home .split_cta__card:hover { transform: none; }
+}
+
+/* ══ Cross-site design refresh ════════════════════════════════════════════ */
+
+/* Homepage — tighten the vertical rhythm between bands (was 64+64=128px gaps).
+   Surgical: leaves hero (0) and news-feed (0, teal flush) untouched. */
+.scouts-home .db-block-shell--quote-banner,
+.scouts-home .db-block-shell--split-cta,
+.scouts-home .db-block-shell--steps,
+.scouts-home .db-block-shell--stats-grid,
+.scouts-home .db-block-shell--card-grid { padding-top: 46px; padding-bottom: 46px; }
+.scouts-home .db-block-shell--split-cta { padding-bottom: 60px; }
+
+/* Gallery — visually appealing, equal-height cards with image zoom on hover */
+.gallery-grid { grid-auto-rows: 1fr; gap: 26px; }
+.gallery-card {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 12px 30px rgba(9, 31, 66, 0.08);
+  transition: transform 0.25s cubic-bezier(.2,.7,.3,1), box-shadow 0.25s ease;
+}
+.gallery-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 26px 52px rgba(9, 31, 66, 0.18);
+}
+.gallery-card img {
+  height: 230px;
+  transition: transform 0.45s ease;
+}
+.gallery-card:hover img { transform: scale(1.07); }
+.gallery-card__body { padding: 22px 24px 26px; }
+.gallery-card__body h3 {
+  font-size: 1.3rem !important;
+  margin: 0 0 8px !important;
+  color: #003982;
+  line-height: 1.25 !important;
+}
+.gallery-card__body p { color: #55565A; font-size: 0.98rem; line-height: 1.55; }
+
+/* Article pages — lead paragraph + brand accent under section headings, so
+   plain content pages get visual rhythm across the board */
+.page_article__body > p:first-of-type {
+  font-size: 1.2rem;
+  line-height: 1.65;
+  color: #333333;
+}
+.page_article__body > h2,
+.page_article__body > h3 { padding-top: 6px; }
+.page_article__body > h2::after,
+.page_article__body > h3::after {
+  content: "";
+  display: block;
+  height: 4px;
+  margin-top: 12px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, #590FA9, #088486);
+}
+.page_article__body > h2::after { width: 54px; }
+.page_article__body > h3::after { width: 42px; }
+
+/* Builder pages (About Us hub, etc.) — polished, equal-height card-grid */
+.page_content--blocks .card_grid { grid-auto-rows: 1fr; gap: 24px; }
+.page_content--blocks .card_grid__item {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  border-radius: 14px;
+  border: 1px solid #E7E9EE;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
+  transition: transform 0.22s cubic-bezier(.2,.7,.3,1), box-shadow 0.22s ease;
+}
+.page_content--blocks .card_grid__item:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 22px 46px rgba(89, 15, 169, 0.14);
+}
+.page_content--blocks .card_grid__item .card_grid__text { color: #55565A; line-height: 1.55; }
+.page_content--blocks .card_grid__item > p { margin: auto 0 0; padding-top: 8px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .gallery-card,
+  .page_content--blocks .card_grid__item { transition: none; }
+  .gallery-card:hover,
+  .page_content--blocks .card_grid__item:hover { transform: none; }
+  .gallery-card:hover img { transform: none; }
 }
