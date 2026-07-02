@@ -186,13 +186,12 @@ $render_flyout = function ( $item ) use ( $admin_groups ) {
 		$out .= '<a href="' . esc_url( $item['url'] ?? '#' ) . '">Open overview</a></div>';
 		foreach ( (array) $admin_groups as $group ) {
 			$links = isset( $group['links'] ) && is_array( $group['links'] ) ? $group['links'] : array();
+			if ( ! $links ) {
+				continue; // Don't render empty folders — no "No links assigned" clutter.
+			}
 			$out  .= '<section class="das-flyout-folder"><h3><span class="dashicons dashicons-portfolio" aria-hidden="true"></span>' . esc_html( $group['label'] ?? '' ) . '</h3>';
-			if ( $links ) {
-				foreach ( $links as $link ) {
-					$out .= '<a href="' . esc_url( $link['url'] ?? '#' ) . '">' . esc_html( $link['label'] ?? '' ) . '</a>';
-				}
-			} else {
-				$out .= '<p>No links assigned</p>';
+			foreach ( $links as $link ) {
+				$out .= '<a href="' . esc_url( $link['url'] ?? '#' ) . '">' . esc_html( $link['label'] ?? '' ) . '</a>';
 			}
 			$out .= '</section>';
 		}
