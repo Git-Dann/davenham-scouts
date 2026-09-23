@@ -891,6 +891,19 @@ body.davenham-admin-shell .woocommerce-layout__activity-panel-wrapper {
   top: var(--das-topbar-height) !important;
 }
 
+/* WC-Admin's header is position:fixed with no left offset and a width sized
+   for WP's 160px menu, so it floated inside #wpcontent's padding with a gap
+   before our rail. Pin it to the rail edge and run it to the right edge. */
+body.davenham-admin-shell .woocommerce-layout__header {
+  left: var(--das-rail-width) !important;
+  right: 0 !important;
+  width: auto !important;
+}
+
+body.davenham-admin-shell.das-app-nav-collapsed .woocommerce-layout__header {
+  left: var(--das-rail-collapsed-width) !important;
+}
+
 /* Same for the older WP admin sticky bits (e.g. notices, screen
    meta) that some plugins still emit. */
 body.davenham-admin-shell #screen-meta-links,
