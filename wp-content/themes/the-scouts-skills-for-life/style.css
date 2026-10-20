@@ -394,6 +394,26 @@ body {
   color: #333;
 }
 
+/* Radio/checkbox groups use <fieldset><legend> for accessibility (so the group
+   name is announced). Reset the browser's default fieldset chrome and make the
+   legend match the field label above exactly. */
+.scouts-fieldset {
+  border: 0;
+  padding: 0;
+  margin: 0 0 20px;
+  min-width: 0;
+}
+.scouts-fieldset > legend {
+  display: block;
+  margin: 0 0 8px;
+  padding: 0;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: #333;
+}
+
 .scouts-form-field input[type="text"],
 .scouts-form-field input[type="email"],
 .scouts-form-field input[type="date"],

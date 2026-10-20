@@ -161,28 +161,9 @@ function scouts_render_site_chrome(): void {
                     node.addEventListener('click', closeModal);
                 });
             }
-
-            // Keep aria-expanded in sync on the hamburger when the mobile menu opens/closes.
-            // The existing theme JS toggles a class on body/overlay — we observe that.
-            var overlay = document.getElementById('mobile-menu');
-            var hamburgers = document.querySelectorAll('.new-header .hamburger');
-            if (overlay && hamburgers.length) {
-                var syncAria = function () {
-                    var isOpen = document.body.classList.contains('menu-open') ||
-                                 overlay.classList.contains('open') ||
-                                 overlay.getAttribute('aria-hidden') === 'false';
-                    hamburgers.forEach(function (h) {
-                        h.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
-                        h.setAttribute('aria-label', isOpen ? 'Close menu' : 'Open menu');
-                    });
-                    overlay.setAttribute('aria-hidden', isOpen ? 'false' : 'true');
-                };
-                var observer = new MutationObserver(syncAria);
-                observer.observe(document.body, { attributes: true, attributeFilter: ['class'] });
-                observer.observe(overlay, { attributes: true, attributeFilter: ['class', 'style'] });
-                // Fallback: also sync on click
-                hamburgers.forEach(function (h) { h.addEventListener('click', function () { setTimeout(syncAria, 50); }); });
-            }
+            // (Legacy mobile-menu aria-sync removed — the old #mobile-menu /
+            // .new-header markup no longer exists; the current .site-header
+            // burger manages its own aria-expanded in scouts_site_header_nav_toggle.)
         }());
     </script>
     <?php
@@ -328,6 +309,9 @@ function scouts_admin_tokens() {
 add_action( 'admin_enqueue_scripts', 'scouts_admin_tokens' );
 
 function scouts_setup() {
+    // Load translations so the theme's __() / _e() strings can actually be
+    // translated (expects .mo files in /languages). Harmless for English-only.
+    load_theme_textdomain( 'the-scouts-skills-for-life', get_template_directory() . '/languages' );
     add_theme_support( 'title-tag' );
     add_theme_support( 'post-thumbnails' );
     add_theme_support( 'html5', [ 'search-form', 'comment-form', 'comment-list', 'gallery', 'caption' ] );
@@ -1475,13 +1459,13 @@ function scouts_shortcode_join_form(): string {
             <input type="hidden" name="redirect_to" value="<?php echo esc_url( get_permalink() ); ?>" />
             <input type="text" name="website" value="" class="scouts-honeypot" tabindex="-1" autocomplete="off" />
 
-            <div class="scouts-form-field">
-                <label>Join type</label>
+            <fieldset class="scouts-form-field scouts-fieldset">
+                <legend>Join type</legend>
                 <div class="scouts-choice-row">
                     <label><input type="radio" name="join_type" value="Young Person" <?php checked( $join_type, 'Young Person' ); ?> /> Young Person</label>
                     <label><input type="radio" name="join_type" value="Adult Volunteer" <?php checked( $join_type, 'Adult Volunteer' ); ?> /> Adult Volunteer</label>
                 </div>
-            </div>
+            </fieldset>
 
             <div class="scouts-form-grid scouts-form-grid--2">
                 <div class="scouts-form-field">
@@ -1533,8 +1517,8 @@ function scouts_shortcode_join_form(): string {
                 </div>
             </div>
 
-            <div class="scouts-form-field">
-                <label>Volunteer interests</label>
+            <fieldset class="scouts-form-field scouts-fieldset">
+                <legend>Volunteer interests</legend>
                 <div class="scouts-choice-grid">
                     <?php
                     $selected = $values['volunteer_interest'] ?? [];
@@ -1542,7 +1526,7 @@ function scouts_shortcode_join_form(): string {
                         <label><input type="checkbox" name="volunteer_interest[]" value="<?php echo esc_attr( $option ); ?>" <?php checked( in_array( $option, $selected, true ) ); ?> /> <?php echo esc_html( $option ); ?></label>
                     <?php endforeach; ?>
                 </div>
-            </div>
+            </fieldset>
 
             <div class="scouts-form-field">
                 <label for="join-message">Anything else we should know?</label>
