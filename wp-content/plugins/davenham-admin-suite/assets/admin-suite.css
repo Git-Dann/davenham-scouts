@@ -883,25 +883,25 @@ body.davenham-admin-shell #wpcontent {
   padding: calc(var(--das-topbar-height) + 20px) 24px 40px !important;
 }
 
-/* WC-Admin's React layout uses its own sticky elements at top:0 that
-   collide with our fixed topbar. Push them down by the topbar height
-   so the page chrome (Overview / Activity tabs etc.) stays visible. */
-body.davenham-admin-shell .woocommerce-layout__header,
+/* WC-Admin's activity panel is a position:fixed slide-in drawer; push it
+   below our topbar so its top controls aren't tucked underneath. */
 body.davenham-admin-shell .woocommerce-layout__activity-panel-wrapper {
   top: var(--das-topbar-height) !important;
 }
 
-/* WC-Admin's header is position:fixed with no left offset and a width sized
-   for WP's 160px menu, so it floated inside #wpcontent's padding with a gap
-   before our rail. Pin it to the rail edge and run it to the right edge. */
+/* Modern WooCommerce / WooPayments render .woocommerce-layout__header in
+   normal document flow (position: relative) inside #wpcontent, which the
+   shell already offsets for the topbar (padding-top) and the rail
+   (margin-left). Older WC made this header position:fixed, so the shell
+   pushed it down by the topbar height and in from the rail. On an in-flow
+   (relative) header those same offsets instead shove it DOWN over the page
+   content and ACROSS to the right (the broken "Overview" banner). Neutralise
+   them so the header sits naturally wherever WooCommerce places it. */
 body.davenham-admin-shell .woocommerce-layout__header {
-  left: var(--das-rail-width) !important;
-  right: 0 !important;
+  top: 0 !important;
+  left: auto !important;
+  right: auto !important;
   width: auto !important;
-}
-
-body.davenham-admin-shell.das-app-nav-collapsed .woocommerce-layout__header {
-  left: var(--das-rail-collapsed-width) !important;
 }
 
 /* Same for the older WP admin sticky bits (e.g. notices, screen
