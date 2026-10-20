@@ -3,7 +3,7 @@
  * Plugin Name: Davenham Inventory
  * Plugin URI:  https://davenhamscouts.org.uk
  * Description: Backend-only catalogue of everything the Group owns — log, track, categorise, and mark kit in/out when it's borrowed. Mobile-friendly with bulk actions.
- * Version:     1.0.0
+ * Version:     1.1.0
  * Author:      Davenham Scout Group
  * Text Domain: davenham-inventory
  * Requires at least: 6.0
@@ -18,13 +18,14 @@ final class Davenham_Inventory {
 	const TAX     = 'dvh_asset_cat';
 	const MENU    = 'davenham-inventory';
 	const CAP     = 'edit_posts';
-	const VERSION = '1.0.0';
+	const VERSION = '1.1.0';
 
 	public static function init() {
 		add_action( 'init', array( __CLASS__, 'register' ) );
 		add_action( 'admin_menu', array( __CLASS__, 'admin_menu' ), 9 );
 		add_action( 'admin_init', array( __CLASS__, 'maybe_seed' ) );
 		add_action( 'admin_init', array( __CLASS__, 'handle_toggle' ) );
+		add_action( 'admin_post_dvh_inv_export', array( __CLASS__, 'export_csv' ) );
 
 		// Item edit screen meta box + layout.
 		add_action( 'add_meta_boxes', array( __CLASS__, 'meta_box' ) );
@@ -133,17 +134,25 @@ final class Davenham_Inventory {
 		$terms = get_terms( array( 'taxonomy' => self::TAX, 'hide_empty' => false ) );
 		$total_items = (int) wp_count_posts( self::CPT )->publish;
 		$total_out   = self::count_by_status( 'out' );
+		$value       = self::total_value();
 		$list_url    = admin_url( 'edit.php?post_type=' . self::CPT );
+		$out_url     = add_query_arg( array( 'post_type' => self::CPT, 'dvh_status_f' => 'out' ), admin_url( 'edit.php' ) );
+		$export_url  = wp_nonce_url( admin_url( 'admin-post.php?action=dvh_inv_export' ), 'dvh_inv_export' );
 		?>
 		<div class="wrap dvh-inv-wrap">
 			<h1 class="wp-heading-inline"><?php esc_html_e( 'Inventory', 'davenham-inventory' ); ?></h1>
 			<a href="<?php echo esc_url( admin_url( 'post-new.php?post_type=' . self::CPT ) ); ?>" class="page-title-action"><?php esc_html_e( 'Add Item', 'davenham-inventory' ); ?></a>
 			<a href="<?php echo esc_url( $list_url ); ?>" class="page-title-action"><?php esc_html_e( 'All Items', 'davenham-inventory' ); ?></a>
+			<?php if ( $total_out > 0 ) : ?><a href="<?php echo esc_url( $out_url ); ?>" class="page-title-action"><?php esc_html_e( "What's out now", 'davenham-inventory' ); ?></a><?php endif; ?>
+			<a href="<?php echo esc_url( $export_url ); ?>" class="page-title-action"><?php esc_html_e( 'Export CSV', 'davenham-inventory' ); ?></a>
 
 			<div class="dvh-inv-summary">
-				<div class="dvh-inv-stat"><span class="dvh-inv-fig"><?php echo (int) $total_items; ?></span><span><?php esc_html_e( 'items catalogued', 'davenham-inventory' ); ?></span></div>
+				<a class="dvh-inv-stat" href="<?php echo esc_url( $list_url ); ?>"><span class="dvh-inv-fig"><?php echo (int) $total_items; ?></span><span><?php esc_html_e( 'items catalogued', 'davenham-inventory' ); ?></span></a>
 				<div class="dvh-inv-stat"><span class="dvh-inv-fig"><?php echo count( is_wp_error( $terms ) ? array() : $terms ); ?></span><span><?php esc_html_e( 'categories', 'davenham-inventory' ); ?></span></div>
-				<div class="dvh-inv-stat dvh-inv-stat--out"><span class="dvh-inv-fig"><?php echo (int) $total_out; ?></span><span><?php esc_html_e( 'currently out', 'davenham-inventory' ); ?></span></div>
+				<a class="dvh-inv-stat dvh-inv-stat--out" href="<?php echo esc_url( $out_url ); ?>"><span class="dvh-inv-fig"><?php echo (int) $total_out; ?></span><span><?php esc_html_e( 'currently out — view', 'davenham-inventory' ); ?></span></a>
+				<?php if ( $value > 0 ) : ?>
+				<div class="dvh-inv-stat"><span class="dvh-inv-fig">&pound;<?php echo esc_html( number_format( $value, 0 ) ); ?></span><span><?php esc_html_e( 'replacement value', 'davenham-inventory' ); ?></span></div>
+				<?php endif; ?>
 			</div>
 
 			<h2><?php esc_html_e( 'Categories', 'davenham-inventory' ); ?></h2>
@@ -182,6 +191,16 @@ final class Davenham_Inventory {
 		}
 		$q = new WP_Query( $args );
 		return (int) $q->found_posts;
+	}
+
+	// Total replacement value = sum of (value x quantity) across all items.
+	public static function total_value() {
+		$ids = get_posts( array( 'post_type' => self::CPT, 'post_status' => 'publish', 'posts_per_page' => -1, 'fields' => 'ids' ) );
+		$total = 0;
+		foreach ( $ids as $id ) {
+			$total += (float) get_post_meta( $id, '_dvh_value', true ) * max( 1, (int) get_post_meta( $id, '_dvh_qty', true ) );
+		}
+		return $total;
 	}
 
 	/* ── Meta box ────────────────────────────────────────────────────────── */
@@ -230,6 +249,8 @@ final class Davenham_Inventory {
 			</select></label></p>
 		<p><label><strong><?php esc_html_e( 'Storage location', 'davenham-inventory' ); ?></strong><br>
 			<input type="text" name="dvh_location" value="<?php echo esc_attr( $location ); ?>" class="widefat" placeholder="<?php esc_attr_e( 'e.g. Peckmill store, shelf 3', 'davenham-inventory' ); ?>"></label></p>
+		<p><label><strong><?php esc_html_e( 'Replacement value (£, each)', 'davenham-inventory' ); ?></strong><br>
+			<input type="number" min="0" step="0.01" name="dvh_value" value="<?php echo esc_attr( get_post_meta( $post->ID, '_dvh_value', true ) ); ?>" class="widefat" placeholder="<?php esc_attr_e( 'e.g. 120 — helps with insurance', 'davenham-inventory' ); ?>"></label></p>
 		<p><label><strong><?php esc_html_e( 'Status', 'davenham-inventory' ); ?></strong><br>
 			<select name="dvh_status" class="widefat">
 				<?php foreach ( self::statuses() as $k => $v ) : ?>
@@ -258,6 +279,7 @@ final class Davenham_Inventory {
 		update_post_meta( $post_id, '_dvh_condition', $cond );
 		update_post_meta( $post_id, '_dvh_location', sanitize_text_field( $_POST['dvh_location'] ?? '' ) );
 		update_post_meta( $post_id, '_dvh_borrowed_by', sanitize_text_field( $_POST['dvh_borrowed_by'] ?? '' ) );
+		update_post_meta( $post_id, '_dvh_value', max( 0, (float) ( $_POST['dvh_value'] ?? 0 ) ) );
 	}
 
 	/* ── List table columns ──────────────────────────────────────────────── */
@@ -265,11 +287,15 @@ final class Davenham_Inventory {
 	public static function columns( $cols ) {
 		$new = array();
 		foreach ( $cols as $key => $label ) {
+			if ( 'title' === $key ) {
+				$new['dvh_thumb'] = __( 'Photo', 'davenham-inventory' );
+			}
 			$new[ $key ] = $label;
 			if ( 'title' === $key ) {
 				$new['dvh_qty']       = __( 'Qty', 'davenham-inventory' );
 				$new['dvh_condition'] = __( 'Condition', 'davenham-inventory' );
 				$new['dvh_location']  = __( 'Location', 'davenham-inventory' );
+				$new['dvh_value']     = __( 'Value', 'davenham-inventory' );
 				$new['dvh_status']    = __( 'Status', 'davenham-inventory' );
 			}
 		}
@@ -277,7 +303,24 @@ final class Davenham_Inventory {
 	}
 
 	public static function column_content( $col, $post_id ) {
-		if ( 'dvh_qty' === $col ) {
+		if ( 'dvh_thumb' === $col ) {
+			if ( has_post_thumbnail( $post_id ) ) {
+				echo '<a href="' . esc_url( get_edit_post_link( $post_id ) ) . '">' . get_the_post_thumbnail( $post_id, array( 48, 48 ), array( 'class' => 'dvh-thumb' ) ) . '</a>';
+			} else {
+				echo '<span class="dvh-thumb dvh-thumb--none" aria-hidden="true"><span class="dashicons dashicons-archive"></span></span>';
+			}
+		} elseif ( 'dvh_value' === $col ) {
+			$v   = (float) get_post_meta( $post_id, '_dvh_value', true );
+			$qty = max( 1, (int) get_post_meta( $post_id, '_dvh_qty', true ) );
+			if ( $v > 0 ) {
+				echo '&pound;' . esc_html( number_format( $v, 2 ) );
+				if ( $qty > 1 ) {
+					echo '<br><small>&pound;' . esc_html( number_format( $v * $qty, 2 ) ) . ' total</small>';
+				}
+			} else {
+				echo '<span style="color:#b5b5b5;">—</span>';
+			}
+		} elseif ( 'dvh_qty' === $col ) {
 			echo esc_html( (string) ( get_post_meta( $post_id, '_dvh_qty', true ) ?: '1' ) );
 		} elseif ( 'dvh_condition' === $col ) {
 			$c = get_post_meta( $post_id, '_dvh_condition', true ) ?: 'good';
@@ -420,6 +463,41 @@ final class Davenham_Inventory {
 		}
 	}
 
+	/* ── CSV export (for the committee / insurance) ──────────────────────── */
+
+	public static function export_csv() {
+		if ( ! current_user_can( self::CAP ) || ! isset( $_GET['_wpnonce'] ) || ! wp_verify_nonce( $_GET['_wpnonce'], 'dvh_inv_export' ) ) {
+			wp_die( esc_html__( 'Sorry, you are not allowed to export the inventory.', 'davenham-inventory' ) );
+		}
+		$ids = get_posts( array( 'post_type' => self::CPT, 'post_status' => 'publish', 'posts_per_page' => -1, 'orderby' => 'title', 'order' => 'ASC', 'fields' => 'ids' ) );
+		$conds = self::conditions();
+
+		nocache_headers();
+		header( 'Content-Type: text/csv; charset=utf-8' );
+		header( 'Content-Disposition: attachment; filename="davenham-inventory-' . gmdate( 'Y-m-d' ) . '.csv"' );
+		$out = fopen( 'php://output', 'w' );
+		fputcsv( $out, array( 'Item', 'Category', 'Quantity', 'Condition', 'Location', 'Value each (£)', 'Total value (£)', 'Status', 'Borrowed by' ) );
+		foreach ( $ids as $id ) {
+			$qty  = max( 1, (int) get_post_meta( $id, '_dvh_qty', true ) );
+			$val  = (float) get_post_meta( $id, '_dvh_value', true );
+			$cond = get_post_meta( $id, '_dvh_condition', true ) ?: 'good';
+			$cats = wp_get_object_terms( $id, self::TAX, array( 'fields' => 'names' ) );
+			fputcsv( $out, array(
+				get_the_title( $id ),
+				is_wp_error( $cats ) ? '' : implode( ', ', $cats ),
+				$qty,
+				isset( $conds[ $cond ] ) ? $conds[ $cond ] : $cond,
+				get_post_meta( $id, '_dvh_location', true ),
+				$val ? number_format( $val, 2, '.', '' ) : '',
+				$val ? number_format( $val * $qty, 2, '.', '' ) : '',
+				( 'out' === get_post_meta( $id, '_dvh_status', true ) ) ? 'Out' : 'In',
+				get_post_meta( $id, '_dvh_borrowed_by', true ),
+			) );
+		}
+		fclose( $out );
+		exit;
+	}
+
 	/* ── Seed sample data ────────────────────────────────────────────────── */
 
 	public static function maybe_seed() {
@@ -508,10 +586,15 @@ final class Davenham_Inventory {
 		?>
 		<style>
 			.dvh-inv-summary{display:flex;flex-wrap:wrap;gap:14px;margin:18px 0 8px;}
-			.dvh-inv-stat{background:#fff;border:1px solid #e7e9ee;border-radius:12px;padding:16px 20px;min-width:150px;box-shadow:0 4px 14px rgba(15,23,42,.05);}
+			.dvh-inv-stat{display:block;background:#fff;border:1px solid #e7e9ee;border-radius:12px;padding:16px 20px;min-width:150px;box-shadow:0 4px 14px rgba(15,23,42,.05);text-decoration:none;transition:transform .16s ease,box-shadow .16s ease;}
+			a.dvh-inv-stat:hover{transform:translateY(-3px);box-shadow:0 12px 26px rgba(15,23,42,.12);}
 			.dvh-inv-stat .dvh-inv-fig{display:block;font-size:2rem;font-weight:800;color:#003982;line-height:1;}
 			.dvh-inv-stat span:last-child{color:#55565A;font-size:.9rem;}
 			.dvh-inv-stat--out .dvh-inv-fig{color:#C0490B;}
+			.dvh-thumb{width:48px;height:48px;object-fit:cover;border-radius:8px;display:inline-block;vertical-align:middle;}
+			.dvh-thumb--none{display:inline-flex;align-items:center;justify-content:center;background:#f1eff7;color:#b9a9dd;}
+			.dvh-thumb--none .dashicons{font-size:22px;width:22px;height:22px;}
+			table.wp-list-table .column-dvh_thumb{width:62px;}
 			.dvh-inv-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));align-items:stretch;gap:16px;margin-top:14px;}
 			.dvh-inv-card{display:flex;flex-direction:column;gap:6px;min-height:120px;background:#fff;border:1px solid #e7e9ee;border-top:4px solid #590FA9;border-radius:14px;padding:20px;text-decoration:none;box-shadow:0 8px 22px rgba(15,23,42,.06);transition:transform .2s cubic-bezier(.2,.7,.3,1),box-shadow .2s ease;}
 			.dvh-inv-card:hover{transform:translateY(-5px);box-shadow:0 20px 40px rgba(89,15,169,.16);}
