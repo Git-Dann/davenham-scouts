@@ -133,8 +133,29 @@ final class Davenham_Inventory {
 	public static function render_dashboard() {
 		$terms = get_terms( array( 'taxonomy' => self::TAX, 'hide_empty' => false ) );
 		$total_items = (int) wp_count_posts( self::CPT )->publish;
-		$total_out   = self::count_by_status( 'out' );
 		$value       = self::total_value();
+
+		// Items currently out: one query for the IDs, one for their categories,
+		// then tally per term in PHP — replaces a WP_Query per category (N+1).
+		$out_ids = get_posts( array(
+			'post_type'      => self::CPT,
+			'post_status'    => 'publish',
+			'posts_per_page' => -1,
+			'fields'         => 'ids',
+			'no_found_rows'  => true,
+			'meta_query'     => array( array( 'key' => '_dvh_status', 'value' => 'out' ) ),
+		) );
+		$total_out   = count( $out_ids );
+		$out_by_term = array();
+		if ( ! empty( $out_ids ) ) {
+			$out_terms = wp_get_object_terms( $out_ids, self::TAX, array( 'fields' => 'all_with_object_id' ) );
+			if ( ! is_wp_error( $out_terms ) ) {
+				foreach ( $out_terms as $out_term ) {
+					$tid = (int) $out_term->term_id;
+					$out_by_term[ $tid ] = isset( $out_by_term[ $tid ] ) ? $out_by_term[ $tid ] + 1 : 1;
+				}
+			}
+		}
 		$list_url    = admin_url( 'edit.php?post_type=' . self::CPT );
 		$out_url     = add_query_arg( array( 'post_type' => self::CPT, 'dvh_status_f' => 'out' ), admin_url( 'edit.php' ) );
 		$export_url  = wp_nonce_url( admin_url( 'admin-post.php?action=dvh_inv_export' ), 'dvh_inv_export' );
@@ -161,7 +182,7 @@ final class Davenham_Inventory {
 			<?php else : ?>
 				<div class="dvh-inv-grid">
 					<?php foreach ( $terms as $term ) :
-						$out = self::count_by_status( 'out', $term->term_id );
+						$out = isset( $out_by_term[ $term->term_id ] ) ? $out_by_term[ $term->term_id ] : 0;
 						$cat_url = add_query_arg( array( 'post_type' => self::CPT, self::TAX => $term->slug ), admin_url( 'edit.php' ) );
 					?>
 					<a class="dvh-inv-card" href="<?php echo esc_url( $cat_url ); ?>">
@@ -175,22 +196,6 @@ final class Davenham_Inventory {
 			<?php endif; ?>
 		</div>
 		<?php
-	}
-
-	public static function count_by_status( $status, $term_id = 0 ) {
-		$args = array(
-			'post_type'      => self::CPT,
-			'post_status'    => 'publish',
-			'posts_per_page' => -1,
-			'fields'         => 'ids',
-			'no_found_rows'  => false,
-			'meta_query'     => array( array( 'key' => '_dvh_status', 'value' => $status ) ),
-		);
-		if ( $term_id ) {
-			$args['tax_query'] = array( array( 'taxonomy' => self::TAX, 'field' => 'term_id', 'terms' => (int) $term_id ) );
-		}
-		$q = new WP_Query( $args );
-		return (int) $q->found_posts;
 	}
 
 	// Total replacement value = sum of (value x quantity) across all items.

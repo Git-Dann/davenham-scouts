@@ -632,7 +632,15 @@ final class Davenham_Events_Fundraising {
 		);
 	}
 
+	private static $settings_cache = null;
+
 	public static function settings() {
+		// Memoised per request: this parses/normalises on every call and is hit
+		// many times per page (enqueue, admin_head, body_class, footer, rollup).
+		// Cleared in handle_save_settings() when the option changes.
+		if ( null !== self::$settings_cache ) {
+			return self::$settings_cache;
+		}
 		$saved = get_option( self::OPTION_NAME, array() );
 		$saved = is_array( $saved ) ? $saved : array();
 		$settings = wp_parse_args( $saved, self::default_settings() );
@@ -656,6 +664,7 @@ final class Davenham_Events_Fundraising {
 		$settings['banner_event_ids'] = self::sanitize_id_list( $settings['banner_event_ids'] ?? array() );
 		$settings['banner_page_ids'] = self::sanitize_id_list( $settings['banner_page_ids'] ?? array() );
 
+		self::$settings_cache = $settings;
 		return $settings;
 	}
 
@@ -1263,6 +1272,7 @@ final class Davenham_Events_Fundraising {
 		$incoming = isset( $_POST[ self::OPTION_NAME ] ) ? wp_unslash( $_POST[ self::OPTION_NAME ] ) : array();
 		$clean = self::sanitize_settings( is_array( $incoming ) ? $incoming : array() );
 		update_option( self::OPTION_NAME, $clean, false );
+		self::$settings_cache = null;
 		self::clear_sales_caches();
 
 		wp_safe_redirect( add_query_arg( 'updated', '1', admin_url( 'admin.php?page=davenham-events-fundraising-settings' ) ) );

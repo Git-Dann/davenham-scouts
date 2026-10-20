@@ -1058,6 +1058,29 @@ final class Davenham_Parent_Portal {
 		return $q->posts;
 	}
 
+	// One grouped query returning event_id => consent count. Replaces an N+1
+	// that ran a WP_Query (hydrating up to 500 posts) per event just to count.
+	private static function consent_counts_by_event() {
+		global $wpdb;
+		$rows = $wpdb->get_results(
+			$wpdb->prepare(
+				"SELECT pm.meta_value AS event_id, COUNT(*) AS cnt
+				 FROM {$wpdb->postmeta} pm
+				 INNER JOIN {$wpdb->posts} p ON p.ID = pm.post_id
+				 WHERE pm.meta_key = '_dpp_event_id'
+				   AND p.post_type = %s
+				   AND p.post_status IN ( 'private', 'publish' )
+				 GROUP BY pm.meta_value",
+				self::CONSENT_CPT
+			)
+		);
+		$map = array();
+		foreach ( (array) $rows as $row ) {
+			$map[ (int) $row->event_id ] = (int) $row->cnt;
+		}
+		return $map;
+	}
+
 	public static function render_consents_page() {
 		if ( ! current_user_can( self::VIEW_CAP ) ) {
 			wp_die( esc_html__( 'You are not allowed to view consents.', 'davenham-parent-portal' ) );
@@ -1096,8 +1119,9 @@ final class Davenham_Parent_Portal {
 		echo '<th>' . esc_html__( 'Event', 'davenham-parent-portal' ) . '</th>';
 		echo '<th>' . esc_html__( 'Date', 'davenham-parent-portal' ) . '</th>';
 		echo '<th>' . esc_html__( 'Consents', 'davenham-parent-portal' ) . '</th></tr></thead><tbody>';
+		$counts = self::consent_counts_by_event();
 		foreach ( $events as $event ) {
-			$count = count( self::consents_for_event( $event->ID ) );
+			$count = isset( $counts[ $event->ID ] ) ? $counts[ $event->ID ] : 0;
 			$date  = get_post_meta( $event->ID, 'event_date', true );
 			$url   = add_query_arg( array( 'page' => 'dpp-consents', 'event' => $event->ID ), admin_url( 'admin.php' ) );
 			echo '<tr>';
