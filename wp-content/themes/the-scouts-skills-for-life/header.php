@@ -9,6 +9,11 @@
 <?php wp_body_open(); ?>
 <a class="scouts-skip-link" href="#main-content"><?php esc_html_e( 'Skip to main content', 'the-scouts-skills-for-life' ); ?></a>
 <?php
+// Load site settings here: the header renders before footer.php, which used to
+// be the only place this was defined — so these CTA settings were silently
+// ignored and PHP logged an "undefined variable" warning on every page load.
+$scouts_site_settings = function_exists( 'scouts_get_site_settings' ) ? scouts_get_site_settings() : array();
+
 // Single primary CTA (Join). Volunteer removed — it duplicated Join, which is
 // in the nav. Uses the saved CTA setting, with a sensible fallback.
 $dvh_join_url  = ! empty( $scouts_site_settings['header_secondary_cta_url'] ) ? $scouts_site_settings['header_secondary_cta_url'] : home_url( '/join/' );
@@ -18,8 +23,8 @@ $dvh_logo_url  = function_exists( 'scouts_get_site_logo_url' ) ? scouts_get_site
 
 <header class="site-header" role="banner">
     <div class="site-header__inner">
-        <a class="site-header__logo" href="<?php echo esc_url( home_url( '/' ) ); ?>" aria-label="<?php bloginfo( 'name' ); ?>">
-            <img src="<?php echo esc_url( $dvh_logo_url ); ?>" alt="<?php bloginfo( 'name' ); ?>" />
+        <a class="site-header__logo" href="<?php echo esc_url( home_url( '/' ) ); ?>" aria-label="<?php echo esc_attr( get_bloginfo( 'name' ) ); ?>">
+            <img src="<?php echo esc_url( $dvh_logo_url ); ?>" alt="<?php echo esc_attr( get_bloginfo( 'name' ) ); ?>" />
         </a>
 
         <nav class="site-header__nav" aria-label="<?php esc_attr_e( 'Primary', 'the-scouts-skills-for-life' ); ?>">

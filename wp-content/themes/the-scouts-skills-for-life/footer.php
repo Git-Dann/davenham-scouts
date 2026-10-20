@@ -12,8 +12,8 @@ $dvh_x        = $scouts_site_settings['footer_social_x'] ?? '';
     <div class="site-footer__inner">
 
         <div class="site-footer__brand">
-            <a class="site-footer__logo" href="<?php echo esc_url( home_url( '/' ) ); ?>" aria-label="<?php bloginfo( 'name' ); ?>">
-                <img src="<?php echo esc_url( $dvh_logo_url ); ?>" alt="<?php bloginfo( 'name' ); ?>" />
+            <a class="site-footer__logo" href="<?php echo esc_url( home_url( '/' ) ); ?>" aria-label="<?php echo esc_attr( get_bloginfo( 'name' ) ); ?>">
+                <img src="<?php echo esc_url( $dvh_logo_url ); ?>" alt="<?php echo esc_attr( get_bloginfo( 'name' ) ); ?>" />
             </a>
             <p class="site-footer__tagline"><?php echo esc_html( $dvh_tagline ); ?></p>
             <div class="site-footer__cta-row">
@@ -67,7 +67,7 @@ $dvh_x        = $scouts_site_settings['footer_social_x'] ?? '';
 
     <div class="site-footer__bar">
         <div class="site-footer__bar-inner">
-            <p>&copy; <?php echo esc_html( date( 'Y' ) ); ?> <?php bloginfo( 'name' ); ?>. All rights reserved.</p>
+            <p>&copy; <?php echo esc_html( wp_date( 'Y' ) ); ?> <?php echo esc_html( get_bloginfo( 'name' ) ); ?>. All rights reserved.</p>
             <p>Registered charity no. <?php echo esc_html( $scouts_site_settings['charity_number'] ?? '1029781' ); ?></p>
         </div>
     </div>

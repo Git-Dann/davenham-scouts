@@ -285,15 +285,15 @@ function scouts_enqueue_assets() {
         [ 'scouts-production' ],
         scouts_asset_version( 'style.css' )
     );
-    wp_enqueue_script(
-        'scouts-production',
-        SCOUTS_THEME_URI . '/production/production.min.js',
-        [ 'jquery' ],
-        scouts_asset_version( 'production/production.min.js' ),
-        true
-    );
-    wp_localize_script( 'scouts-production', 'template_url', SCOUTS_THEME_URI );
-    wp_localize_script( 'scouts-production', 'website_url', home_url() );
+    // NOTE: the legacy 'production.min.js' bundle (a ~269KB jQuery+Slick slider
+    // library for the OLD header/theme) is intentionally no longer enqueued. Its
+    // path was broken ('/production/production.min.js' — the file lives at the
+    // theme root), so it had been 404ing on every page. Nothing current depends
+    // on it: the header/menu JS is inline (above), the gallery uses gallery.js,
+    // and no theme template uses slider markup. Re-adding it would download
+    // 269KB site-wide for no benefit. If a page ever needs a slider, enqueue a
+    // slider library on that page only. 'website_url' is still provided (below /
+    // functions.php ~885) for any inline script that references it.
 
     // Gallery lightbox — self-guards to pages that have a .gallery-grid.
     wp_enqueue_script(
