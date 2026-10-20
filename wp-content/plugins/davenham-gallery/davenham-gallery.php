@@ -3,7 +3,7 @@
  * Plugin Name: Davenham Gallery
  * Plugin URI:  https://davenhamscouts.org.uk
  * Description: Safeguarding-first public gallery. Images are private by default; each one has a "Show on public gallery" setting in the Media Library. Only ticked images appear on the public gallery page.
- * Version:     1.0.0
+ * Version:     1.0.1
  * Author:      Davenham Scout Group
  * Text Domain: davenham-gallery
  * Requires at least: 6.0
@@ -16,6 +16,13 @@ final class Davenham_Gallery {
 
 	const META_PUBLIC  = '_dvh_gallery_public';
 	const META_CAPTION = '_dvh_gallery_caption';
+
+	// Media Library form-field keys. These must NOT start with an underscore —
+	// WordPress's get_compat_media_markup() skips underscore-prefixed keys, so
+	// the fields would never render in the media modal. Storage still uses the
+	// protected (underscore-prefixed) meta keys above.
+	const FIELD_PUBLIC  = 'dvh_gallery_public';
+	const FIELD_CAPTION = 'dvh_gallery_caption';
 
 	public static function init() {
 		// Per-image settings in the Media Library (modal + edit screen).
@@ -39,13 +46,13 @@ final class Davenham_Gallery {
 		$public  = get_post_meta( $post->ID, self::META_PUBLIC, true );
 		$caption = get_post_meta( $post->ID, self::META_CAPTION, true );
 
-		$form_fields[ self::META_PUBLIC ] = array(
+		$form_fields[ self::FIELD_PUBLIC ] = array(
 			'label' => __( 'Public gallery', 'davenham-gallery' ),
 			'input' => 'html',
-			'html'  => '<label style="display:flex;gap:8px;align-items:flex-start;"><input type="checkbox" name="attachments[' . $post->ID . '][' . self::META_PUBLIC . ']" value="1" ' . checked( $public, '1', false ) . ' style="margin-top:2px;" /> <span>' . esc_html__( 'Show this image on the public gallery page', 'davenham-gallery' ) . '</span></label>',
+			'html'  => '<label style="display:flex;gap:8px;align-items:flex-start;"><input type="checkbox" name="attachments[' . $post->ID . '][' . self::FIELD_PUBLIC . ']" value="1" ' . checked( $public, '1', false ) . ' style="margin-top:2px;" /> <span>' . esc_html__( 'Show this image on the public gallery page', 'davenham-gallery' ) . '</span></label>',
 			'helps' => __( 'Safeguarding: only tick images you have consent to publish. Photos of young people must have photo consent on file. Everything is private until ticked.', 'davenham-gallery' ),
 		);
-		$form_fields[ self::META_CAPTION ] = array(
+		$form_fields[ self::FIELD_CAPTION ] = array(
 			'label' => __( 'Gallery caption', 'davenham-gallery' ),
 			'input' => 'text',
 			'value' => $caption,
@@ -59,9 +66,9 @@ final class Davenham_Gallery {
 		if ( ! current_user_can( 'edit_post', $id ) ) {
 			return $post;
 		}
-		update_post_meta( $id, self::META_PUBLIC, empty( $attachment[ self::META_PUBLIC ] ) ? '' : '1' );
-		if ( isset( $attachment[ self::META_CAPTION ] ) ) {
-			update_post_meta( $id, self::META_CAPTION, sanitize_text_field( $attachment[ self::META_CAPTION ] ) );
+		update_post_meta( $id, self::META_PUBLIC, empty( $attachment[ self::FIELD_PUBLIC ] ) ? '' : '1' );
+		if ( isset( $attachment[ self::FIELD_CAPTION ] ) ) {
+			update_post_meta( $id, self::META_CAPTION, sanitize_text_field( $attachment[ self::FIELD_CAPTION ] ) );
 		}
 		return $post;
 	}
