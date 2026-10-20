@@ -737,6 +737,7 @@ final class Davenham_Events_Fundraising {
 		self::$product_sales_cache = array();
 		self::$woo_sales_total_cache = null;
 		delete_transient( 'davenham_events_woo_sales_total' );
+		delete_transient( 'davenham_events_fundraising_totals' );
 	}
 
 	public static function register_admin_menu() {
@@ -1908,6 +1909,18 @@ final class Davenham_Events_Fundraising {
 	}
 
 	public static function fundraising_totals() {
+		// This rollup scans every WooCommerce order (twice: all events + banner
+		// events) and runs on the public auto-banner on potentially every page
+		// view, plus the admin dashboard widget. On this shared host with no
+		// object cache that is the single most expensive thing a request does,
+		// so cache the whole result. clear_sales_caches() — fired on order
+		// changes, event edits and settings saves — invalidates it immediately.
+		$cache_key = 'davenham_events_fundraising_totals';
+		$cached    = get_transient( $cache_key );
+		if ( is_array( $cached ) ) {
+			return $cached;
+		}
+
 		$settings = self::settings();
 		$all_events_rollup = self::events_rollup();
 		$banner_event_ids = self::banner_event_ids_for_settings( $settings );
@@ -1929,7 +1942,7 @@ final class Davenham_Events_Fundraising {
 		$target = (float) $settings['target_amount'];
 		$percent = $target > 0 ? min( 100, max( 0, ( $raised / $target ) * 100 ) ) : 0;
 
-		return array(
+		$result = array(
 			'raised'             => $raised,
 			'target'             => $target,
 			'percent'            => $percent,
@@ -1941,6 +1954,10 @@ final class Davenham_Events_Fundraising {
 			'banner_event_ids'   => $banner_event_ids,
 			'event_count_mode'   => $settings['event_count_mode'],
 		);
+
+		set_transient( $cache_key, $result, HOUR_IN_SECONDS );
+
+		return $result;
 	}
 
 	public static function events_rollup( $event_ids = null ) {

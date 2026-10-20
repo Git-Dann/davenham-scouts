@@ -840,11 +840,6 @@ function scouts_close_buy_card() {
  * Brand WooCommerce transactional emails with Scouts purple.
  * Filters apply at plugin load — no need for is_woocommerce() guard.
  */
-function scouts_woocommerce_email_options( $value, $option = '' ) {
-    // Used as a single-arg filter; we just override values directly via add_filter below.
-    return $value;
-}
-
 add_filter( 'pre_option_woocommerce_email_base_color',         function () { return '#590FA9'; } );
 add_filter( 'pre_option_woocommerce_email_background_color',   function () { return '#F1F1F1'; } );
 add_filter( 'pre_option_woocommerce_email_body_background_color', function () { return '#FFFFFF'; } );
